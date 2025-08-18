@@ -1,0 +1,56 @@
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+
+export interface AppSettings {
+  checkReminderWarning: boolean;
+  checkReminderDays: number; // Field for check reminder days
+  invoicePrintSize: 'A4' | 'A5' | 'Receipt';
+  syncCustomersToContacts: boolean;
+  autoBackupOnExit: boolean;
+  allowUserDiscount: boolean;
+  autoAddQuantity: boolean;
+  useBarcodeScanner: boolean;
+  checkStockOnHand: boolean;
+  showDebtOnInvoice: boolean;
+  showProfitOnInvoice: boolean;
+  quickPrintInvoice: boolean;
+  backgroundColor: string;
+  backgroundImage: string;
+}
+
+const initialState: AppSettings = {
+  checkReminderWarning: true,
+  checkReminderDays: 7, // Default value set to 7 days
+  invoicePrintSize: 'A4',
+  syncCustomersToContacts: false,
+  autoBackupOnExit: true,
+  allowUserDiscount: false,
+  autoAddQuantity: true,
+  useBarcodeScanner: true,
+  checkStockOnHand: true,
+  showDebtOnInvoice: true,
+  showProfitOnInvoice: false,
+  quickPrintInvoice: false,
+  backgroundColor: '#F8F7FA',
+  backgroundImage: '',
+};
+
+type SettingValue = AppSettings[keyof AppSettings];
+
+const settingsSlice = createSlice({
+  name: 'settings',
+  initialState,
+  reducers: {
+    updateSetting: (state, action: PayloadAction<{ key: keyof AppSettings; value: SettingValue }>) => {
+      const { key, value } = action.payload;
+      if (key in state) {
+        state[key] = value as never;
+      }
+    },
+    setAllSettings: (_state, action: PayloadAction<AppSettings>) => {
+      return action.payload;
+    },
+  },
+});
+
+export const { updateSetting, setAllSettings } = settingsSlice.actions;
+export default settingsSlice.reducer;
