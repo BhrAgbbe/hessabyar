@@ -100,8 +100,6 @@ const CustomerLedgerPage = () => {
         dispatch(deleteTransaction(id));
       } else if (type === "sale") {
         dispatch(deleteInvoice(id));
-      } else {
-        alert(`حذف ${type} هنوز پشتیبانی نمی‌شود.`);
       }
     }
   };

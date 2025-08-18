@@ -1,24 +1,26 @@
-import Document, { Html, Head, Main, NextScript } from 'next/document';
-import React from 'react';
 
-class MyDocument extends Document {
-  render() {
-    return (
-      <Html lang="fa">
-        <Head>
-          <meta name="theme-color" content="#1131bf" />
-          <link rel="manifest" href="/manifest.json" />
-          <meta name="mobile-web-app-capable" content="yes" />
-          <link rel="icon" href="/file.svg" />
-          <link rel="apple-touch-icon" href="/file.svg" />
-        </Head>
-        <body>
-          <Main />
-          <NextScript />
-        </body>
-      </Html>
-    );
-  }
+import { Html, Head, Main, NextScript } from 'next/document';
+
+export default function Document() {
+  return (
+    <Html dir="rtl" lang="fa">
+      <Head>
+        <meta name="application-name" content="حساب یار" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="حساب یار" />
+        <meta name="description" content="نرم‌افزار مدیریت فروش و حسابداری" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="theme-color" content="#0f15c2" />
+
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/icon512_rounded.png" />
+      </Head>
+      <body>
+        <Main />
+        <NextScript />
+      </body>
+    </Html>
+  );
 }
-
-export default MyDocument;
