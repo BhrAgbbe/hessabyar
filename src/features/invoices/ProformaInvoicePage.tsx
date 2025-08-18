@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Box, Typography, Button } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import InvoiceForm from './InvoiceForm';
 import { PrintableReportLayout } from '../../components/layout/PrintableReportLayout';
 import { type Invoice } from '../../store/slices/invoicesSlice';
@@ -31,9 +31,6 @@ const ProformaInvoicePage = () => {
 
     return (
         <Box sx={{ direction: 'rtl' }}>
-            <Typography variant="h4" gutterBottom  sx={{textAlign:'center', fontSize: { xs: '0.75rem', sm: '1.5rem' } }}>
-                صدور پیش فاکتور
-            </Typography>
             <InvoiceForm mode="proforma" onSaveSuccess={handleSaveSuccess} />
         </Box>
     );

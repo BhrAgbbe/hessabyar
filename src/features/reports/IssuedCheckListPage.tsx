@@ -1,5 +1,5 @@
 import { useSelector } from 'react-redux';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip ,Typography,Box} from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip} from '@mui/material';
 import { PrintableReportLayout } from '../../components/layout/PrintableReportLayout';
 import {type RootState } from '../../store/store';
 import { type CheckStatus } from '../../store/slices/checksSlice';
@@ -17,39 +17,40 @@ const IssuedCheckListPage = () => {
 
     return (
         <>
-        <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', mb: 3 }}>
-                <Typography sx={{ textAlign: 'center', fontWeight:'800', fontSize: { xs: '0.75rem', sm: '1.5rem' } }}>
-صورت چک‌های پرداختی
-                </Typography>
-            </Box>
-        <PrintableReportLayout>
-             <TableContainer component={Paper} elevation={0}>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>سریال</TableCell>
-                            <TableCell>در وجه</TableCell>
-                            <TableCell>مبلغ</TableCell>
-                            <TableCell>تاریخ سررسید</TableCell>
-                            <TableCell>وضعیت</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {issuedChecks.map(check => (
-                            <TableRow key={check.id}>
-                                <TableCell>{check.serial}</TableCell>
-                                <TableCell>{check.payee}</TableCell>
-                                <TableCell>{check.amount.toLocaleString('fa-IR')} تومان</TableCell>
-                                <TableCell>{new Date(check.dueDate).toLocaleDateString('fa-IR')}</TableCell>
-                                <TableCell>
-                                    <Chip label={check.status} color={getStatusChipColor(check.status)} size="small" />
-                                </TableCell>
+
+            <PrintableReportLayout>
+                 <TableContainer component={Paper} elevation={0}>
+                    <Table sx={{ tableLayout: 'fixed', width: '100%' }}>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell sx={{ fontSize: '0.5rem', p: 1, textAlign: 'center', width: '12%' }}>سریال</TableCell>
+                                <TableCell sx={{ fontSize: '0.5rem', p: 1, textAlign: 'center', width: '15%' }}>در وجه</TableCell>
+                                <TableCell sx={{ fontSize: '0.5rem', p: 1, textAlign: 'center', width: '12%' }}>مبلغ</TableCell>
+                                <TableCell sx={{ fontSize: '0.5rem', p: 1, textAlign: 'center', width: '28%' }}>تاریخ سررسید</TableCell>
+                                <TableCell sx={{ fontSize: '0.5rem', p: 1, textAlign: 'center', width: '10%' }}>وضعیت</TableCell>
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-        </PrintableReportLayout>
+                        </TableHead>
+                        <TableBody>
+                            {issuedChecks.map(check => (
+                                <TableRow key={check.id}>
+                                    <TableCell sx={{ fontSize: '0.5rem', p: 1, wordBreak: 'break-word', textAlign: 'center' }}>{check.serial}</TableCell>
+                                    <TableCell sx={{ fontSize: '0.5rem', p: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'center' }}>{check.payee}</TableCell>
+                                    <TableCell sx={{ fontSize: '0.5rem', p: 1, wordBreak: 'break-word', textAlign: 'center' }}>{check.amount.toLocaleString('fa-IR')}</TableCell>
+                                    <TableCell sx={{ fontSize: '0.5rem', p: 1, whiteSpace: 'nowrap', textAlign: 'center' }}>{new Date(check.dueDate).toLocaleDateString('fa-IR')}</TableCell>
+                                    <TableCell sx={{ fontSize: '0.5rem', p: 1, textAlign: 'center' }}>
+                                        <Chip 
+                                            label={check.status} 
+                                            color={getStatusChipColor(check.status)} 
+                                            size="small" 
+                                            sx={{ fontSize: '0.7rem' }}
+                                        />
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </PrintableReportLayout>
         </>
     );
 };

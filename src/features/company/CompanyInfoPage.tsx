@@ -4,9 +4,7 @@ import { type RootState } from '../../store/store';
 import { updateCompanyInfo, type CompanyInfo } from '../../store/slices/companySlice';
 import { 
     Box, 
-    Typography, 
     Paper, 
-    Grid, 
     TextField, 
     Button, 
     Avatar, 
@@ -26,6 +24,20 @@ const CompanyInfoPage = () => {
 
     const [activeStep, setActiveStep] = useState(0);
     const steps = ['اطلاعات اصلی', 'اطلاعات تماس', 'لوگو و تبلیغات'];
+
+    const rtlTextFieldStyle = {
+        '& .MuiInputLabel-root': {
+            transformOrigin: 'top right',
+            right: '1.75rem',
+            left: 'auto'
+        },
+        '& .MuiOutlinedInput-root legend': {
+            textAlign: 'right',
+        },
+        '& .MuiInputBase-input': {
+            textAlign: 'right',
+        },
+    };
 
     const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -56,12 +68,13 @@ const CompanyInfoPage = () => {
 
     return (
         <Box>
-            <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', fontSize: { xs: '0.75rem', sm: '1.5rem' } }}>
-                معرفی شرکت
-            </Typography>
-            
-            <Paper sx={{ p: { xs: 2, sm: 3 }, maxWidth: 600, mx: 'auto' }}>
-                <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 4 }}>
+            <Paper sx={{ p: { xs: 2, sm: 3 }, maxWidth: 600, mx: 'auto', direction: 'rtl' }}>
+                <Stepper 
+                    activeStep={activeStep} 
+                    alternativeLabel
+                    connector={null}
+                    sx={{ mb: 4 }}
+                >
                     {steps.map((label) => (
                         <Step key={label}>
                             <StepLabel>{label}</StepLabel>
@@ -69,55 +82,39 @@ const CompanyInfoPage = () => {
                     ))}
                 </Stepper>
 
-                <Grid container spacing={3} direction="column">
+                {/* ✅ استفاده از Box با Flexbox برای چیدمان عمودی و وسط‌چین */}
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
                     {activeStep === 0 && (
                         <>
-                            <Grid>
-                                <TextField name="name" label="نام شرکت" value={formData.name} onChange={handleChange} fullWidth autoFocus />
-                            </Grid>
-                            <Grid>
-                                <TextField name="managerName" label="نام مدیر" value={formData.managerName} onChange={handleChange} fullWidth />
-                            </Grid>
-                            <Grid>
-                                <TextField name="economicCode" label="کد اقتصادی" value={formData.economicCode} onChange={handleChange} fullWidth />
-                            </Grid>
+                            {/* ✅ تنظیم عرض TextField برای زیبایی بیشتر */}
+                            <TextField name="name" label="نام شرکت" value={formData.name} onChange={handleChange} fullWidth autoFocus sx={{...rtlTextFieldStyle, width: '80%'}} />
+                            <TextField name="managerName" label="نام مدیر" value={formData.managerName} onChange={handleChange} fullWidth sx={{...rtlTextFieldStyle, width: '80%'}} />
+                            <TextField name="economicCode" label="کد اقتصادی" value={formData.economicCode} onChange={handleChange} fullWidth sx={{...rtlTextFieldStyle, width: '80%'}} />
                         </>
                     )}
 
                     {activeStep === 1 && (
                         <>
-                            <Grid>
-                                <TextField name="phone" label="شماره تلفن" value={formData.phone} onChange={handleChange} fullWidth autoFocus />
-                            </Grid>
-                            <Grid>
-                                <TextField name="mobile" label="شماره همراه" value={formData.mobile} onChange={handleChange} fullWidth />
-                            </Grid>
-                            <Grid>
-                                <TextField name="fax" label="فکس" value={formData.fax} onChange={handleChange} fullWidth />
-                            </Grid>
-                            <Grid>
-                                <TextField name="address" label="آدرس" value={formData.address} onChange={handleChange} fullWidth multiline rows={3} />
-                            </Grid>
+                            <TextField name="phone" label="شماره تلفن" value={formData.phone} onChange={handleChange} fullWidth autoFocus sx={{...rtlTextFieldStyle, width: '80%'}} />
+                            <TextField name="mobile" label="شماره همراه" value={formData.mobile} onChange={handleChange} fullWidth sx={{...rtlTextFieldStyle, width: '80%'}} />
+                            <TextField name="fax" label="فکس" value={formData.fax} onChange={handleChange} fullWidth sx={{...rtlTextFieldStyle, width: '80%'}} />
+                            <TextField name="address" label="آدرس" value={formData.address} onChange={handleChange} fullWidth multiline rows={3} sx={{...rtlTextFieldStyle, width: '80%'}} />
                         </>
                     )}
 
                     {activeStep === 2 && (
                         <>
-                            <Grid>
-                                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
-                                    <Avatar src={formData.logo || undefined} sx={{ width: 100, height: 100, mb: 2 }} />
-                                    <Button variant="outlined" component="label">
-                                        آپلود لوگو
-                                        <input type="file" hidden accept="image/*" onChange={handleLogoChange} />
-                                    </Button>
-                                </Box>
-                            </Grid>
-                            <Grid>
-                                <TextField name="promoMessage" label="پیام تبلیغاتی" value={formData.promoMessage} onChange={handleChange} fullWidth multiline rows={3} />
-                            </Grid>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 2 }}>
+                                <Avatar src={formData.logo || undefined} sx={{ width: 100, height: 100, mb: 2 }} />
+                                <Button variant="outlined" component="label">
+                                    آپلود لوگو
+                                    <input type="file" hidden accept="image/*" onChange={handleLogoChange} />
+                                </Button>
+                            </Box>
+                            <TextField name="promoMessage" label="پیام تبلیغاتی" value={formData.promoMessage} onChange={handleChange} fullWidth multiline rows={3} sx={{...rtlTextFieldStyle, width: '80%'}} />
                         </>
                     )}
-                </Grid>
+                </Box>
 
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
                     <Button

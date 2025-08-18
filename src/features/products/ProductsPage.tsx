@@ -135,10 +135,6 @@ const ProductsPage = () => {
 
   return (
     <Box>
-      <Typography variant="h4" gutterBottom sx={{ textAlign: "center", fontSize: { xs: '0.75rem', sm: '1.5rem' } }}>
-        اطلاعات پایه
-      </Typography>
-
       {view === "form" ? (
         <Paper sx={{ p: 3, maxWidth: 600, mx: "auto" }}>
           <Typography variant="h6" sx={{ textAlign: "center", mb: 2 }}>

@@ -174,10 +174,6 @@ const BasicDataPage = () => {
   return (
     <Box>
       <Toaster position="top-center" reverseOrder={false} />
-      <Typography variant="h4" gutterBottom sx={{ textAlign: "center", fontSize: { xs: '0.75rem', sm: '1.5rem' } }}>
-        اطلاعات پایه
-      </Typography>
-
       <Paper>
         <Tabs value={tab} onChange={(_e, newValue) => setTab(newValue)}>
           <Tab label="معرفی کالا" />

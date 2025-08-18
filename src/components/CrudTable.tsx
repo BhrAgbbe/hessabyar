@@ -53,7 +53,7 @@ export const CrudTable: React.FC<CrudTableProps> = ({ title, items, onAdd, onEdi
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>#</TableCell>
+              <TableCell>ردیف</TableCell>
               <TableCell>نام</TableCell>
               <TableCell align="center">عملیات</TableCell>
             </TableRow>

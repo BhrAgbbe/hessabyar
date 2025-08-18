@@ -24,10 +24,10 @@ type ProductWithDetails = Product & {
 
 const WastagePage = () => {
   const dispatch = useDispatch();
-  const { products, warehouses, wastage } = useSelector((state: RootState) => state); // Added wastage
+  const { products, warehouses, wastage } = useSelector((state: RootState) => state); 
   const [selectedProduct, setSelectedProduct] = useState<ProductWithDetails | null>(null);
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<number>(0);
-  const [viewMode, setViewMode] = useState<'form' | 'report'>('form'); // State for view mode
+  const [viewMode, setViewMode] = useState<'form' | 'report'>('form'); 
 
   const { control, handleSubmit, formState: { errors }, setValue, reset } = useForm<WastageFormData>({
     defaultValues: { productId: 0, quantity: 1, reason: '' }
@@ -123,12 +123,6 @@ const WastagePage = () => {
   return (
     <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', height: '100%', direction: 'rtl' }}>
       <Toaster position="top-center" />
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h5" sx={{ flexGrow: 1, textAlign: 'center', fontWeight: 'bold' }}>
-          ضایعات انبار
-        </Typography>
-      </Box>
-
       <Paper sx={{ p: 2, flexGrow: 1, border: '1px solid #e0e0e0', borderRadius: '12px' }}>
         <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
           <Grid container spacing={2} sx={{ mb: 2 }}>

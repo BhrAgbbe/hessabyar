@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   Box, Typography, Paper, Button, TextField, FormControlLabel,
-  Table, TableContainer, TableHead, TableRow, TableCell, TableBody, IconButton, Dialog,
+  Table,Grid, TableContainer, TableHead, TableRow, TableCell, TableBody, IconButton, Dialog,
   DialogTitle, DialogContent, DialogActions, FormControl, Select, MenuItem, Menu, RadioGroup, Radio, DialogContentText
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
@@ -145,16 +145,21 @@ const CustomerManagementPage = () => {
         textAlign: 'center',
         color: 'text.secondary',
         fontWeight: 600,
-        borderBottom: 'none'
+        borderBottom: 'none',
+        fontSize: { xs: '0.75rem', md: '0.875rem' }, 
+        p: { xs: 1, md: 2 },
     };
     
     const bodyCellStyle = {
         textAlign: 'center',
-        borderBottom: '1px solid rgba(224, 224, 224, 0.5)'
+        borderBottom: '1px solid rgba(224, 224, 224, 0.5)',
+        fontSize: { xs: '0.75rem', md: '0.875rem' }, 
+        p: { xs: 1, md: 2 },
+        wordBreak: 'break-word', 
     };
 
     return (
-        <Box sx={{p: 3, direction: 'rtl'}}>
+        <Box sx={{p: { xs: 1, sm: 2, md: 3 }, direction: 'rtl'}}>
             <Toaster 
                 position="top-center" 
                 reverseOrder={false}
@@ -162,13 +167,15 @@ const CustomerManagementPage = () => {
                     duration: 5000,
                 }}
             />
-
-            <Typography variant="h4" gutterBottom sx={{textAlign: 'center', fontSize: { xs: '0.75rem', sm: '1.5rem' }}}>
-                اطلاعات فردی
-            </Typography>
-
-            <Paper sx={{p: 3, maxWidth: 900, mx: 'auto', borderRadius: 4, boxShadow: '0 4px 20px rgba(0,0,0,0.05)'}}>
-                <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3}}>
+            <Paper sx={{p: { xs: 2, md: 3 }, maxWidth: 900, mx: 'auto', borderRadius: 4, boxShadow: '0 4px 20px rgba(0,0,0,0.05)'}}>
+                <Box sx={{
+                    display: 'flex', 
+                    flexDirection: { xs: 'column', sm: 'row' }, 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center', 
+                    mb: 3,
+                    gap: 2, 
+                }}>
                     <div>
                         <Button
                             id="person-type-button"
@@ -179,7 +186,7 @@ const CustomerManagementPage = () => {
                             endIcon={<ArrowDropDownIcon />}
                             sx={{ color: 'text.primary', textTransform: 'none' }}
                         >
-                            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                            <Typography variant="h6" sx={{ fontWeight: 'bold', fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
                                 لیست {personType === 'customer' ? 'مشتریان فروش' : 'مشتریان خرید'}
                             </Typography>
                         </Button>
@@ -204,27 +211,35 @@ const CustomerManagementPage = () => {
                             '&:hover': { backgroundColor: '#5e35b1' },
                             borderRadius: 2,
                             boxShadow: 'none',
-                            px: 3
+                            px: 3,
+                            width: { xs: '100%', sm: 'auto' }, 
                         }}
                     >
                         افزودن شخص جدید
                     </Button>
                 </Box>
                 
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, gap: 2 }}>
+                <Box sx={{ 
+                    display: 'flex', 
+                    flexDirection: { xs: 'column', md: 'row' }, 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center', 
+                    mb: 3, 
+                    gap: 2 
+                }}>
                      <TextField
                         placeholder={`جستجو بر اساس ${sortBy === 'name' ? 'نام' : 'شهر'}...`}
                         variant="outlined"
                         size="small"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        sx={{ width: '280px' }}
+                        sx={{ width: { xs: '100%', md: '280px' } }} 
                     />
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, width: { xs: '100%', md: 'auto' } }}>
                         <Typography variant="body2" sx={{ fontWeight: 'medium', color: 'text.secondary' }}>
-                            فیلتر و مرتب‌سازی:
+                            مرتب‌سازی:
                         </Typography>
-                        <FormControl size="small" variant="outlined">
+                        <FormControl size="small" variant="outlined" fullWidth>
                             <Select
                                 value={sortBy}
                                 onChange={(e) => setSortBy(e.target.value as 'name' | 'city')}
@@ -237,14 +252,14 @@ const CustomerManagementPage = () => {
                 </Box>
 
                 <TableContainer>
-                    <Table>
+                    <Table sx={{ tableLayout: 'fixed', width: '100%' }}>
                         <TableHead>
                             <TableRow sx={{ '& .MuiTableCell-root': { py: 1 } }}>
-                                <TableCell sx={headerCellStyle}>کد</TableCell>
-                                <TableCell sx={headerCellStyle}>نام</TableCell>
-                                <TableCell sx={headerCellStyle}>تلفن</TableCell>
-                                <TableCell sx={headerCellStyle}>شهر</TableCell>
-                                <TableCell sx={headerCellStyle}>عملیات</TableCell>
+                                <TableCell sx={{...headerCellStyle, width: '15%'}}>کد</TableCell>
+                                <TableCell sx={{...headerCellStyle, width: '30%'}}>نام</TableCell>
+                                <TableCell sx={{...headerCellStyle, width: '25%'}}>تلفن</TableCell>
+                                <TableCell sx={{...headerCellStyle, width: '15%'}}>شهر</TableCell>
+                                <TableCell sx={{...headerCellStyle, width: '15%'}}>عملیات</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -264,6 +279,7 @@ const CustomerManagementPage = () => {
                     </Table>
                 </TableContainer>
             </Paper>
+
             <Dialog open={formOpen} onClose={handleCloseForm} fullWidth maxWidth="sm" dir="rtl">
                 <DialogTitle sx={{textAlign: 'right'}}>{editingPerson ? 'ویرایش شخص' : 'افزودن شخص جدید'}</DialogTitle>
                 <form onSubmit={handleSubmit(onSubmit)}>
@@ -280,40 +296,41 @@ const CustomerManagementPage = () => {
                                     <FormControlLabel value="supplier" control={<Radio size="small" />} label="مشتری خرید" />
                                 </RadioGroup>
                             </Box>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 4 }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, gap: 2 }}>
-                                    <Typography component="label">کد کاربری:</Typography>
-                                    <TextField value={editingPerson ? editingPerson.id : getNextId()} disabled fullWidth size="small"/>
-                                </Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, gap: 2 }}>
-                                    <Typography component="label">معین:</Typography>
-                                    <Controller name="moein" control={control} render={({field}) => (
-                                        <FormControl fullWidth size="small">
-                                            <Select {...field} defaultValue="بدهکاران">
-                                                {moeinCategories.map(cat => <MenuItem key={cat} value={cat}>{cat}</MenuItem>)}
-                                            </Select>
-                                        </FormControl>
-                                    )}/>
-                                </Box>
-                            </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                <Typography component="label" sx={{ width: '90px', textAlign: 'right' }}>نام کاربر:</Typography>
-                                <Controller name="name" control={control} rules={{required: 'نام اجباری است'}} render={({field}) => 
-                                    <TextField {...field} fullWidth size="small" error={!!errors.name} helperText={errors.name?.message}/>
-                                }/>
-                            </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                <Typography component="label" sx={{ width: '90px', textAlign: 'right' }}>شماره همراه:</Typography>
-                                <Controller name="phone" control={control} render={({field}) => <TextField {...field} fullWidth size="small" />}/>
-                            </Box>
-                             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-                                <Typography component="label" sx={{ width: '90px', textAlign: 'right', pt: 1 }}>آدرس:</Typography>
-                                <Controller name="address" control={control} render={({field}) => <TextField {...field} fullWidth multiline rows={2} size="small"/>}/>
-                            </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                <Typography component="label" sx={{ width: '90px', textAlign: 'right' }}>نام شهر:</Typography>
-                                <Controller name="city" control={control} render={({field}) => <TextField {...field} fullWidth size="small"/>}/>
-                            </Box>
+                            
+                            <Grid container spacing={2}>
+                                <Grid>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                        <Typography component="label">کد:</Typography>
+                                        <TextField value={editingPerson ? editingPerson.id : getNextId()} disabled fullWidth size="small"/>
+                                    </Box>
+                                </Grid>
+                                <Grid>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                        <Typography component="label">معین:</Typography>
+                                        <Controller name="moein" control={control} render={({field}) => (
+                                            <FormControl fullWidth size="small">
+                                                <Select {...field} defaultValue="بدهکاران">
+                                                    {moeinCategories.map(cat => <MenuItem key={cat} value={cat}>{cat}</MenuItem>)}
+                                                </Select>
+                                            </FormControl>
+                                        )}/>
+                                    </Box>
+                                </Grid>
+                                <Grid >
+                                    <Controller name="name" control={control} rules={{required: 'نام اجباری است'}} render={({field}) => 
+                                        <TextField {...field} label="نام کاربر" fullWidth size="small" error={!!errors.name} helperText={errors.name?.message}/>
+                                    }/>
+                                </Grid>
+                                <Grid >
+                                    <Controller name="phone" control={control} render={({field}) => <TextField {...field} label="شماره همراه" fullWidth size="small" />}/>
+                                </Grid>
+                                <Grid>
+                                    <Controller name="address" control={control} render={({field}) => <TextField {...field} label="آدرس" fullWidth multiline rows={2} size="small"/>}/>
+                                </Grid>
+                                <Grid>
+                                    <Controller name="city" control={control} render={({field}) => <TextField {...field} label="نام شهر" fullWidth size="small"/>}/>
+                                </Grid>
+                            </Grid>
                         </Box>
                     </DialogContent>
                     <DialogActions sx={{p: 2, px: 3}}>
@@ -322,11 +339,8 @@ const CustomerManagementPage = () => {
                     </DialogActions>
                 </form>
             </Dialog>
-            <Dialog
-                open={deleteModalOpen}
-                onClose={handleCloseDeleteModal}
-                dir="rtl"
-            >
+
+            <Dialog open={deleteModalOpen} onClose={handleCloseDeleteModal} dir="rtl">
                 <DialogTitle>تایید حذف</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
@@ -335,9 +349,7 @@ const CustomerManagementPage = () => {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleCloseDeleteModal} color="secondary">انصراف</Button>
-                    <Button onClick={handleConfirmDelete} color="error" variant="contained">
-                        حذف
-                    </Button>
+                    <Button onClick={handleConfirmDelete} color="error" variant="contained">حذف</Button>
                 </DialogActions>
             </Dialog>
         </Box>

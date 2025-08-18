@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
-  Box, Typography, Paper, Table, TableBody, TableCell, TableContainer,
+  Box, Paper, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, FormControl, InputLabel, Select, MenuItem, TextField, IconButton,
   Snackbar, Alert, Button
 } from '@mui/material';
@@ -48,9 +48,6 @@ const InventoryPage = () => {
   return (
     <Box>
       <Box sx={{ position: 'relative', textAlign: 'center', mb: 2 }}>
-        <Typography variant="h4" sx={{ fontSize: { xs: '0.75rem', sm: '1.5rem' } }}>
-          موجودی انبار
-        </Typography>
         <Box sx={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }}>
             <Button variant="contained" startIcon={<AddIcon />} onClick={() => setProductFormOpen(true)}>
               افزودن کالا

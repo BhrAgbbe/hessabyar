@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Box, Typography, Paper, TextField, Button, Snackbar, Alert, InputAdornment, IconButton } from '@mui/material';
+import { Box, Paper, TextField, Button, Snackbar, Alert, InputAdornment, IconButton } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
@@ -24,6 +24,7 @@ const ChangePasswordPage = () => {
         defaultValues: { currentPassword: '', newPassword: '', confirmPassword: '' }
     });
     const newPassword = watch('newPassword');
+
     const onSubmit = (data: ChangePasswordFormData) => {
         if (currentUser && data.currentPassword === currentUser.password) {
             dispatch(editUser({ ...currentUser, password: data.newPassword }));
@@ -33,14 +34,34 @@ const ChangePasswordPage = () => {
         }
     };
 
+    const rtlInputStyle = {
+        '& .MuiInputLabel-root': {
+            transformOrigin: 'top right',
+            right: '1.75rem',
+            left: 'auto'
+        },
+        '& label.Mui-focused': {
+            right: '1.75rem',
+        },
+        '& .MuiInputLabel-shrink': {
+            transformOrigin: 'top right',
+        },
+        '& .MuiOutlinedInput-root legend': {
+            textAlign: 'right',
+        },
+        '& .MuiInputBase-input': {
+            textAlign: 'right',
+        },
+    };
+
     return (
         <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%'}}>
-            <Paper sx={{ p: 3, width: '100%', maxWidth: 400 }}>
-                <Typography variant="h4" gutterBottom sx={{textAlign:'center', fontSize: { xs: '0.75rem', sm: '1.5rem' } }}>تغییر کلمه عبور</Typography>
+            <Paper sx={{ p: 3, width: '100%', maxWidth: 400, direction: 'rtl' }}>
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <Controller name="currentPassword" control={control} rules={{required: true}}
                         render={({ field }) => (
-                            <TextField {...field} label="کلمه عبور فعلی" type={showCurrentPassword ? 'text' : 'password'} fullWidth margin="normal" 
+                            <TextField {...field} label="کلمه عبور فعلی" type={showCurrentPassword ? 'text' : 'password'} fullWidth margin="normal"
+                                sx={rtlInputStyle} 
                                 InputProps={{
                                     endAdornment: <InputAdornment position="end"><IconButton onClick={() => setShowCurrentPassword(!showCurrentPassword)} edge="end">{showCurrentPassword ? <VisibilityOff /> : <Visibility />}</IconButton></InputAdornment>
                                 }}
@@ -50,6 +71,7 @@ const ChangePasswordPage = () => {
                     <Controller name="newPassword" control={control} rules={{required: true, minLength: 4}}
                         render={({ field }) => (
                             <TextField {...field} label="کلمه عبور جدید" type={showNewPassword ? 'text' : 'password'} fullWidth margin="normal" error={!!errors.newPassword} helperText={errors.newPassword ? 'حداقل ۴ کاراکتر' : ''}
+                                sx={rtlInputStyle} 
                                 InputProps={{
                                     endAdornment: <InputAdornment position="end"><IconButton onClick={() => setShowNewPassword(!showNewPassword)} edge="end">{showNewPassword ? <VisibilityOff /> : <Visibility />}</IconButton></InputAdornment>
                                 }}
@@ -59,6 +81,7 @@ const ChangePasswordPage = () => {
                     <Controller name="confirmPassword" control={control} rules={{required: true, validate: value => value === newPassword || 'رمزهای عبور یکسان نیستند'}}
                         render={({ field }) => (
                             <TextField {...field} label="تکرار کلمه عبور جدید" type={showConfirmPassword ? 'text' : 'password'} fullWidth margin="normal" error={!!errors.confirmPassword} helperText={errors.confirmPassword?.message}
+                                sx={rtlInputStyle} 
                                 InputProps={{
                                     endAdornment: <InputAdornment position="end"><IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end">{showConfirmPassword ? <VisibilityOff /> : <Visibility />}</IconButton></InputAdornment>
                                 }}

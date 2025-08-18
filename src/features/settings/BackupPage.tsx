@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Typography, Paper, Button, Snackbar, Alert } from "@mui/material";
+import { Box, Paper, Button, Snackbar, Alert } from "@mui/material";
 import { useSelector, useDispatch } from "react-redux";
 import { type RootState } from "../../store/store";
 import { setAllSettings } from "../../store/slices/settingsSlice";
@@ -69,13 +69,7 @@ const BackupPage = () => {
 
   return (
     <Box>
-      <Typography
-        variant="h4"
-        gutterBottom
-        sx={{ textAlign: "center", fontSize: { xs: "0.75rem", sm: "1.5rem" } }}
-      >
-        نسخه پشتیبان
-      </Typography>
+    
       <Paper sx={{ p: 3, display: "flex", gap: 2 }}>
         <Button variant="contained" onClick={handleSaveBackup}>
           ذخیره اطلاعات

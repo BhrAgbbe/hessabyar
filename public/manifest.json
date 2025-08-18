@@ -4,7 +4,7 @@
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#0f15c2",
+  "theme_color": "#482a84ff",
   "orientation": "any",
   "description": "نرم‌افزار مدیریت فروش و حسابداری",
   "icons": [

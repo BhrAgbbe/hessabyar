@@ -1,11 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
-  Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+  Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   FormControl, InputLabel, Select, MenuItem, TextField, Button, Dialog, DialogTitle,
   DialogContent, DialogContentText, DialogActions, Snackbar, Alert
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
 import {type RootState } from '../../store/store';
 import { updateStock } from '../../store/slices/productsSlice';
 import { ProductFormDialog } from '../products/ProductFormDialog';
@@ -51,16 +50,12 @@ const StockTakingPage = () => {
 
   return (
     <Box>
-      <Box sx={{ position: 'relative', textAlign: 'center', mb: 2 }}>
-        <Typography variant="h4" sx={{ fontSize: { xs: '0.75rem', sm: '1.5rem' } }}>
-          انبارگردانی
-        </Typography>
-        <Box sx={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }}>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setProductFormOpen(true)}>
+        <Box mb={3}>
+          <Button variant="contained"  onClick={() => setProductFormOpen(true)}>
             افزودن کالا
           </Button>
         </Box>
-      </Box>
+      
 
       <FormControl fullWidth sx={{ mb: 3 }}>
         <InputLabel>انتخاب انبار</InputLabel>

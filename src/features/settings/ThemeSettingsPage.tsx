@@ -26,7 +26,6 @@ const ThemeSettingsPage = () => {
     };
 
     return (
-        // مرحله ۱: استایل‌های فلکس را به Box اصلی اضافه کنید
         <Box
             sx={{
                 display: 'flex',
@@ -35,11 +34,7 @@ const ThemeSettingsPage = () => {
                 width: '100%',
             }}
         >
-            <Typography variant="h4" gutterBottom sx={{textAlign:'center', fontSize: { xs: '0.75rem', sm: '1.5rem' } }}>
-                تنظیمات ظاهری
-            </Typography>
 
-            {/* مرحله ۲: این Paper به صورت خودکار در مرکز قرار می‌گیرد */}
             <Paper sx={{p: 3, maxWidth: 600, width: '100%' }}>
                 <Typography variant="h6">رنگ پس‌زمینه</Typography>
                 <TextField

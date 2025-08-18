@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { 
     Box, 
-    Typography, 
     Button, 
     Dialog, 
     DialogActions, 
@@ -67,9 +66,6 @@ const PurchaseInvoicePage = () => {
     return (
         <>
             <Box sx={{ direction: 'rtl' }}>
-                <Typography variant="h4" gutterBottom  sx={{textAlign:'center', fontSize: { xs: '0.75rem', sm: '1.5rem' } }}>
-                    صدور فاکتور خرید
-                </Typography>
                 <InvoiceForm mode="purchase" onSaveSuccess={handleSaveSuccess} />
             </Box>
 

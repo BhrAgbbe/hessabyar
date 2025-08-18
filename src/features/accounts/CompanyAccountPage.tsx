@@ -127,9 +127,6 @@ const CompanyAccountPage = () => {
     return (
         <Box>
             <Box sx={{ alignItems: 'center', mb: 2 }}>
-                <Typography variant="h4"  sx={{textAlign:'center', fontSize: { xs: '0.75rem', sm: '1.5rem' } }}>
-                    حساب های شرکت
-                </Typography>
                 <Box sx={{ display: 'flex', gap: 1, justifyContent:'flex-end', mt: 1 }}>
                     <Button 
                         variant="outlined" 

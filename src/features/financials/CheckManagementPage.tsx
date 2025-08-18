@@ -6,10 +6,8 @@ import {
   TextField, FormControl, InputLabel, Select, MenuItem, Grid, Chip, Tabs, Tab,
   Snackbar, Alert
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import FindReplaceIcon from '@mui/icons-material/FindReplace';
 import { useForm, Controller, type SubmitHandler } from 'react-hook-form';
 import { type RootState } from '../../store/store';
 import { addCheck, editCheck, deleteCheck, type Check, type CheckStatus } from '../../store/slices/checksSlice';
@@ -136,54 +134,70 @@ const CheckManagementPage = () => {
     });
 
     return (
-        <Box>
-            <Box sx={{ alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>
-                <Typography variant="h4" sx={{textAlign:'center', fontSize: { xs: '0.75rem', sm: '1.5rem' } }}>مدیریت چک‌ها</Typography>
-                <Box sx={{display: 'flex',justifyContent:'flex-end' ,gap: 1}}>
-                    <Button variant="outlined" startIcon={<FindReplaceIcon />} onClick={() => setUpdateBySerialOpen(true)}>تغییر وضعیت با سریال</Button>
-                    <Button variant="contained" startIcon={<AddIcon />} onClick={() => setAddFormOpen(true)}>ثبت چک جدید</Button>
-                </Box>
+        <Box sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
+            <Box sx={{ 
+                display: 'flex', 
+                flexDirection: { xs: 'column', sm: 'row' },
+                justifyContent:'flex-end', 
+                gap: 1, 
+                mb: 2 
+            }}>
+                <Button variant="outlined" size="small" onClick={() => setUpdateBySerialOpen(true)}>
+                    تغییر وضعیت با سریال
+                </Button>
+                <Button variant="contained" size="small" onClick={() => setAddFormOpen(true)}>
+                    ثبت چک جدید
+                </Button>
+            </Box>
+            
+            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                <Tabs 
+                    value={tab} 
+                    onChange={(_e, newValue) => setTab(newValue)} 
+                    variant="scrollable" 
+                    scrollButtons="auto" 
+                    allowScrollButtonsMobile
+                    sx={{ maxWidth: { xs: 'calc(100vw - 32px)', sm: 'calc(100vw - 48px)', md: '100%' } }}
+                >
+                    <Tab label="همه چک‌ها"sx={{fontSize: '0.6rem'}} />
+                    <Tab label="چک‌های امروز"sx={{fontSize: '0.6rem'}} />
+                    <Tab label="چک‌های فردا" sx={{fontSize: '0.6rem'}}/>
+                    <Tab label="چک‌های تا ۵ روز آینده"sx={{fontSize: '0.6rem'}} />
+                    <Tab label="چک‌های برگشتی"sx={{fontSize: '0.6rem'}} />
+                </Tabs>
             </Box>
 
-            <Tabs value={tab} onChange={(_e, newValue) => setTab(newValue)} sx={{ mb: 2 }}>
-                <Tab label="همه چک‌ها" />
-                <Tab label="چک‌های امروز" />
-                <Tab label="چک‌های فردا" />
-                <Tab label="چک‌های تا ۵ روز آینده" />
-                <Tab label="چک‌های برگشتی" />
-            </Tabs>
-
-            <Paper>
+            <Paper sx={{ mt: 2 }}>
                 <TableContainer>
-                    <Table>
+                    <Table sx={{ tableLayout: 'fixed', width: '100%' }}>
                         <TableHead>
                             <TableRow>
-                                <TableCell>سریال</TableCell>
-                                <TableCell>شخص</TableCell>
-                                <TableCell>نوع</TableCell>
-                                <TableCell>مبلغ</TableCell>
-                                <TableCell>تاریخ سررسید</TableCell>
-                                <TableCell>وضعیت</TableCell>
-                                <TableCell align="center">عملیات</TableCell>
+                                <TableCell sx={{ fontSize: '0.6rem', p: 1 ,width: '15%'}}>سریال</TableCell>
+                                <TableCell sx={{ fontSize: '0.6rem', p: 1 ,width: '15%'}}>شخص</TableCell>
+                                <TableCell sx={{ fontSize: '0.6rem', p: 1 ,width: '15%'}}>نوع</TableCell>
+                                <TableCell sx={{ fontSize: '0.6rem', p: 1 ,width: '12%'}}>مبلغ</TableCell>
+                                <TableCell sx={{ fontSize: '0.6rem', p: 1 ,width: '17%'}}>سررسید</TableCell>
+                                <TableCell sx={{ fontSize: '0.6rem', p: 1 ,width: '16%'}}>وضعیت</TableCell>
+                                <TableCell align="center" sx={{ fontSize: '0.75rem', p: 1,width: '15%'}}>عملیات</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
                             {filteredChecks.map(check => (
                                 <TableRow key={check.id}>
-                                    <TableCell>{check.serial}</TableCell>
-                                    <TableCell>{check.payee}</TableCell>
-                                    <TableCell>{check.type === 'received' ? 'دریافتی' : 'پرداختی'}</TableCell>
-                                    <TableCell>{check.amount.toLocaleString()} تومان</TableCell>
-                                    <TableCell>{new Date(check.dueDate).toLocaleDateString('fa-IR')}</TableCell>
-                                    <TableCell>
+                                    <TableCell sx={{ fontSize: '0.4rem', p: 1, wordBreak: 'break-word' }}>{check.serial}</TableCell>
+                                    <TableCell sx={{ fontSize: '0.4rem', p: 1, wordBreak: 'break-word' }}>{check.payee}</TableCell>
+                                    <TableCell sx={{ fontSize: '0.4rem', p: 1 }}>{check.type === 'received' ? 'دریافتی' : 'پرداختی'}</TableCell>
+                                    <TableCell sx={{ fontSize: '0.4rem', p: 1, wordBreak: 'break-word' }}>{check.amount.toLocaleString()}</TableCell>
+                                    <TableCell sx={{ fontSize: '0.4rem', p: 1 }}>{new Date(check.dueDate).toLocaleDateString('fa-IR')}</TableCell>
+                                    <TableCell sx={{ fontSize: '0.4rem', p: 1 }}>
                                         <Chip label={check.derivedStatus} color={getStatusChipColor(check.derivedStatus as CheckStatus)} size="small" />
                                     </TableCell>
-                                    <TableCell align="center">
+                                    <TableCell align="center" sx={{ p: 1 }}>
                                         <IconButton size="small" onClick={() => { setSelectedCheck(check); setEditFormOpen(true); }}>
-                                            <EditIcon />
+                                            <EditIcon fontSize="small" />
                                         </IconButton>
                                         <IconButton size="small" onClick={() => openDeleteConfirm(check.id)}>
-                                            <DeleteIcon />
+                                            <DeleteIcon fontSize="small" />
                                         </IconButton>
                                     </TableCell>
                                 </TableRow>
@@ -193,106 +207,104 @@ const CheckManagementPage = () => {
                 </TableContainer>
             </Paper>
 
-            <Dialog open={isAddFormOpen} onClose={() => setAddFormOpen(false)}>
+            <Dialog open={isAddFormOpen} onClose={() => setAddFormOpen(false)} fullWidth maxWidth="xs">
                 <DialogTitle>ثبت چک جدید</DialogTitle>
                 <form onSubmit={handleAddSubmit(onAddSubmit)}>
                     <DialogContent>
                         <Grid container spacing={2} sx={{pt: 1}}>
-                            <Grid><Controller name="serial" control={addFormControl} rules={{required: true}} render={({field}) => <TextField {...field} label="سریال چک" fullWidth margin="dense"/>}/></Grid>
-                            <Grid><Controller name="payee" control={addFormControl} rules={{required: true}} render={({field}) => <TextField {...field} label="نام شخص (پرداخت کننده/دریافت کننده)" fullWidth margin="dense"/>}/></Grid>
-                            <Grid><Controller name="amount" control={addFormControl} rules={{required: true, min: 1}} render={({field}) => <TextField {...field} type="number" label="مبلغ" fullWidth margin="dense"/>}/></Grid>
-                            <Grid>
+                            <Grid ><Controller name="serial" control={addFormControl} rules={{required: true}} render={({field}) => <TextField {...field} label="سریال چک" fullWidth size="small"/>}/></Grid>
+                            <Grid ><Controller name="payee" control={addFormControl} rules={{required: true}} render={({field}) => <TextField {...field} label="نام شخص" fullWidth size="small"/>}/></Grid>
+                            <Grid ><Controller name="amount" control={addFormControl} rules={{required: true, min: 1}} render={({field}) => <TextField {...field} type="number" label="مبلغ" fullWidth size="small"/>}/></Grid>
+                            <Grid >
                                 <Controller
                                   name="dueDate"
                                   control={addFormControl}
                                   rules={{ required: true }}
                                   render={({ field: { onChange, value } }) => (
                                     <DatePicker
-                                      portal
-                                      zIndex={1400}
                                       value={value}
                                       onChange={(date: DateObject) => onChange(date?.toDate())}
                                       calendar={persian}
                                       locale={persian_fa}
-                                      render={<TextField fullWidth label="تاریخ سررسید" margin="dense" />}
+                                      render={<TextField fullWidth label="تاریخ سررسید" size="small" InputLabelProps={{ shrink: true }} />}
                                     />
                                   )}
                                 />
                             </Grid>
-                            <Grid>
+                            <Grid >
                                 <Controller name="type" control={addFormControl} rules={{required: true}} render={({field}) => (
-                                    <FormControl fullWidth margin="dense"><InputLabel>نوع چک</InputLabel><Select {...field} label="نوع چک"><MenuItem value="received">دریافتی</MenuItem><MenuItem value="issued">پرداختی</MenuItem></Select></FormControl>
+                                    <FormControl fullWidth size="small"><InputLabel>نوع چک</InputLabel><Select {...field} label="نوع چک"><MenuItem value="received">دریافتی</MenuItem><MenuItem value="issued">پرداختی</MenuItem></Select></FormControl>
                                 )}/>
                             </Grid>
                         </Grid>
                     </DialogContent>
-                    <DialogActions sx={{ justifyContent: 'flex-start', padding: '0 24px 20px' }}><Button onClick={()=>setAddFormOpen(false)}>انصراف</Button><Button type="submit" variant="contained">ثبت</Button></DialogActions>
+                    <DialogActions sx={{ justifyContent: 'flex-start', p: '16px' }}><Button onClick={()=>setAddFormOpen(false)}>انصراف</Button><Button type="submit" variant="contained">ثبت</Button></DialogActions>
                 </form>
             </Dialog>
-            <Dialog open={isEditFormOpen} onClose={() => setEditFormOpen(false)}>
+
+            <Dialog open={isEditFormOpen} onClose={() => setEditFormOpen(false)} fullWidth maxWidth="xs">
                 <DialogTitle>ویرایش چک</DialogTitle>
                 <form onSubmit={handleEditSubmit(onEditSubmit)}>
                     <DialogContent>
                         <Typography sx={{mb: 2}}>سریال: {selectedCheck?.serial}</Typography>
-                        <Controller name="amount" control={editFormControl} rules={{ required: true, min: 1 }} render={({ field }) => <TextField {...field} type="number" label="مبلغ" fullWidth margin="dense" />} />
-                        <Controller
-                          name="dueDate"
-                          control={editFormControl}
-                          rules={{ required: true }}
-                          render={({ field: { onChange, value } }) => (
-                            <DatePicker
-                              portal
-                              zIndex={1400}
-                              value={value}
-                              onChange={(date: DateObject) => onChange(date?.toDate())}
-                              calendar={persian}
-                              locale={persian_fa}
-                              render={<TextField fullWidth label="تاریخ سررسید" margin="dense" sx={{mt: 1}} />}
-                            />
-                          )}
-                        />
-                        <Controller name="status" control={editFormControl} rules={{ required: true }} render={({ field }) => (
-                            <FormControl fullWidth margin="dense" sx={{mt: 1}}>
-                                <InputLabel>وضعیت</InputLabel>
-                                <Select {...field} label="وضعیت">
-                                    <MenuItem value="در جریان">در جریان</MenuItem>
-                                    <MenuItem value="پاس شده">پاس شده</MenuItem>
-                                    <MenuItem value="برگشتی">برگشتی</MenuItem>
-                                </Select>
-                            </FormControl>
-                        )} />
+                        <Grid container spacing={2} sx={{pt: 1}}>
+                            <Grid><Controller name="amount" control={editFormControl} rules={{ required: true, min: 1 }} render={({ field }) => <TextField {...field} type="number" label="مبلغ" fullWidth size="small" />} /></Grid>
+                            <Grid>
+                                <Controller
+                                name="dueDate"
+                                control={editFormControl}
+                                rules={{ required: true }}
+                                render={({ field: { onChange, value } }) => (
+                                    <DatePicker
+                                    value={value}
+                                    onChange={(date: DateObject) => onChange(date?.toDate())}
+                                    calendar={persian}
+                                    locale={persian_fa}
+                                    render={<TextField fullWidth label="تاریخ سررسید" size="small" InputLabelProps={{ shrink: true }} />}
+                                    />
+                                )}
+                                />
+                            </Grid>
+                            <Grid>
+                                <Controller name="status" control={editFormControl} rules={{ required: true }} render={({ field }) => (
+                                    <FormControl fullWidth size="small">
+                                        <InputLabel>وضعیت</InputLabel>
+                                        <Select {...field} label="وضعیت">
+                                            <MenuItem value="در جریان">در جریان</MenuItem>
+                                            <MenuItem value="پاس شده">پاس شده</MenuItem>
+                                            <MenuItem value="برگشتی">برگشتی</MenuItem>
+                                        </Select>
+                                    </FormControl>
+                                )} />
+                            </Grid>
+                        </Grid>
                     </DialogContent>
-                    <DialogActions sx={{ justifyContent: 'flex-start', padding: '0 24px 20px' }}>
+                    <DialogActions sx={{ justifyContent: 'flex-start', p: '16px' }}>
                         <Button onClick={() => setEditFormOpen(false)}>انصراف</Button>
-                        <Button type="submit" variant="contained">ذخیره تغییرات</Button>
+                        <Button type="submit" variant="contained">ذخیره</Button>
                     </DialogActions>
                 </form>
             </Dialog>
-            <Dialog open={isUpdateBySerialOpen} onClose={() => setUpdateBySerialOpen(false)}>
-                <DialogTitle>تغییر وضعیت چک با سریال</DialogTitle>
+
+            <Dialog open={isUpdateBySerialOpen} onClose={() => setUpdateBySerialOpen(false)} fullWidth maxWidth="xs">
+                <DialogTitle>تغییر وضعیت با سریال</DialogTitle>
                 <form onSubmit={handleUpdateBySerialSubmit(onUpdateBySerial)}>
                     <DialogContent>
                         <Grid container spacing={2} sx={{pt: 1}}>
-                            <Grid><Controller name="serial" control={updateSerialFormControl} rules={{required: true}} render={({field}) => <TextField {...field} label="سریال چک را وارد کنید" fullWidth autoFocus margin="dense"/>}/></Grid>
-                            <Grid><Controller name="status" control={updateSerialFormControl} render={({field}) => (<FormControl fullWidth margin="dense"><InputLabel>وضعیت جدید</InputLabel><Select {...field} label="وضعیت جدید"><MenuItem value="در جریان">در جریان</MenuItem><MenuItem value="پاس شده">پاس شده</MenuItem><MenuItem value="برگشتی">برگشتی</MenuItem></Select></FormControl>)}/></Grid>
+                            <Grid><Controller name="serial" control={updateSerialFormControl} rules={{required: true}} render={({field}) => <TextField {...field} label="سریال چک" fullWidth autoFocus size="small"/>}/></Grid>
+                            <Grid><Controller name="status" control={updateSerialFormControl} render={({field}) => (<FormControl fullWidth size="small"><InputLabel>وضعیت جدید</InputLabel><Select {...field} label="وضعیت جدید"><MenuItem value="در جریان">در جریان</MenuItem><MenuItem value="پاس شده">پاس شده</MenuItem><MenuItem value="برگشتی">برگشتی</MenuItem></Select></FormControl>)}/></Grid>
                         </Grid>
                     </DialogContent>
-                    <DialogActions sx={{ justifyContent: 'flex-start', padding: '0 24px 20px' }}><Button onClick={()=>setUpdateBySerialOpen(false)}>انصراف</Button><Button type="submit" variant="contained">اعمال تغییر</Button></DialogActions>
+                    <DialogActions sx={{ justifyContent: 'flex-start', p: '16px' }}><Button onClick={()=>setUpdateBySerialOpen(false)}>انصراف</Button><Button type="submit" variant="contained">اعمال تغییر</Button></DialogActions>
                 </form>
             </Dialog>
-            <Dialog
-                open={isDeleteConfirmOpen}
-                onClose={() => setDeleteConfirmOpen(false)}
-            >
+
+            <Dialog open={isDeleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)}>
                 <DialogTitle>تایید حذف</DialogTitle>
-                <DialogContent>
-                    <Typography>آیا از حذف این چک اطمینان دارید؟ این عملیات غیرقابل بازگشت است.</Typography>
-                </DialogContent>
-                <DialogActions sx={{ justifyContent: 'flex-start', padding: '0 24px 20px' }}>
+                <DialogContent><Typography>آیا از حذف این چک اطمینان دارید؟</Typography></DialogContent>
+                <DialogActions sx={{ justifyContent: 'flex-start', p: '16px' }}>
                     <Button onClick={() => setDeleteConfirmOpen(false)}>خیر</Button>
-                    <Button onClick={handleConfirmDelete} color="error" variant="contained">
-                        بله، حذف کن
-                    </Button>
+                    <Button onClick={handleConfirmDelete} color="error" variant="contained">بله، حذف کن</Button>
                 </DialogActions>
             </Dialog>
 

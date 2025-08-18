@@ -32,8 +32,8 @@ const palette = {
 };
 
 export const theme = createTheme({
-  direction: 'ltr', 
-  
+  direction: 'ltr',
+
   palette: palette,
 
   typography: {
@@ -79,7 +79,7 @@ export const theme = createTheme({
         styleOverrides: {
             paper: {
                 backgroundColor: palette.background.paper,
-                borderRight: 'none', 
+                borderRight: 'none',
             }
         }
     },

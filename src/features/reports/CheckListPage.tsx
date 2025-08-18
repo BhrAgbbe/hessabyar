@@ -8,8 +8,7 @@ import {
   TableRow,
   Paper,
   Chip,
-  Box,
-  Typography,
+
 } from "@mui/material";
 import { PrintableReportLayout } from "../../components/layout/PrintableReportLayout";
 import { type RootState } from "../../store/store";
@@ -28,47 +27,37 @@ const CheckListPage = () => {
 
   return (
     <>
-      <Box
-        sx={{ width: "100%", display: "flex", justifyContent: "center", mb: 3 }}
-      >
-        <Typography
-          sx={{
-            textAlign: "center",
-            fontWeight: "800",
-            fontSize: { xs: "0.75rem", sm: "1.5rem" },
-          }}
-        >
-          صورت چک‌های دریافتی
-        </Typography>
-      </Box>
       <PrintableReportLayout>
         <TableContainer component={Paper} elevation={0}>
-          <Table>
+          <Table sx={{ tableLayout: 'fixed', width: '100%' }}>
             <TableHead>
               <TableRow>
-                <TableCell>سریال</TableCell>
-                <TableCell>پرداخت کننده</TableCell>
-                <TableCell>مبلغ</TableCell>
-                <TableCell>تاریخ سررسید</TableCell>
-                <TableCell>وضعیت</TableCell>
+                <TableCell sx={{ fontSize: '0.7rem', p: 1, textAlign: 'center' }}>سریال</TableCell>
+                <TableCell sx={{ fontSize: '0.7rem', p: 1, whiteSpace: 'nowrap', textAlign: 'center' }}>پرداخت کننده</TableCell>
+                <TableCell sx={{ fontSize: '0.7rem', p: 1, textAlign: 'center' }}>مبلغ</TableCell>
+                <TableCell sx={{ fontSize: '0.7rem', p: 1, whiteSpace: 'nowrap', textAlign: 'center' }}>تاریخ سررسید</TableCell>
+                <TableCell sx={{ fontSize: '0.7rem', p: 1, textAlign: 'center' }}>وضعیت</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {receivedChecks.map((check) => (
                 <TableRow key={check.id}>
-                  <TableCell>{check.serial}</TableCell>
-                  <TableCell>{check.payee}</TableCell>
-                  <TableCell>
-                    {check.amount.toLocaleString("fa-IR")} تومان
+                  <TableCell sx={{ fontSize: '0.7rem', p: 1, wordBreak: 'break-word', textAlign: 'center' }}>{check.serial}</TableCell>
+                  <TableCell sx={{ fontSize: '0.7rem', p: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'center' }}>
+                    {check.payee}
                   </TableCell>
-                  <TableCell>
+                  <TableCell sx={{ fontSize: '0.7rem', p: 1, wordBreak: 'break-word', textAlign: 'center' }}>
+                    {check.amount.toLocaleString("fa-IR")}
+                  </TableCell>
+                  <TableCell sx={{ fontSize: '0.7rem', p: 1, whiteSpace: 'nowrap', textAlign: 'center' }}>
                     {new Date(check.dueDate).toLocaleDateString("fa-IR")}
                   </TableCell>
-                  <TableCell>
+                  <TableCell sx={{ fontSize: '0.7rem', p: 1, textAlign: 'center' }}>
                     <Chip
                       label={check.status}
                       color={getStatusChipColor(check.status)}
                       size="small"
+                      sx={{ fontSize: '0.7rem' }} 
                     />
                   </TableCell>
                 </TableRow>

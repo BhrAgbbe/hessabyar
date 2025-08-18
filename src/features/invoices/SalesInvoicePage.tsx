@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { 
     Box, 
-    Typography, 
     Button, 
     Dialog, 
     DialogActions, 
@@ -18,21 +17,15 @@ import { type RootState } from '../../store/store';
 
 const SalesInvoicePage = () => {
     const settings = useSelector((state: RootState) => state.settings);
-
     const [viewMode, setViewMode] = useState<'form' | 'preview'>('form');
-    
     const [currentInvoice, setCurrentInvoice] = useState<Invoice | null>(null);
-
     const [isConfirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
     const handleSaveSuccess = (invoice: Invoice) => {
         setCurrentInvoice(invoice);
-
         if (settings.quickPrintInvoice) {
             setViewMode('preview');
-            setTimeout(() => {
-                window.print();
-            }, 500);
+            setTimeout(() => { window.print(); }, 500);
         } else {
             setConfirmDialogOpen(true);
         }
@@ -42,15 +35,15 @@ const SalesInvoicePage = () => {
         setViewMode('form');
         setCurrentInvoice(null);
     };
-
+    
     const handleConfirmPrint = () => {
-        setViewMode('preview');
         setConfirmDialogOpen(false);
+        setViewMode('preview');
     };
 
     const handleCancelPrint = () => {
         setConfirmDialogOpen(false);
-        handleCreateNewInvoice(); 
+        handleCreateNewInvoice();
     };
 
     if (viewMode === 'preview' && currentInvoice) {
@@ -69,9 +62,6 @@ const SalesInvoicePage = () => {
     return (
         <>
             <Box sx={{ direction: 'rtl' }}>
-                <Typography variant="h4" gutterBottom  sx={{textAlign:'center', fontSize: { xs: '0.75rem', sm: '1.5rem' }}}>
-                    صدور فاکتور فروش
-                </Typography>
                 <InvoiceForm mode="sale" onSaveSuccess={handleSaveSuccess} />
             </Box>
 

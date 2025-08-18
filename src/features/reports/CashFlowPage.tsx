@@ -27,12 +27,10 @@ import {
   Snackbar,
   Alert,
   Autocomplete,
+  Grid, 
 } from "@mui/material";
-import { Grid } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import PrintIcon from "@mui/icons-material/Print";
 import { useForm, Controller, type SubmitHandler } from "react-hook-form";
 import { type RootState } from "../../store/store";
 import {
@@ -177,16 +175,6 @@ const CashFlowPage = () => {
 
   return (
     <>
-          <Typography
-            variant="h4"
-            sx={{
-              textAlign: "center",
-              fontSize: { xs: "0.75rem", sm: "1.5rem" },
-              mb: 2,
-            }}
-          >
-            صورت دریافت و پرداخت نقدی
-          </Typography>
       <Paper sx={{ p: { xs: 2, sm: 3 } }}>
         <Box
           className="no-print"
@@ -194,7 +182,7 @@ const CashFlowPage = () => {
             display: "flex",
             flexDirection: { xs: "column", sm: "row" },
             justifyContent: "space-between",
-            alignItems: { xs: "flex-start", sm: "center" },
+            alignItems: { xs: "stretch", sm: "center" }, 
             mb: 2,
             gap: 2,
           }}
@@ -204,12 +192,11 @@ const CashFlowPage = () => {
               display: "flex",
               gap: 1,
               width: { xs: "100%", sm: "auto" },
-              justifyContent: "flex-end",
+              justifyContent: "flex-start",
             }}
           >
             <Button
               variant="outlined"
-              startIcon={<PrintIcon />}
               onClick={handlePrint}
               size={isMobile ? "small" : "medium"}
             >
@@ -217,7 +204,6 @@ const CashFlowPage = () => {
             </Button>
             <Button
               variant="contained"
-              startIcon={<AddIcon />}
               onClick={() => handleOpenForm()}
               size={isMobile ? "small" : "medium"}
             >
@@ -227,14 +213,14 @@ const CashFlowPage = () => {
         </Box>
         <Box className="printable-area">
           <TableContainer component={Paper} elevation={0}>
-            <Table>
+            <Table sx={{ tableLayout: 'fixed', width: '100%' }}>
               <TableHead>
                 <TableRow>
-                  <TableCell>تاریخ</TableCell>
-                  <TableCell>شرح</TableCell>
-                  <TableCell>مبلغ دریافتی</TableCell>
-                  <TableCell>مبلغ پرداختی</TableCell>
-                  <TableCell className="no-print" align="right">
+                  <TableCell sx={{ fontSize: '0.75rem', p: 1, textAlign: 'center',width: '15%' }}>تاریخ</TableCell>
+                  <TableCell sx={{ fontSize: '0.75rem', p: 1, textAlign: 'center', width: '15%' }}>شرح</TableCell>
+                  <TableCell sx={{ fontSize: '0.75rem', p: 1, textAlign: 'center',whiteSpace: 'nowrap' ,width: '30%'}}>مبلغ دریافتی</TableCell>
+                  <TableCell sx={{ fontSize: '0.75rem', p: 1, textAlign: 'center',whiteSpace: 'nowrap' ,width: '30%'}}>مبلغ پرداختی</TableCell>
+                  <TableCell className="no-print" align="center" sx={{ fontSize: '0.75rem', p: 1 }}>
                     عملیات
                   </TableCell>
                 </TableRow>
@@ -242,46 +228,46 @@ const CashFlowPage = () => {
               <TableBody>
                 {transactions.map((tx) => (
                   <TableRow key={tx.id}>
-                    <TableCell>
+                    <TableCell sx={{ fontSize: '0.4rem', p: 1, textAlign: 'center' }}>
                       {new Date(tx.date).toLocaleDateString("fa-IR")}
                     </TableCell>
-                    <TableCell>{tx.description}</TableCell>
-                    <TableCell>
+                    <TableCell sx={{ fontSize: '0.4rem', p: 1, wordBreak: 'break-word' }}>{tx.description}</TableCell>
+                    <TableCell sx={{ fontSize: '0.4rem', p: 1, textAlign: 'center' }}>
                       {tx.type === "receipt"
                         ? tx.amount.toLocaleString("fa-IR")
                         : "-"}
                     </TableCell>
-                    <TableCell>
+                    <TableCell sx={{ fontSize: '0.4rem', p: 1, textAlign: 'center' }}>
                       {tx.type === "payment"
                         ? tx.amount.toLocaleString("fa-IR")
                         : "-"}
                     </TableCell>
-                    <TableCell className="no-print" align="right">
+                    <TableCell className="no-print" align="center" sx={{ p: 1 }}>
                       <IconButton
                         size="small"
                         onClick={() => handleOpenForm(tx)}
                       >
-                        <EditIcon />
+                        <EditIcon fontSize="small" />
                       </IconButton>
                       <IconButton
                         size="small"
                         onClick={() => handleDeleteClick(tx)}
                       >
-                        <DeleteIcon color="error" />
+                        <DeleteIcon color="error" fontSize="small" />
                       </IconButton>
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
-            <Box sx={{ p: 2, textAlign: "right", fontWeight: "bold" }}>
+            <Box sx={{ p: 2, textAlign: "right", fontWeight: "bold", borderTop: '1px solid #eee' }}>
               <Typography>
                 جمع کل دریافتی‌ها: {receipts.toLocaleString("fa-IR")} تومان
               </Typography>
               <Typography>
                 جمع کل پرداختی‌ها: {payments.toLocaleString("fa-IR")} تومان
               </Typography>
-              <Typography variant="h6">
+              <Typography variant="h6" sx={{ fontSize: '1.1rem' }}>
                 موجودی نقد: {(receipts - payments).toLocaleString("fa-IR")}{" "}
                 تومان
               </Typography>
@@ -302,7 +288,7 @@ const CashFlowPage = () => {
                   name="type"
                   control={control}
                   render={({ field }) => (
-                    <FormControl fullWidth>
+                    <FormControl fullWidth size="small">
                       <InputLabel>نوع تراکنش</InputLabel>
                       <Select {...field} label="نوع تراکنش">
                         <MenuItem value="receipt">دریافت</MenuItem>
@@ -333,7 +319,7 @@ const CashFlowPage = () => {
                           {...params}
                           label="شخص"
                           variant="outlined"
-                          sx={{ width: "100%" }}
+                          size="small"
                         />
                       )}
                     />
@@ -352,6 +338,7 @@ const CashFlowPage = () => {
                       type="number"
                       label="مبلغ"
                       fullWidth
+                      size="small"
                     />
                   )}
                 />
@@ -368,7 +355,8 @@ const CashFlowPage = () => {
                       label="شرح تراکنش"
                       fullWidth
                       multiline
-                      rows={4}
+                      rows={3}
+                      size="small"
                       autoFocus
                     />
                   )}
