@@ -1,25 +1,24 @@
 {
-  "theme_color": "#0f15c2",
+  "name": "حساب یار",
+  "short_name": "حساب یار",
+  "start_url": "/",
+  "display": "standalone",
   "background_color": "#ffffff",
+  "theme_color": "#0f15c2",
+  "orientation": "any",
+  "description": "نرم‌افزار مدیریت فروش و حسابداری",
   "icons": [
     {
-      "purpose": "maskable",
+      "src": "/icon512_maskable.png",
       "sizes": "512x512",
-      "src": "icon512_maskable.png",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
-      "purpose": "any",
+      "src": "/icon512_rounded.png",
       "sizes": "512x512",
-      "src": "icon512_rounded.png",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     }
-  ],
-  "orientation": "any",
-  "display": "standalone",
-  "dir": "rtl",
-  "lang": "FA",
-  "description": "pos management ",
-  "name": "حساب یار",
-  "short_name": "pos"
+  ]
 }
