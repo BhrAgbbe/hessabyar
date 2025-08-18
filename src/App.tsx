@@ -3,12 +3,8 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type{ RootState } from './store/store';
-
-// Layout & Auth
 import { MainLayout } from './components/layout/MainLayout';
 import LoginPage from './features/auth/LoginPage';
-
-// Pages
 import DashboardPage from './features/dashboard/DashboardPage';
 import UserManagementPage from './features/users/UserManagementPage';
 import CompanyInfoPage from './features/company/CompanyInfoPage';
