@@ -116,36 +116,33 @@ const CompanyAccountPage = () => {
             setSnackbar({ open: true, message: 'نام بانک نمی‌تواند خالی یا تکراری باشد.', severity: 'error' });
         }
     };
-
+    
     const FormRow = ({ label, children }: { label: string, children: React.ReactNode }) => (
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
-            <Typography sx={{ ml: 2, whiteSpace: 'nowrap' }}>{label} :</Typography>
-            {children}
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2.5, gap: 2 }}>
+            <Typography sx={{ width: '110px', flexShrink: 0, textAlign: 'left' }}>{label} :</Typography>
+            <Box sx={{ width: '100%' }}>{children}</Box>
         </Box>
     );
 
     return (
         <Box>
-            <Box sx={{ alignItems: 'center', mb: 2 }}>
-                <Box sx={{ display: 'flex', gap: 1, justifyContent:'flex-end', mt: 1 }}>
-                    <Button 
-                        variant="outlined" 
-                        size={isMobile ? 'small' : 'medium'} 
-                        onClick={() => setTransactionOpen(true)}
-                        sx={{ fontSize: { xs: '0.5rem', sm: '0.8rem' }, px: { xs: 1, sm:4 } }}
-                    >
-                        واریز/برداشت
-                    </Button>
-                    <Button 
-                        variant="contained" 
-                        size={isMobile ? 'small' : 'medium'} 
-                        startIcon={<AddIcon />} 
-                        onClick={() => handleOpenForm()}
-                        sx={{ fontSize: { xs: '0.5rem', sm: '0.8rem' }, px: { xs: 1, sm: 4} }}
-                    >
-                        حساب جدید
-                    </Button>
-                </Box>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 1, mb: 2, mt: 1 }}>
+                 <Button 
+                    variant="contained" 
+                    size={isMobile ? 'small' : 'medium'} 
+                    onClick={() => handleOpenForm()}
+                    sx={{ fontSize: { xs: '0.5rem', sm: '0.8rem' }, px: { xs: 1, sm: 4} }}
+                >
+                    حساب جدید
+                </Button>
+                <Button 
+                    variant="outlined" 
+                    size={isMobile ? 'small' : 'medium'} 
+                    onClick={() => setTransactionOpen(true)}
+                    sx={{ fontSize: { xs: '0.5rem', sm: '0.8rem' }, px: { xs: 1, sm:4 } }}
+                >
+                    واریز/برداشت
+                </Button>
             </Box>
             <Paper>
                 <List>
@@ -199,7 +196,7 @@ const CompanyAccountPage = () => {
                 <form onSubmit={handleAccountSubmit(onAccountSubmit)}>
                     <DialogContent sx={{pt: '20px !important'}}>
                         <FormRow label="نام بانک">
-                             <Box sx={{display: 'flex', alignItems: 'center', width: '75%'}}>
+                             <Box sx={{display: 'flex', alignItems: 'center'}}>
                                 <Controller name="bankName" control={accountControl} rules={{ required: 'نام بانک اجباری است' }}
                                     render={({ field }) => (
                                         <FormControl fullWidth error={!!accountErrors.bankName}>
@@ -213,16 +210,16 @@ const CompanyAccountPage = () => {
                             </Box>
                         </FormRow>
                         <FormRow label="کد شعبه">
-                            <Controller name="branchCode" control={accountControl} rules={{ required: 'کد شعبه اجباری است' }} render={({field}) => <TextField {...field} size="small" sx={{width: '75%'}} error={!!accountErrors.branchCode} />}/>
+                            <Controller name="branchCode" control={accountControl} rules={{ required: 'کد شعبه اجباری است' }} render={({field}) => <TextField {...field} size="small" fullWidth error={!!accountErrors.branchCode} />}/>
                         </FormRow>
                         <FormRow label="نام شعبه">
-                            <Controller name="branchName" control={accountControl} rules={{ required: 'نام شعبه اجباری است' }} render={({field}) => <TextField {...field} size="small" sx={{width: '75%'}} error={!!accountErrors.branchName} />}/>
+                            <Controller name="branchName" control={accountControl} rules={{ required: 'نام شعبه اجباری است' }} render={({field}) => <TextField {...field} size="small" fullWidth error={!!accountErrors.branchName} />}/>
                         </FormRow>
                         <FormRow label="شماره حساب">
-                            <Controller name="accountNumber" control={accountControl} rules={{ required: 'شماره حساب اجباری است' }} render={({field}) => <TextField {...field} size="small" sx={{width: '75%'}} error={!!accountErrors.accountNumber} />}/>
+                            <Controller name="accountNumber" control={accountControl} rules={{ required: 'شماره حساب اجباری است' }} render={({field}) => <TextField {...field} size="small" fullWidth error={!!accountErrors.accountNumber} />}/>
                         </FormRow>
                         <FormRow label="موجودی حساب">
-                            <Controller name="balance" control={accountControl} rules={{ required: 'موجودی اولیه اجباری است' }} render={({field}) => <TextField {...field} type="number" size="small" sx={{width: '75%'}} error={!!accountErrors.balance} />}/>
+                            <Controller name="balance" control={accountControl} rules={{ required: 'موجودی اولیه اجباری است' }} render={({field}) => <TextField {...field} type="number" size="small" fullWidth error={!!accountErrors.balance} />}/>
                         </FormRow>
                     </DialogContent>
                     <DialogActions><Button onClick={handleCloseForm}>انصراف</Button><Button type="submit" variant="contained">ذخیره</Button></DialogActions>
@@ -246,7 +243,7 @@ const CompanyAccountPage = () => {
                     <DialogContent sx={{pt: '20px !important'}}>
                         <FormRow label="نوع تراکنش">
                             <Controller name="type" control={transControl} rules={{ required: true }} render={({field}) => (
-                                <FormControl size="small" sx={{width: '75%'}}>
+                                <FormControl size="small" fullWidth>
                                     <Select {...field} >
                                         <MenuItem value="withdrawal">برداشت</MenuItem>
                                         <MenuItem value="deposit">واریز</MenuItem>
@@ -256,7 +253,7 @@ const CompanyAccountPage = () => {
                         </FormRow>
                         <FormRow label="شماره حساب">
                              <Controller name="accountId" control={transControl} rules={{ required: true }} render={({field}) => (
-                                <FormControl size="small" sx={{width: '75%'}}>
+                                <FormControl size="small" fullWidth>
                                     <Select {...field} >
                                         {accounts.map(acc => <MenuItem key={acc.id} value={acc.id}>{`${acc.bankName} - ${toPersianDigits(acc.accountNumber, { useGrouping: false })}`}</MenuItem>)}
                                     </Select>
@@ -264,14 +261,14 @@ const CompanyAccountPage = () => {
                             )}/>
                         </FormRow>
                         <FormRow label="مبلغ">
-                            <Controller name="amount" control={transControl} rules={{ required: true, min: 1 }} render={({field}) => <TextField {...field} type="number" size="small" sx={{width: '75%'}}/>}/>
+                            <Controller name="amount" control={transControl} rules={{ required: true, min: 1 }} render={({field}) => <TextField {...field} type="number" size="small" fullWidth/>}/>
                         </FormRow>
                         <FormRow label="علت کسری">
-                             <Controller name="reason" control={transControl} render={({field}) => <TextField {...field} multiline rows={2} sx={{width: '75%'}}/>}/>
+                             <Controller name="reason" control={transControl} render={({field}) => <TextField {...field} multiline rows={2} fullWidth/>}/>
                         </FormRow>
                         <FormRow label="نوع پرداخت">
                             <Controller name="paymentMethod" control={transControl} render={({ field }) => (
-                                <RadioGroup {...field} row sx={{ width: '75%' }}>
+                                <RadioGroup {...field} row>
                                     <FormControlLabel value="cash" control={<Radio />} label="نقدی" />
                                     <FormControlLabel value="check" control={<Radio />} label="چکی" />
                                 </RadioGroup>
@@ -279,7 +276,7 @@ const CompanyAccountPage = () => {
                         </FormRow>
                         {paymentMethod === 'check' && (
                              <FormRow label="سریال چک">
-                                <Controller name="checkSerial" control={transControl} render={({field}) => <TextField {...field} size="small" sx={{width: '75%'}}/>}/>
+                                <Controller name="checkSerial" control={transControl} render={({field}) => <TextField {...field} size="small" fullWidth/>}/>
                             </FormRow>
                         )}
                     </DialogContent>

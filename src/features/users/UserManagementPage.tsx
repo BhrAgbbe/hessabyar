@@ -23,7 +23,6 @@ import {
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import AddIcon from "@mui/icons-material/Add";
 import { useForm, Controller, type SubmitHandler } from "react-hook-form";
 import { useSelector, useDispatch } from "react-redux";
 import { type RootState } from "../../store/store";
@@ -57,6 +56,25 @@ const UserManagementPage = () => {
     reset,
     formState: { errors },
   } = useForm<UserFormData>();
+
+  const rtlStyles = {
+    '& .MuiInputLabel-root': {
+        transformOrigin: 'top right',
+        right: '1.75rem',
+        left: 'auto'
+    },
+    '& .MuiOutlinedInput-root': {
+        '& legend': {
+            textAlign: 'right',
+        },
+        '& input': {
+            textAlign: 'right',
+        },
+    },    '& .MuiSelect-select': {
+        textAlign: 'right',
+    },
+  };
+
 
   useEffect(() => {
     if (editingUser) {
@@ -108,7 +126,6 @@ const UserManagementPage = () => {
       >
         <Button
           variant="contained"
-          startIcon={<AddIcon />}
           onClick={() => handleOpenForm()}
         >
           افزودن کاربر جدید
@@ -116,19 +133,19 @@ const UserManagementPage = () => {
       </Box>
 
       <TableContainer component={Paper}>
-        <Table>
+        <Table sx={{ tableLayout: 'fixed' }}>
           <TableHead>
             <TableRow>
-              <TableCell>نام کاربری</TableCell>
-              <TableCell>سطح دسترسی (نقش)</TableCell>
+              <TableCell align="center">نام کاربری</TableCell>
+              <TableCell align="center">سطح دسترسی</TableCell>
               <TableCell align="center">عملیات</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {users.map((user) => (
               <TableRow key={user.id}>
-                <TableCell>{user.username}</TableCell>
-                <TableCell>{user.role}</TableCell>
+                <TableCell align="center">{user.username}</TableCell>
+                <TableCell align="center">{user.role}</TableCell>
                 <TableCell align="center">
                   <IconButton
                     color="primary"
@@ -153,7 +170,7 @@ const UserManagementPage = () => {
         <DialogTitle>
           {editingUser ? "ویرایش کاربر" : "افزودن کاربر جدید"}
         </DialogTitle>
-        <Box component="form" onSubmit={handleSubmit(onSubmit)}>
+        <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ direction: 'rtl' }}>
           <DialogContent sx={{ pt: 1 }}>
             <Controller
               name="username"
@@ -168,6 +185,7 @@ const UserManagementPage = () => {
                   fullWidth
                   error={!!errors.username}
                   helperText={errors.username?.message}
+                  sx={rtlStyles}
                 />
               )}
             />
@@ -190,10 +208,11 @@ const UserManagementPage = () => {
                   fullWidth
                   error={!!errors.password}
                   helperText={errors.password?.message}
+                  sx={rtlStyles}
                 />
               )}
             />
-            <FormControl fullWidth margin="dense" error={!!errors.role}>
+            <FormControl fullWidth margin="dense" error={!!errors.role} sx={rtlStyles}>
               <InputLabel>نقش کاربر</InputLabel>
               <Controller
                 name="role"

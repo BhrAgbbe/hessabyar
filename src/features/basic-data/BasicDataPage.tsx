@@ -185,11 +185,9 @@ const BasicDataPage = () => {
         <TabPanel value={tab} index={0}>
           {productView === "form" ? (
             <Paper sx={{ p: 3, maxWidth: 600, mx: "auto", boxShadow: "none" }}>
-              <Typography variant="h6" sx={{ textAlign: "center", mb: 3 }}>
-                {editingProduct ? 'ویرایش کالا' : 'معرفی کالای جدید'}
-              </Typography>
+
               
-              <Stepper activeStep={activeStep} alternativeLabel sx={{mb: 4}}>
+              <Stepper activeStep={activeStep} alternativeLabel connector={null} sx={{mb: 4}}>
                 {steps.map((label) => (
                   <Step key={label}>
                     <StepLabel>{label}</StepLabel>

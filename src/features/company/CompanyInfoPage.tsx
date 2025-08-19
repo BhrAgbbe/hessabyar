@@ -2,17 +2,17 @@ import { useState, type ChangeEvent } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { type RootState } from '../../store/store';
 import { updateCompanyInfo, type CompanyInfo } from '../../store/slices/companySlice';
-import { 
-    Box, 
-    Paper, 
-    TextField, 
-    Button, 
-    Avatar, 
-    Snackbar, 
+import {
+    Box,
+    Paper,
+    TextField,
+    Button,
+    Avatar,
+    Snackbar,
     Alert,
-    Stepper,    
-    Step,    
-    StepLabel     
+    Stepper,
+    Step,
+    StepLabel
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 
@@ -24,6 +24,8 @@ const CompanyInfoPage = () => {
 
     const [activeStep, setActiveStep] = useState(0);
     const steps = ['اطلاعات اصلی', 'اطلاعات تماس', 'لوگو و تبلیغات'];
+
+    const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
     const rtlTextFieldStyle = {
         '& .MuiInputLabel-root': {
@@ -40,7 +42,11 @@ const CompanyInfoPage = () => {
     };
 
     const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+        if (errors[name]) {
+            setErrors({ ...errors, [name]: '' });
+        }
     };
 
     const handleLogoChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -53,13 +59,55 @@ const CompanyInfoPage = () => {
         }
     };
 
-    const handleSave = () => {
-        dispatch(updateCompanyInfo(formData));
-        setSnackbarOpen(true);
+    const validateStep = (step: number): boolean => {
+        const newErrors: { [key: string]: string } = {};
+        let isValid = true;
+
+        if (step === 0) {
+            if (!formData.name.trim()) {
+                newErrors.name = 'نام شرکت الزامی است';
+                isValid = false;
+            }
+            if (!formData.managerName.trim()) {
+                newErrors.managerName = 'نام مدیر الزامی است';
+                isValid = false;
+            }
+            if (!formData.economicCode.trim()) {
+                newErrors.economicCode = 'کد اقتصادی الزامی است';
+                isValid = false;
+            }
+        } else if (step === 1) {
+            if (!formData.phone.trim()) {
+                newErrors.phone = 'شماره تلفن الزامی است';
+                isValid = false;
+            }
+            if (!formData.mobile.trim()) {
+                newErrors.mobile = 'شماره همراه الزامی است';
+                isValid = false;
+            }
+            if (!formData.address.trim()) {
+                newErrors.address = 'آدرس الزامی است';
+                isValid = false;
+            }
+        }
+
+
+        setErrors(newErrors);
+        return isValid;
     };
-    
+
+
+    const handleSave = () => {
+        if (validateStep(activeStep)) {
+            dispatch(updateCompanyInfo(formData));
+            setSnackbarOpen(true);
+        }
+    };
+
     const handleNext = () => {
-        setActiveStep((prevActiveStep) => prevActiveStep + 1);
+        if (validateStep(activeStep)) {
+            setActiveStep((prevActiveStep) => prevActiveStep + 1);
+        }
     };
 
     const handleBack = () => {
@@ -69,8 +117,8 @@ const CompanyInfoPage = () => {
     return (
         <Box>
             <Paper sx={{ p: { xs: 2, sm: 3 }, maxWidth: 600, mx: 'auto', direction: 'rtl' }}>
-                <Stepper 
-                    activeStep={activeStep} 
+                <Stepper
+                    activeStep={activeStep}
                     alternativeLabel
                     connector={null}
                     sx={{ mb: 4 }}
@@ -85,18 +133,18 @@ const CompanyInfoPage = () => {
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
                     {activeStep === 0 && (
                         <>
-                            <TextField name="name" label="نام شرکت" value={formData.name} onChange={handleChange} fullWidth autoFocus sx={{...rtlTextFieldStyle, width: '80%'}} />
-                            <TextField name="managerName" label="نام مدیر" value={formData.managerName} onChange={handleChange} fullWidth sx={{...rtlTextFieldStyle, width: '80%'}} />
-                            <TextField name="economicCode" label="کد اقتصادی" value={formData.economicCode} onChange={handleChange} fullWidth sx={{...rtlTextFieldStyle, width: '80%'}} />
+                            <TextField name="name" label="نام شرکت" value={formData.name} onChange={handleChange} fullWidth autoFocus required error={!!errors.name} helperText={errors.name} sx={{ ...rtlTextFieldStyle, width: '80%' }} />
+                            <TextField name="managerName" label="نام مدیر" value={formData.managerName} onChange={handleChange} fullWidth required error={!!errors.managerName} helperText={errors.managerName} sx={{ ...rtlTextFieldStyle, width: '80%' }} />
+                            <TextField name="economicCode" label="کد اقتصادی" value={formData.economicCode} onChange={handleChange} fullWidth required error={!!errors.economicCode} helperText={errors.economicCode} sx={{ ...rtlTextFieldStyle, width: '80%' }} />
                         </>
                     )}
 
                     {activeStep === 1 && (
                         <>
-                            <TextField name="phone" label="شماره تلفن" value={formData.phone} onChange={handleChange} fullWidth autoFocus sx={{...rtlTextFieldStyle, width: '80%'}} />
-                            <TextField name="mobile" label="شماره همراه" value={formData.mobile} onChange={handleChange} fullWidth sx={{...rtlTextFieldStyle, width: '80%'}} />
-                            <TextField name="fax" label="فکس" value={formData.fax} onChange={handleChange} fullWidth sx={{...rtlTextFieldStyle, width: '80%'}} />
-                            <TextField name="address" label="آدرس" value={formData.address} onChange={handleChange} fullWidth multiline rows={3} sx={{...rtlTextFieldStyle, width: '80%'}} />
+                            <TextField name="phone" label="شماره تلفن" value={formData.phone} onChange={handleChange} fullWidth autoFocus required error={!!errors.phone} helperText={errors.phone} sx={{ ...rtlTextFieldStyle, width: '80%' }} />
+                            <TextField name="mobile" label="شماره همراه" value={formData.mobile} onChange={handleChange} fullWidth required error={!!errors.mobile} helperText={errors.mobile} sx={{ ...rtlTextFieldStyle, width: '80%' }} />
+                            <TextField name="fax" label="فکس" value={formData.fax} onChange={handleChange} fullWidth sx={{ ...rtlTextFieldStyle, width: '80%' }} />
+                            <TextField name="address" label="آدرس" value={formData.address} onChange={handleChange} fullWidth multiline rows={3} required error={!!errors.address} helperText={errors.address} sx={{ ...rtlTextFieldStyle, width: '80%' }} />
                         </>
                     )}
 
@@ -109,7 +157,7 @@ const CompanyInfoPage = () => {
                                     <input type="file" hidden accept="image/*" onChange={handleLogoChange} />
                                 </Button>
                             </Box>
-                            <TextField name="promoMessage" label="پیام تبلیغاتی" value={formData.promoMessage} onChange={handleChange} fullWidth multiline rows={3} sx={{...rtlTextFieldStyle, width: '80%'}} />
+                            <TextField name="promoMessage" label="پیام تبلیغاتی" value={formData.promoMessage} onChange={handleChange} fullWidth multiline rows={3} sx={{ ...rtlTextFieldStyle, width: '80%' }} />
                         </>
                     )}
                 </Box>
@@ -121,7 +169,7 @@ const CompanyInfoPage = () => {
                     >
                         قبلی
                     </Button>
-                    
+
                     {activeStep === steps.length - 1 ? (
                         <Button variant="contained" startIcon={<SaveIcon />} onClick={handleSave}>
                             ذخیره اطلاعات
@@ -134,9 +182,9 @@ const CompanyInfoPage = () => {
                 </Box>
             </Paper>
 
-            <Snackbar 
-                open={snackbarOpen} 
-                autoHideDuration={4000} 
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={4000}
                 onClose={() => setSnackbarOpen(false)}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
             >
