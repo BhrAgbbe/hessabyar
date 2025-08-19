@@ -82,11 +82,9 @@ const CompanyInfoPage = () => {
                     ))}
                 </Stepper>
 
-                {/* ✅ استفاده از Box با Flexbox برای چیدمان عمودی و وسط‌چین */}
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
                     {activeStep === 0 && (
                         <>
-                            {/* ✅ تنظیم عرض TextField برای زیبایی بیشتر */}
                             <TextField name="name" label="نام شرکت" value={formData.name} onChange={handleChange} fullWidth autoFocus sx={{...rtlTextFieldStyle, width: '80%'}} />
                             <TextField name="managerName" label="نام مدیر" value={formData.managerName} onChange={handleChange} fullWidth sx={{...rtlTextFieldStyle, width: '80%'}} />
                             <TextField name="economicCode" label="کد اقتصادی" value={formData.economicCode} onChange={handleChange} fullWidth sx={{...rtlTextFieldStyle, width: '80%'}} />
