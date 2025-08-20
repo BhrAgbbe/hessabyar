@@ -50,12 +50,12 @@ const StockTakingPage = () => {
 
   return (
     <Box>
+      
         <Box mb={3}>
           <Button variant="contained"  onClick={() => setProductFormOpen(true)}>
             افزودن کالا
           </Button>
         </Box>
-      
 
       <FormControl fullWidth sx={{ mb: 3 }}>
         <InputLabel>انتخاب انبار</InputLabel>

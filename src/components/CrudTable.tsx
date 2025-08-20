@@ -16,7 +16,7 @@ import {
   DialogActions, 
   TextField, 
   Box,
-  TablePagination // ۱. کامپوننت صفحه‌بندی ایمپورت شد
+  TablePagination 
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';

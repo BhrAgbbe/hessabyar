@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
-  Box, Typography, Button, Paper, Grid, TextField,
+  Box, Typography, Button, Paper, TextField,
   FormControl, InputLabel, Select, MenuItem, Table, TableContainer,
   TableHead, TableRow, TableCell, TableBody
 } from '@mui/material';
@@ -24,10 +24,10 @@ type ProductWithDetails = Product & {
 
 const WastagePage = () => {
   const dispatch = useDispatch();
-  const { products, warehouses, wastage } = useSelector((state: RootState) => state); 
+  const { products, warehouses, wastage } = useSelector((state: RootState) => state);
   const [selectedProduct, setSelectedProduct] = useState<ProductWithDetails | null>(null);
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<number>(0);
-  const [viewMode, setViewMode] = useState<'form' | 'report'>('form'); 
+  const [viewMode, setViewMode] = useState<'form' | 'report'>('form');
 
   const { control, handleSubmit, formState: { errors }, setValue, reset } = useForm<WastageFormData>({
     defaultValues: { productId: 0, quantity: 1, reason: '' }
@@ -69,7 +69,7 @@ const WastagePage = () => {
       warehouseId: selectedWarehouseId,
       date: new Date().toISOString(),
     }));
-    
+
     toast.success('ضایعات با موفقیت ثبت شد.');
     reset({ productId: 0, quantity: 1, reason: '' });
     setSelectedWarehouseId(0);
@@ -125,92 +125,99 @@ const WastagePage = () => {
       <Toaster position="top-center" />
       <Paper sx={{ p: 2, flexGrow: 1, border: '1px solid #e0e0e0', borderRadius: '12px' }}>
         <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-          <Grid container spacing={2} sx={{ mb: 2 }}>
-            <Grid>
+          <Box sx={{ mb: 2 }}>
               <Typography>تاریخ صدور: {today}</Typography>
-            </Grid>
-          </Grid>
+          </Box>
 
-          <Paper variant="outlined" sx={{ p: 1.5, borderRadius: '8px' }}>
-            <Grid container spacing={1}>
-              <Grid>
-                <FormControl fullWidth size="small">
-                    <InputLabel>انتخاب انبار</InputLabel>
-                    <Select
-                    sx={{ minHeight: 55 }}
-                      value={selectedWarehouseId}
-                      label="انتخاب انبار"
-                      onChange={(e) => {
-                        setSelectedWarehouseId(e.target.value as number);
-                        setValue('productId', 0); 
-                      }}
-                    >
-                      <MenuItem value={0} disabled><em>یک انبار انتخاب کنید</em></MenuItem>
-                      {warehouses.map(w => <MenuItem key={w.id} value={w.id}>{w.name}</MenuItem>)}
-                    </Select>
-                </FormControl>
-              </Grid>
-              <Grid>
-                <FormControl fullWidth error={!!errors.productId}>
-                  <InputLabel shrink>نام کالا</InputLabel>
-                  <Controller
-                    name="productId"
-                    control={control}
-                    rules={{ required: true, min: 1 }}
-                    render={({ field }) => (
-                      <Select
-                      sx={{ minWidth: 120 }}
-                        {...field}
-                        label="نام کالا"
-                        notched
-                        disabled={!selectedWarehouseId}
-                        renderValue={(selectedId) => {
-                          const product = products.find(p => p.id === selectedId);
-                          return (
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              {product?.name || ''}
-                            </Box>
-                          );
-                        }}
-                      >
-                        <MenuItem value={0} disabled><em>یک کالا انتخاب کنید</em></MenuItem>
-                        {filteredProducts.map(p => (
-                          <MenuItem key={p.id} value={p.id}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                              <Inventory2Icon fontSize="small" />
-                              {p.name}
-                            </Box>
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    )}
-                  />
-                </FormControl>
-              </Grid>
-              <Grid>
-                 <TextField
-                   label="موجودی انبار"
-                   value={selectedProduct?.stock?.[selectedWarehouseId] || 0}
-                   fullWidth
-                   disabled
-                   InputLabelProps={{ shrink: true }}
-                 />
-              </Grid>
-              <Grid >
-                 <Controller
-                  name="quantity"
+          <Paper variant="outlined" sx={{ p: 2, borderRadius: '8px' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 2,
+              }}
+            >
+              <FormControl fullWidth size="small">
+                  <InputLabel>انتخاب انبار</InputLabel>
+                  <Select
+                    value={selectedWarehouseId}
+                    label="انتخاب انبار"
+                    onChange={(e) => {
+                      setSelectedWarehouseId(e.target.value as number);
+                      setValue('productId', 0);
+                    }}
+                    sx={{ '& .MuiInputBase-input': { fontSize: '0.75rem' } }}
+                  >
+                    <MenuItem value={0} disabled><em>یک انبار انتخاب کنید</em></MenuItem>
+                    {warehouses.map(w => <MenuItem key={w.id} value={w.id}>{w.name}</MenuItem>)}
+                  </Select>
+              </FormControl>
+
+              <FormControl fullWidth error={!!errors.productId} size="small">
+                <InputLabel shrink>نام کالا</InputLabel>
+                <Controller
+                  name="productId"
                   control={control}
-                  rules={{
-                    required: 'تعداد اجباری است',
-                    min: {value: 1, message: 'تعداد باید مثبت باشد'},
-                    validate: value => (selectedProduct && (selectedProduct.stock?.[selectedWarehouseId] || 0) >= value) || 'تعداد ضایعات از موجودی بیشتر است'
-                  }}
+                  rules={{ required: true, min: 1 }}
                   render={({ field }) => (
-                    <TextField {...field} label="تعداد" type="number" fullWidth error={!!errors.quantity} helperText={errors.quantity?.message} InputLabelProps={{ shrink: true }}/>
+                    <Select
+                      {...field}
+                      label="نام کالا"
+                      notched
+                      disabled={!selectedWarehouseId}
+                      renderValue={(selectedId) => {
+                        const product = products.find(p => p.id === selectedId);
+                        return product?.name || '';
+                      }}
+                      sx={{ '& .MuiInputBase-input': { fontSize: '0.75rem' } }}
+                    >
+                      <MenuItem value={0} disabled><em>یک کالا انتخاب کنید</em></MenuItem>
+                      {filteredProducts.map(p => (
+                        <MenuItem key={p.id} value={p.id}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                            <Inventory2Icon fontSize="small" />
+                            {p.name}
+                          </Box>
+                        </MenuItem>
+                      ))}
+                    </Select>
                   )}
                 />
-              </Grid>
-            </Grid>
+              </FormControl>
+
+               <TextField
+                 label="موجودی انبار"
+                 value={selectedProduct?.stock?.[selectedWarehouseId] || 0}
+                 fullWidth
+                 disabled
+                 size="small"
+                 InputLabelProps={{ shrink: true }}
+                 sx={{ '& .MuiInputBase-input': { fontSize: '0.75rem' } }}
+               />
+
+               <Controller
+                name="quantity"
+                control={control}
+                rules={{
+                  required: 'تعداد اجباری است',
+                  min: {value: 1, message: 'تعداد باید مثبت باشد'},
+                  validate: value => (selectedProduct && (selectedProduct.stock?.[selectedWarehouseId] || 0) >= value) || 'تعداد ضایعات از موجودی بیشتر است'
+                }}
+                render={({ field }) => (
+                  <TextField
+                      {...field}
+                      label="تعداد"
+                      type="number"
+                      fullWidth
+                      size="small"
+                      error={!!errors.quantity}
+                      helperText={errors.quantity?.message}
+                      InputLabelProps={{ shrink: true }}
+                      sx={{ '& .MuiInputBase-input': { fontSize: '0.75rem' } }}
+                  />
+                )}
+              />
+            </Box>
           </Paper>
 
           <Box sx={{ mt: 2, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
@@ -225,15 +232,24 @@ const WastagePage = () => {
                   fullWidth
                   multiline
                   rows={4}
+                  size="small"
                   error={!!errors.reason}
                   helperText={errors.reason?.message}
-                  sx={{ flexGrow: 1 }}
+                  sx={{ flexGrow: 1, '& .MuiInputBase-input': { fontSize: '0.75rem' } }}
                 />
               )}
             />
           </Box>
-          
-          <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 1, pt: 2, mt: 'auto' }}>
+
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
+              gap: 1,
+              pt: 2,
+              mt: 'auto',
+            }}
+          >
             <Button type="submit" variant="contained">ثبت</Button>
             <Button variant="outlined" color="error">حذف</Button>
             <Button variant="outlined" color="secondary" onClick={() => setViewMode('report')}>گزارش</Button>

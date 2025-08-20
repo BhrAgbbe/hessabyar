@@ -31,7 +31,7 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useForm, Controller, type SubmitHandler } from "react-hook-form";
-import toast, { Toaster } from 'react-hot-toast'; 
+import toast, { Toaster } from "react-hot-toast";
 import { type RootState } from "../../store/store";
 import {
   type Product,
@@ -66,7 +66,7 @@ function TabPanel(props: {
         <Box
           sx={{
             maxHeight: "calc(100vh - 250px)",
-            overflowY: "auto",
+            overflow: "auto",
             p: 3,
           }}
         >
@@ -85,12 +85,12 @@ const BasicDataPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchBy, setSearchBy] = useState<"name" | "code">("name");
   const [activeStep, setActiveStep] = useState(0);
-  const steps = ['اطلاعات اصلی', 'اطلاعات قیمت', 'انبار و تنظیمات'];
+  const steps = ["اطلاعات اصلی", "اطلاعات قیمت", "انبار و تنظیمات"];
 
   const { products, groups, units, warehouses } = useSelector(
     (state: RootState) => state
   );
-  
+
   const { control, handleSubmit, reset, trigger } = useForm<ProductFormData>();
 
   const getNextProductId = () => {
@@ -157,13 +157,15 @@ const BasicDataPage = () => {
   const handleNextStep = async () => {
     let isValid = false;
     if (activeStep === 0) {
-        isValid = await trigger(['name', 'groupId', 'unitId']);
+      isValid = await trigger(["name", "groupId", "unitId"]);
     } else if (activeStep === 1) {
-        isValid = await trigger(['purchasePrice', 'retailPrice']);
+      isValid = await trigger(["purchasePrice", "retailPrice"]);
+    } else {
+      isValid = true;
     }
 
-    if (isValid) {
-        setActiveStep((prev) => prev + 1);
+    if (isValid && activeStep < steps.length - 1) {
+      setActiveStep((prev) => prev + 1);
     }
   };
 
@@ -171,10 +173,15 @@ const BasicDataPage = () => {
     setActiveStep((prev) => prev - 1);
   };
 
+  const responsiveCellSx = {
+    fontSize: { xs: "0.75rem", sm: "0.875rem" },
+    p: { xs: 1, sm: 2 },
+  };
+
   return (
     <Box>
       <Toaster position="top-center" reverseOrder={false} />
-      <Paper>
+      <Paper sx={{ overflow: "hidden" }}>
         <Tabs value={tab} onChange={(_e, newValue) => setTab(newValue)}>
           <Tab label="معرفی کالا" />
           <Tab label="گروه‌ها" />
@@ -184,10 +191,13 @@ const BasicDataPage = () => {
 
         <TabPanel value={tab} index={0}>
           {productView === "form" ? (
-            <Paper sx={{ p: 3, maxWidth: 600, mx: "auto", boxShadow: "none" }}>
-
-              
-              <Stepper activeStep={activeStep} alternativeLabel connector={null} sx={{mb: 4}}>
+             <Paper sx={{ p: 3, maxWidth: 600, mx: "auto", boxShadow: "none" }}>
+              <Stepper
+                activeStep={activeStep}
+                alternativeLabel
+                connector={null}
+                sx={{ mb: 4 }}
+              >
                 {steps.map((label) => (
                   <Step key={label}>
                     <StepLabel>{label}</StepLabel>
@@ -204,91 +214,339 @@ const BasicDataPage = () => {
                     </Typography>
                   </Grid>
 
+                  {/* Form steps content */}
                   {activeStep === 0 && (
-                    <>
-                      <Grid ><Controller name="name" control={control} rules={{ required: true }} render={({ field }) => (<TextField {...field} label="نام کالا" fullWidth autoFocus />)}/></Grid>
-                      <Grid ><Controller name="model" control={control} render={({ field }) => (<TextField {...field} label="مدل کالا" fullWidth />)}/></Grid>
-                      <Grid ><Controller name="groupId" control={control} rules={{ required: true, min: 1 }} render={({ field }) => (
-                          <FormControl fullWidth><InputLabel>گروه کالا</InputLabel><Select {...field} label="گروه کالا">{groups.map(g => <MenuItem key={g.id} value={g.id}>{g.name}</MenuItem>)}</Select></FormControl>
-                      )}/></Grid>
-                      <Grid ><Controller name="unitId" control={control} rules={{ required: true, min: 1 }} render={({ field }) => (
-                          <FormControl fullWidth><InputLabel>واحد کالا</InputLabel><Select {...field} label="واحد کالا">{units.map(u => <MenuItem key={u.id} value={u.id}>{u.name}</MenuItem>)}</Select></FormControl>
-                      )}/></Grid>
-                      <Grid ><Controller name="barcode" control={control} render={({ field }) => (<TextField {...field} label="شماره بارکد" fullWidth />)}/></Grid>
+                     <>
+                      <Grid>
+                        <Controller
+                          name="name"
+                          control={control}
+                          rules={{ required: true }}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              label="نام کالا"
+                              fullWidth
+                              autoFocus
+                            />
+                          )}
+                        />
+                      </Grid>
+                      <Grid>
+                        <Controller
+                          name="model"
+                          control={control}
+                          render={({ field }) => (
+                            <TextField {...field} label="مدل کالا" fullWidth />
+                          )}
+                        />
+                      </Grid>
+                      <Grid>
+                        <Controller
+                          name="groupId"
+                          control={control}
+                          rules={{ required: true, min: 1 }}
+                          render={({ field }) => (
+                            <FormControl fullWidth>
+                              <InputLabel>گروه کالا</InputLabel>
+                              <Select {...field} label="گروه کالا">
+                                {groups.map((g) => (
+                                  <MenuItem key={g.id} value={g.id}>
+                                    {g.name}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                          )}
+                        />
+                      </Grid>
+                      <Grid>
+                        <Controller
+                          name="unitId"
+                          control={control}
+                          rules={{ required: true, min: 1 }}
+                          render={({ field }) => (
+                            <FormControl fullWidth>
+                              <InputLabel>واحد کالا</InputLabel>
+                              <Select {...field} label="واحد کالا">
+                                {units.map((u) => (
+                                  <MenuItem key={u.id} value={u.id}>
+                                    {u.name}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                          )}
+                        />
+                      </Grid>
+                      <Grid>
+                        <Controller
+                          name="barcode"
+                          control={control}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              label="شماره بارکد"
+                              fullWidth
+                            />
+                          )}
+                        />
+                      </Grid>
                     </>
                   )}
 
                   {activeStep === 1 && (
-                     <>
-                        <Grid><Controller name="purchasePrice" control={control} rules={{ required: true }} render={({ field }) => (<TextField {...field} type="number" label="قیمت خرید" fullWidth autoFocus />)}/></Grid>
-                        <Grid><Controller name="retailPrice" control={control} rules={{ required: true }} render={({ field }) => (<TextField {...field} type="number" label="قیمت فروش" fullWidth />)}/></Grid>
-                        <Grid><Controller name="wholesalePrice" control={control} render={({ field }) => (<TextField {...field} type="number" label="قیمت فروش عمده" fullWidth />)}/></Grid>
-                     </>
+                    <>
+                      <Grid>
+                        <Controller
+                          name="purchasePrice"
+                          control={control}
+                          rules={{ required: true }}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              type="number"
+                              label="قیمت خرید"
+                              fullWidth
+                              autoFocus
+                            />
+                          )}
+                        />
+                      </Grid>
+                      <Grid>
+                        <Controller
+                          name="retailPrice"
+                          control={control}
+                          rules={{ required: true }}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              type="number"
+                              label="قیمت فروش"
+                              fullWidth
+                            />
+                          )}
+                        />
+                      </Grid>
+                      <Grid>
+                        <Controller
+                          name="wholesalePrice"
+                          control={control}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              type="number"
+                              label="قیمت فروش عمده"
+                              fullWidth
+                            />
+                          )}
+                        />
+                      </Grid>
+                    </>
                   )}
 
                   {activeStep === 2 && (
-                    <>
-                      <Grid><Controller name="warehouseId" control={control} rules={{ required: true, min: 1 }} render={({ field }) => (
-                        <FormControl fullWidth><InputLabel>انبار</InputLabel><Select {...field} label="انبار">{warehouses.map(w => <MenuItem key={w.id} value={w.id}>{w.name}</MenuItem>)}</Select></FormControl>
-                      )}/></Grid>
-                      <Grid><Controller name="allowDuplicate" control={control} render={({ field }) => (<FormControlLabel control={<Checkbox {...field} checked={field.value} />} label="امکان تکرار پذیری کالا در فاکتور"/>)}/></Grid>
+                     <>
+                      <Grid>
+                        <Controller
+                          name="warehouseId"
+                          control={control}
+                          rules={{ required: true, min: 1 }}
+                          render={({ field }) => (
+                            <FormControl fullWidth>
+                              <InputLabel>انبار</InputLabel>
+                              <Select {...field} label="انبار">
+                                {warehouses.map((w) => (
+                                  <MenuItem key={w.id} value={w.id}>
+                                    {w.name}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                          )}
+                        />
+                      </Grid>
+                      <Grid>
+                        <Controller
+                          name="allowDuplicate"
+                          control={control}
+                          render={({ field }) => (
+                            <FormControlLabel
+                              control={
+                                <Checkbox {...field} checked={field.value} />
+                              }
+                              label="امکان تکرار پذیری کالا در فاکتور"
+                            />
+                          )}
+                        />
+                      </Grid>
                     </>
                   )}
-                  
                 </Grid>
-                
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
-                    <Button disabled={activeStep === 0} onClick={handleBackStep}>قبلی</Button>
-                    <Box>
-                        {activeStep < steps.length - 1 && (<Button variant="contained" onClick={handleNextStep}>بعدی</Button>)}
-                        {activeStep === steps.length - 1 && (<Button type="submit" variant="contained">ذخیره کالا</Button>)}
-                    </Box>
-                    <Button variant="outlined" onClick={() => setProductView("report")}>مشاهده لیست</Button>
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    mt: 4,
+                  }}
+                >
+                  <Button disabled={activeStep === 0} onClick={handleBackStep}>
+                    قبلی
+                  </Button>
+                  <Box>
+                    {activeStep < steps.length - 1 ? (
+                      <Button variant="contained" onClick={handleNextStep}>
+                        بعدی
+                      </Button>
+                    ) : (
+                      <Button type="submit" variant="contained">
+                        ذخیره کالا
+                      </Button>
+                    )}
+                  </Box>
+                  <Button
+                    variant="outlined"
+                    onClick={() => setProductView("report")}
+                  >
+                    مشاهده لیست
+                  </Button>
                 </Box>
               </form>
             </Paper>
           ) : (
-            <PrintableReportLayout title="لیست گزارش کالا">
-              <Box className="no-print" sx={{ display: "flex", gap: 2, alignItems: "center", mb: 2 }}>
-                <TextField label="جستجو..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} size="small"/>
-                <RadioGroup row value={searchBy} onChange={(e) => setSearchBy(e.target.value as "name" | "code")}>
-                  <FormControlLabel value="name" control={<Radio size="small" />} label="نام کالا"/>
-                  <FormControlLabel value="code" control={<Radio size="small" />} label="کد کالا"/>
+            <PrintableReportLayout  title={
+                <Typography
+                  variant="h4"
+                  sx={{ fontSize: { xs: "1rem", sm: "1.5rem",md:"2rem" } }}
+                >
+                  لیست گزارش کالا
+                </Typography>
+              }>
+              <Box
+                className="no-print"
+                sx={{ display: "flex", gap: 2, alignItems: "center", mb: 2 }}
+              >
+                <TextField
+                  label="جستجو..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  size="small"
+                  sx={{
+                    "& label": {
+                      transformOrigin: "top right !important",
+                      right: "1.75rem !important",
+                      left: "auto !important",
+                    },
+                    "& .MuiInputBase-input": {
+                      textAlign: "right",
+                    },
+                  }}
+                />
+                <RadioGroup
+                  row
+                  value={searchBy}
+                  onChange={(e) =>
+                    setSearchBy(e.target.value as "name" | "code")
+                  }
+                >
+                  <FormControlLabel
+                    value="name"
+                    control={<Radio size="small" />}
+                    label="نام کالا"
+                  />
+                  <FormControlLabel
+                    value="code"
+                    control={<Radio size="small" />}
+                    label="کد کالا"
+                  />
                 </RadioGroup>
               </Box>
               <TableContainer component={Paper} variant="outlined">
                 <Table>
-                  <TableHead><TableRow><TableCell>کد</TableCell><TableCell>نام کالا</TableCell><TableCell>قیمت فروش</TableCell><TableCell className="no-print">عملیات</TableCell></TableRow></TableHead>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={responsiveCellSx}>کد</TableCell>
+                      <TableCell sx={responsiveCellSx}>نام کالا</TableCell>
+                      <TableCell sx={responsiveCellSx}>قیمت فروش</TableCell>
+                      <TableCell className="no-print" sx={responsiveCellSx}>
+                        عملیات
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
                   <TableBody>
                     {filteredProducts.map((p) => (
                       <TableRow key={p.id}>
-                        <TableCell>{p.id}</TableCell>
-                        <TableCell>{p.name}</TableCell>
-                        <TableCell>{p.retailPrice.toLocaleString()}</TableCell>
-                        <TableCell className="no-print">
-                          <IconButton size="small" onClick={() => handleSetFormView(p)}><EditIcon /></IconButton>
-                          <IconButton size="small" onClick={() => handleProductDelete(p.id)}><DeleteIcon color="error" /></IconButton>
+                        <TableCell sx={responsiveCellSx}>{p.id}</TableCell>
+                        <TableCell sx={responsiveCellSx}>{p.name}</TableCell>
+                        <TableCell sx={responsiveCellSx}>
+                          {p.retailPrice.toLocaleString()}
+                        </TableCell>
+                        <TableCell className="no-print" sx={responsiveCellSx}>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleSetFormView(p)}
+                          >
+                            <EditIcon />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleProductDelete(p.id)}
+                          >
+                            <DeleteIcon color="error" />
+                          </IconButton>
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
               </TableContainer>
-              <Box className="no-print" sx={{ mt: 2, textAlign: "center" }}>
-                <Button variant="contained" onClick={() => handleSetFormView(null)}>ثبت کالای جدید</Button>
+              <Box
+                className="no-print"
+                sx={{
+                  mt: 2,
+                  display: "flex",
+                  justifyContent: "center",
+                  gap: 2,
+                }}
+              >
+                <Button
+                  variant="contained"
+                  onClick={() => handleSetFormView(null)}
+                >
+                  ثبت کالای جدید
+                </Button>
               </Box>
             </PrintableReportLayout>
           )}
         </TabPanel>
 
         <TabPanel value={tab} index={1}>
-          <CrudTable title="گروه" items={groups} onAdd={addGroup} onEdit={editGroup} onDelete={deleteGroup} />
+          <CrudTable
+            title="گروه"
+            items={groups}
+            onAdd={addGroup}
+            onEdit={editGroup}
+            onDelete={deleteGroup}
+          />
         </TabPanel>
         <TabPanel value={tab} index={2}>
-          <CrudTable title="واحد" items={units} onAdd={addUnit} onEdit={editUnit} onDelete={deleteUnit}/>
+          <CrudTable
+            title="واحد"
+            items={units}
+            onAdd={addUnit}
+            onEdit={editUnit}
+            onDelete={deleteUnit}
+          />
         </TabPanel>
         <TabPanel value={tab} index={3}>
-          <CrudTable title="انبار" items={warehouses} onAdd={addWarehouse} onEdit={editWarehouse} onDelete={deleteWarehouse} />
+          <CrudTable
+            title="انبار"
+            items={warehouses}
+            onAdd={addWarehouse}
+            onEdit={editWarehouse}
+            onDelete={deleteWarehouse}
+          />
         </TabPanel>
       </Paper>
     </Box>

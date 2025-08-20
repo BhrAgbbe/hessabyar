@@ -7,7 +7,6 @@ import {
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
-import AddIcon from '@mui/icons-material/Add';
 import {type RootState } from '../../store/store';
 import { updateStock } from '../../store/slices/productsSlice';
 import { ProductFormDialog } from '../products/ProductFormDialog';
@@ -47,14 +46,12 @@ const InventoryPage = () => {
 
   return (
     <Box>
-      <Box sx={{ position: 'relative', textAlign: 'center', mb: 2 }}>
-        <Box sx={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }}>
-            <Button variant="contained" startIcon={<AddIcon />} onClick={() => setProductFormOpen(true)}>
+      <Box sx={{ textAlign: 'center' ,display:'flex',justifyItems:'right', mb: 3 }}>
+            <Button variant="contained" onClick={() => setProductFormOpen(true)}>
               افزودن کالا
             </Button>
-        </Box>
+        
       </Box>
-      
       <FormControl fullWidth sx={{ mb: 3 }}>
         <InputLabel>انتخاب انبار</InputLabel>
         <Select

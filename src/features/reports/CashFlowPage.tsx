@@ -27,7 +27,6 @@ import {
   Snackbar,
   Alert,
   Autocomplete,
-  Grid, 
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -182,7 +181,7 @@ const CashFlowPage = () => {
             display: "flex",
             flexDirection: { xs: "column", sm: "row" },
             justifyContent: "space-between",
-            alignItems: { xs: "stretch", sm: "center" }, 
+            alignItems: { xs: "stretch", sm: "center" },
             mb: 2,
             gap: 2,
           }}
@@ -213,14 +212,56 @@ const CashFlowPage = () => {
         </Box>
         <Box className="printable-area">
           <TableContainer component={Paper} elevation={0}>
-            <Table sx={{ tableLayout: 'fixed', width: '100%' }}>
+            <Table sx={{ tableLayout: "fixed", width: "100%" }}>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontSize: '0.75rem', p: 1, textAlign: 'center',width: '15%' }}>تاریخ</TableCell>
-                  <TableCell sx={{ fontSize: '0.75rem', p: 1, textAlign: 'center', width: '15%' }}>شرح</TableCell>
-                  <TableCell sx={{ fontSize: '0.75rem', p: 1, textAlign: 'center',whiteSpace: 'nowrap' ,width: '30%'}}>مبلغ دریافتی</TableCell>
-                  <TableCell sx={{ fontSize: '0.75rem', p: 1, textAlign: 'center',whiteSpace: 'nowrap' ,width: '30%'}}>مبلغ پرداختی</TableCell>
-                  <TableCell className="no-print" align="center" sx={{ fontSize: '0.75rem', p: 1 }}>
+                  <TableCell
+                    sx={{
+                      fontSize: "0.75rem",
+                      p: 1,
+                      textAlign: "center",
+                      width: "15%",
+                    }}
+                  >
+                    تاریخ
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      fontSize: "0.75rem",
+                      p: 1,
+                      textAlign: "center",
+                      width: "15%",
+                    }}
+                  >
+                    شرح
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      fontSize: "0.75rem",
+                      p: 1,
+                      textAlign: "center",
+                      whiteSpace: "nowrap",
+                      width: "30%",
+                    }}
+                  >
+                    مبلغ دریافتی
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      fontSize: "0.75rem",
+                      p: 1,
+                      textAlign: "center",
+                      whiteSpace: "nowrap",
+                      width: "30%",
+                    }}
+                  >
+                    مبلغ پرداختی
+                  </TableCell>
+                  <TableCell
+                    className="no-print"
+                    align="center"
+                    sx={{ fontSize: "0.75rem", p: 1 }}
+                  >
                     عملیات
                   </TableCell>
                 </TableRow>
@@ -228,16 +269,26 @@ const CashFlowPage = () => {
               <TableBody>
                 {transactions.map((tx) => (
                   <TableRow key={tx.id}>
-                    <TableCell sx={{ fontSize: '0.4rem', p: 1, textAlign: 'center' }}>
+                    <TableCell
+                      sx={{ fontSize: "0.4rem", p: 1, textAlign: "center" }}
+                    >
                       {new Date(tx.date).toLocaleDateString("fa-IR")}
                     </TableCell>
-                    <TableCell sx={{ fontSize: '0.4rem', p: 1, wordBreak: 'break-word' }}>{tx.description}</TableCell>
-                    <TableCell sx={{ fontSize: '0.4rem', p: 1, textAlign: 'center' }}>
+                    <TableCell
+                      sx={{ fontSize: "0.4rem", p: 1, wordBreak: "break-word" }}
+                    >
+                      {tx.description}
+                    </TableCell>
+                    <TableCell
+                      sx={{ fontSize: "0.4rem", p: 1, textAlign: "center" }}
+                    >
                       {tx.type === "receipt"
                         ? tx.amount.toLocaleString("fa-IR")
                         : "-"}
                     </TableCell>
-                    <TableCell sx={{ fontSize: '0.4rem', p: 1, textAlign: 'center' }}>
+                    <TableCell
+                      sx={{ fontSize: "0.4rem", p: 1, textAlign: "center" }}
+                    >
                       {tx.type === "payment"
                         ? tx.amount.toLocaleString("fa-IR")
                         : "-"}
@@ -260,30 +311,65 @@ const CashFlowPage = () => {
                 ))}
               </TableBody>
             </Table>
-            <Box sx={{ p: 2, textAlign: "right", fontWeight: "bold", borderTop: '1px solid #eee' }}>
-              <Typography>
-                جمع کل دریافتی‌ها: {receipts.toLocaleString("fa-IR")} تومان
-              </Typography>
-              <Typography>
-                جمع کل پرداختی‌ها: {payments.toLocaleString("fa-IR")} تومان
-              </Typography>
-              <Typography variant="h6" sx={{ fontSize: '1.1rem' }}>
-                موجودی نقد: {(receipts - payments).toLocaleString("fa-IR")}{" "}
-                تومان
-              </Typography>
+            <Box
+              sx={{
+                p: 2,
+                fontWeight: "bold",
+                borderTop: "1px solid #eee",
+                display: "flex",
+                flexDirection: "column",
+                gap: 1.5,
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  flexWrap: "wrap",
+                  gap: 1,
+                }}
+              >
+                <Typography
+                  sx={{ fontSize: { xs: "0.8rem", sm: "0.9rem" } }}
+                >
+                  جمع کل دریافتی‌ها: {receipts.toLocaleString("fa-IR")} تومان
+                </Typography>
+                <Typography
+                  sx={{ fontSize: { xs: "0.8rem", sm: "0.9rem" } }}
+                >
+                  جمع کل پرداختی‌ها: {payments.toLocaleString("fa-IR")} تومان
+                </Typography>
+              </Box>
+              <Box sx={{ display: "flex", justifyContent: "center", mt: 1 }}>
+                <Typography
+                  variant="h6"
+                  sx={{ fontSize: { xs: "0.9rem", sm: "1.05rem" } }}
+                >
+                  موجودی نقد: {(receipts - payments).toLocaleString("fa-IR")}{" "}
+                  تومان
+                </Typography>
+              </Box>
             </Box>
           </TableContainer>
         </Box>
       </Paper>
 
-      <Dialog open={formOpen} onClose={handleCloseForm} fullWidth maxWidth="sm">
-        <DialogTitle>
+      <Dialog open={formOpen} onClose={handleCloseForm} fullWidth maxWidth="xs">
+        <DialogTitle sx={{ textAlign: "center" }}>
           {editingTx ? "ویرایش تراکنش" : "ثبت تراکنش نقدی جدید"}
         </DialogTitle>
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogContent>
-            <Grid container spacing={2} sx={{ pt: 1 }}>
-              <Grid>
+            <Box
+              sx={{
+                pt: 1,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 2,
+              }}
+            >
+              <Box sx={{ width: "90%" }}>
                 <Controller
                   name="type"
                   control={control}
@@ -297,9 +383,9 @@ const CashFlowPage = () => {
                     </FormControl>
                   )}
                 />
-              </Grid>
+              </Box>
 
-              <Grid>
+              <Box sx={{ width: "90%" }}>
                 <Controller
                   name="personId"
                   control={control}
@@ -314,20 +400,26 @@ const CashFlowPage = () => {
                       isOptionEqualToValue={(option, value) =>
                         option.id === value.id
                       }
+                      renderOption={(props, option) => (
+                        <li {...props} style={{ fontSize: "0.6rem" }}>
+                          {option.name}
+                        </li>
+                      )}
                       renderInput={(params) => (
                         <TextField
                           {...params}
-                          label="شخص"
+                          label="نام"
                           variant="outlined"
                           size="small"
+                          fullWidth
                         />
                       )}
                     />
                   )}
                 />
-              </Grid>
+              </Box>
 
-              <Grid>
+              <Box sx={{ width: "90%" }}>
                 <Controller
                   name="amount"
                   control={control}
@@ -342,9 +434,9 @@ const CashFlowPage = () => {
                     />
                   )}
                 />
-              </Grid>
+              </Box>
 
-              <Grid>
+              <Box sx={{ width: "90%" }}>
                 <Controller
                   name="description"
                   control={control}
@@ -361,10 +453,10 @@ const CashFlowPage = () => {
                     />
                   )}
                 />
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
           </DialogContent>
-          <DialogActions>
+          <DialogActions sx={{ justifyContent: "center" }}>
             <Button onClick={handleCloseForm}>انصراف</Button>
             <Button type="submit" variant="contained">
               ذخیره

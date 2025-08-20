@@ -15,7 +15,11 @@ export const PrintableReportLayout: React.FC<PrintableReportLayoutProps> = ({ ti
     <Paper sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }} className="no-print">
         <Typography variant="h4">{title}</Typography>
-        <Button variant="contained" onClick={handlePrint}>
+        <Button variant="contained" onClick={handlePrint} sx={{
+            fontSize: { xs: '0.6rem', sm: '0.8rem' },
+            px: { xs: 2}, 
+            py: { xs: 1},
+          }}>
           چاپ گزارش
         </Button>
       </Box>
