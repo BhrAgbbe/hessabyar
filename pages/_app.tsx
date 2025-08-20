@@ -1,26 +1,24 @@
-import type { AppProps } from 'next/app';
-import React from 'react';
-import { Provider } from 'react-redux';
-import { PersistGate } from 'redux-persist/integration/react';
-import { CssBaseline } from '@mui/material';
-
-import { store, persistor } from '../src/store/store';
-import DynamicThemeProvider from '../src/components/DynamicThemeProvider';
-
-import '../src/styles/fonts.css';
-import '../src/styles/print.css';
+import type { AppProps } from "next/app";
+import React from "react";
+import { Provider } from "react-redux";
+import { PersistGate } from "redux-persist/integration/react";
+import { CssBaseline, ThemeProvider } from "@mui/material";
+import { store, persistor } from "../src/store/store";
+import { theme } from "../src/styles/theme";
+import { MainLayout } from "../src/components/layout/MainLayout";
+import "../src/styles/fonts.css";
 
 function MyApp({ Component, pageProps }: AppProps) {
   React.useEffect(() => {
-    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
+    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
         navigator.serviceWorker
-          .register('/service-worker.js')
+          .register("/service-worker.js")
           .then((registration) => {
-            console.log('SW registered:', registration);
+            console.log("SW registered:", registration);
           })
           .catch((err) => {
-            console.warn('SW registration failed:', err);
+            console.warn("SW registration failed:", err);
           });
       });
     }
@@ -29,10 +27,12 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <DynamicThemeProvider>
+        <ThemeProvider theme={theme}>
           <CssBaseline />
-          <Component {...pageProps} />
-        </DynamicThemeProvider>
+          <MainLayout>         
+            <Component {...pageProps} />
+          </MainLayout>
+        </ThemeProvider>
       </PersistGate>
     </Provider>
   );

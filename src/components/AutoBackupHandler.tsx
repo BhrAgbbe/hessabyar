@@ -13,7 +13,6 @@ const AutoBackupHandler = () => {
       link.href = jsonString;
       link.download = `backup-${new Date().toISOString().split('T')[0]}.json`;
       link.click();
-      console.log('Auto backup successful.');
     } catch (error) {
       console.error('Auto backup failed:', error);
     }
