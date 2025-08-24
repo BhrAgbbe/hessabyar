@@ -101,6 +101,7 @@ function EnhancedTableHead<T>(props: EnhancedTableHeadProps<T>) {
             align={headCell.numeric ? 'left' : 'right'}
             padding="normal"
             sortDirection={orderBy === headCell.id ? order : false}
+            sx={{ fontSize: { xs: '0.6rem', md: '0.7rem' }, p: { xs: 1, sm: 2 } }}
           >
             <TableSortLabel
               active={orderBy === headCell.id}
@@ -116,7 +117,7 @@ function EnhancedTableHead<T>(props: EnhancedTableHeadProps<T>) {
             </TableSortLabel>
           </TableCell>
         ))}
-        {hasActions && <TableCell align="center">عملیات</TableCell>}
+        {hasActions && <TableCell align="center" sx={{ fontSize: { xs: '0.7rem', md: '0.875rem' }, p: { xs: 1, sm: 2 } }}>عملیات</TableCell>}
       </TableRow>
     </TableHead>
   );
@@ -143,11 +144,11 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
       }}
     >
       {numSelected > 0 ? (
-        <Typography sx={{ flex: '1 1 100%' }} color="inherit" variant="subtitle1" component="div">
+        <Typography sx={{ flex: '1 1 100%', fontSize: { xs: '0.7rem', md: '0.875rem' } }} color="inherit" variant="subtitle1" component="div">
           {toPersianDigits(numSelected)} مورد انتخاب شده
         </Typography>
       ) : (
-        <Typography sx={{ flex: '1 1 100%' }} variant="h6" id="tableTitle" component="div">
+        <Typography sx={{ flex: '1 1 100%', fontSize: { xs: '0.7rem', md: '1rem' } }} variant="h6" id="tableTitle" component="div">
           {title}
         </Typography>
       )}
@@ -250,7 +251,7 @@ export default function EnhancedMuiTable<T extends Data>({
       <Paper sx={{ width: '100%', mb: 2 }}>
         <EnhancedTableToolbar numSelected={selected.length} title={title} onDelete={onDelete ? handleDelete : undefined} />
         <TableContainer>
-          <Table sx={{ minWidth: 750 }} aria-labelledby="tableTitle">
+          <Table aria-labelledby="tableTitle">
             <EnhancedTableHead
               numSelected={selected.length}
               order={order}
@@ -285,15 +286,20 @@ export default function EnhancedMuiTable<T extends Data>({
                       />
                     </TableCell>
                     {headCells.map((cell) => (
-                      <TableCell key={cell.id as string} align={cell.numeric ? 'left' : 'right'}>
+                      <TableCell key={cell.id as string} align={cell.numeric ? 'left' : 'right'}
+                        sx={{ fontSize: { xs: '0.7rem', md: '0.875rem' }, p: { xs: 1, sm: 2 } }}>
                         {cell.cell ? cell.cell(row) : row[cell.id] as ReactNode}
                       </TableCell>
                     ))}
                     {actions && (
-                      <TableCell align="center" onClick={(e) => e.stopPropagation()}>
+                      <TableCell align="center"
+                        sx={{ fontSize: { xs: '0.7rem', md: '0.875rem' }, p: { xs: 1, sm: 2 } }}>
                         {actions.map((action, i) => (
                           <Tooltip title={action.tooltip} key={i}>
-                            <IconButton onClick={() => action.onClick(row)}>
+                            <IconButton onClick={(e) => {
+                              e.stopPropagation();
+                              action.onClick(row);
+                            }}>
                               {action.icon}
                             </IconButton>
                           </Tooltip>

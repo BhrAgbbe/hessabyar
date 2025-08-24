@@ -197,7 +197,7 @@ const CompanyAccountPage = () => {
         { id: 'bankName', numeric: false, label: 'نام بانک' },
         { id: 'branchName', numeric: false, label: 'نام شعبه' },
         { id: 'accountNumber', numeric: false, label: 'شماره حساب', cell: (row) => toPersianDigits(row.accountNumber) },
-        { id: 'balance', numeric: true, label: 'موجودی (تومان)', cell: (row) => toPersianDigits(row.balance.toLocaleString()) },
+        { id: 'balance', numeric: true, label: 'موجودی (تومان)', cell: (row) => row.balance.toLocaleString('fa-IR') },
     ], []);
 
     const accountActions = useMemo<readonly Action<BankAccount>[]>(() => [
@@ -212,7 +212,7 @@ const CompanyAccountPage = () => {
             { id: 'accountId', numeric: false, label: 'حساب', cell: (row) => toPersianDigits(accountMap.get(row.accountId) || 'نامشخص') },
             { id: 'description', numeric: false, label: 'توضیحات' },
             { id: 'type', numeric: false, label: 'نوع', cell: (row) => row.type === 'receipt' ? 'واریز' : 'برداشت' },
-            { id: 'amount', numeric: true, label: 'مبلغ (تومان)', cell: (row) => toPersianDigits(row.amount.toLocaleString()) },
+            { id: 'amount', numeric: true, label: 'مبلغ (تومان)', cell: (row) => row.amount.toLocaleString('fa-IR') },
         ];
     }, [accounts]);
 

@@ -24,7 +24,7 @@ const palette = {
 };
 
 const themeOptions: ThemeOptions = {
-  direction: 'rtl',
+  direction: 'ltr',
   palette: palette,
   typography: {
     fontFamily: 'Vazirmatn, Tahoma, Arial, sans-serif',

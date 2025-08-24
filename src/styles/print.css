@@ -1,35 +1,26 @@
-/* print.css - Combined and improved styles for printing */
 
-/* This rule is applied when the page is being printed */
 @media print {
-  /* First, hide everything on the page */
   body * {
     visibility: hidden;
   }
 
-  /* Then, make only the printable area and its contents visible */
   .printable-area, .printable-area * {
     visibility: visible;
   }
 
-  /* Position the printable area to take up the entire page */
   .printable-area {
     position: absolute;
     left: 0;
     top: 0;
     width: 100%;
-    padding: 1cm; /* Add some margin for the printer */
+    padding: 1cm; 
     box-sizing: border-box;
   }
 
-  /* Hide any elements that should never be printed (like buttons) */
   .no-print {
     display: none !important;
   }
 
-  /* --- Detailed styling for the content inside .printable-area --- */
-
-  /* Style the main container (Paper component) */
   .printable-area .MuiPaper-root {
     box-shadow: none !important;
     border: 1px solid #ddd !important;
@@ -38,7 +29,6 @@
     overflow: visible !important;
   }
 
-  /* Make TextFields look like plain text */
   .printable-area .MuiTextField-root .MuiInputBase-input {
     color: black !important;
     border: none !important;
@@ -49,7 +39,6 @@
     display: none !important;
   }
 
-  /* Style the table for a clean look */
   .printable-area .MuiTable-root {
     width: 100%;
     border-collapse: collapse;
@@ -61,11 +50,10 @@
   }
   .printable-area .MuiTableHead-root {
     background-color: #f0f0f0 !important;
-    -webkit-print-color-adjust: exact; /* Ensure background color is printed */
+    -webkit-print-color-adjust: exact; 
     print-color-adjust: exact;
   }
 
-  /* Ensure all text is black */
   .printable-area .MuiTypography-root {
     color: black !important;
   }
