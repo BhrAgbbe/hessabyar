@@ -39,9 +39,9 @@ const rootReducer = combineReducers({
 });
 
 const persistConfig = {
-  key: 'root', // The key for the persisted object in storage
-  storage, // The storage engine to use (localStorage in this case)
-  blacklist: ['auth'], // Slices of state that you do not want to persist
+  key: 'root', 
+  storage, 
+  blacklist: ['auth'],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

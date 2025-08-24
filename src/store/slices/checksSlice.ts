@@ -26,7 +26,6 @@ const checksSlice = createSlice({
       };
       state.push(newCheck);
     },
-    // ردیوسر جامع برای ویرایش هر بخشی از چک
     editCheck: (state, action: PayloadAction<Partial<Check> & { id: string }>) => {
       const { id, ...updates } = action.payload;
       const checkIndex = state.findIndex(c => c.id === id);

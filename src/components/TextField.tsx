@@ -11,7 +11,6 @@ const CustomTextField: React.FC<TextFieldProps> = (props) => {
         direction: 'rtl',
         '& .MuiInputLabel-root': {
           transformOrigin: 'top right', 
-          right: '1.75rem',             
           left: 'auto',                
         },
         '& .MuiOutlinedInput-root legend': {

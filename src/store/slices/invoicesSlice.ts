@@ -66,7 +66,6 @@ const invoicesSlice = createSlice({
         state.sales = state.sales.filter(inv => inv.id !== action.payload);
     },
 
-    // افزودن پیش فاکتور
     addProforma: (state, action: PayloadAction<Omit<Invoice, 'id' | 'invoiceNumber'>>) => {
       const newProforma: Invoice = { 
         ...action.payload,

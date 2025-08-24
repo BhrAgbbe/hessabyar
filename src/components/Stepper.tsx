@@ -13,7 +13,9 @@ import { styled } from '@mui/material/styles';
 interface StepperProps {
   steps: string[];
   getStepContent: (step: number) => ReactNode;
-  onFinish: () => void;
+  activeStep: number;
+  onNext: () => void;
+  onBack: () => void;
 }
 
 const CustomConnector = styled(StepConnector)({
@@ -22,21 +24,7 @@ const CustomConnector = styled(StepConnector)({
   },
 });
 
-const Stepper: React.FC<StepperProps> = ({ steps, getStepContent, onFinish }) => {
-  const [activeStep, setActiveStep] = React.useState(0);
-
-  const handleNext = () => {
-    if (activeStep === steps.length - 1) {
-      onFinish();
-    } else {
-      setActiveStep((prevActiveStep) => prevActiveStep + 1);
-    }
-  };
-
-  const handleBack = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep - 1);
-  };
-
+const Stepper: React.FC<StepperProps> = ({ steps, getStepContent, activeStep, onNext, onBack }) => {
   return (
     <Box sx={{ width: '100%' }}>
       <MuiStepper
@@ -59,13 +47,13 @@ const Stepper: React.FC<StepperProps> = ({ steps, getStepContent, onFinish }) =>
           <Button
             color="inherit"
             disabled={activeStep === 0}
-            onClick={handleBack}
+            onClick={onBack}
             sx={{ mr: 1 }}
           >
             بازگشت
           </Button>
           <Box sx={{ flex: '1 1 auto' }} />
-          <Button onClick={handleNext} variant="contained">
+          <Button onClick={onNext} variant="contained">
             {activeStep === steps.length - 1 ? 'پایان' : 'بعدی'}
           </Button>
         </Box>

@@ -1,11 +1,6 @@
-import React, { useEffect } from 'react';
-import { useRouter } from 'next/router';
-import { useSelector } from 'react-redux';
-import type { RootState } from '../src/store/store';
+import React from 'react';
 
-import { MainLayout } from '../src/components/layout/MainLayout';
 
-// Pages
 import DashboardPage from '../src/features/dashboard/DashboardPage';
 import UserManagementPage from '../src/features/users/UserManagementPage';
 import CompanyInfoPage from '../src/features/company/CompanyInfoPage';
@@ -35,7 +30,6 @@ import DataManagementPage from '../src/features/settings/DataManagementPage';
 import BackupPage from '../src/features/settings/BackupPage';
 import ChangePasswordPage from '../src/features/settings/ChangePasswordPage';
 import LoginPage from '../src/features/auth/LoginPage';
-import PlaceholderReportPage from '../src/features/reports/PlaceholderReportPage';
 
 const routeMap: Record<string, React.ComponentType<any>> = {
   '/': DashboardPage,
@@ -70,6 +64,5 @@ const routeMap: Record<string, React.ComponentType<any>> = {
 };
 
 export default function DummyPage() {
-  // placeholder while migrating routes
   return null;
 }

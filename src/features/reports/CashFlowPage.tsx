@@ -38,6 +38,7 @@ import {
   deleteTransaction,
   type Transaction,
 } from "../../store/slices/transactionsSlice";
+import { type BankAccount } from "../../store/slices/accountsSlice";
 
 type TransactionFormData = Omit<
   Transaction,
@@ -48,7 +49,7 @@ type TransactionFormData = Omit<
 
 const CashFlowPage = () => {
   const dispatch = useDispatch();
-  const { transactions, customers, suppliers } = useSelector(
+  const { transactions, customers, suppliers, accounts } = useSelector(
     (state: RootState) => state
   );
   const [formOpen, setFormOpen] = useState(false);
@@ -89,6 +90,15 @@ const CashFlowPage = () => {
     [customers, suppliers]
   );
 
+  const accountOptions = useMemo(
+    () =>
+      accounts.map((acc: BankAccount) => ({
+        id: acc.id,
+        name: `${acc.bankName} - ${acc.accountNumber}`,
+      })),
+    [accounts]
+  );
+
   const handleOpenForm = (tx: Transaction | null = null) => {
     setEditingTx(tx);
     if (tx) {
@@ -98,6 +108,7 @@ const CashFlowPage = () => {
       reset({
         ...tx,
         personId: person?.id,
+        accountId: tx.accountId,
       });
     } else {
       reset({
@@ -105,6 +116,7 @@ const CashFlowPage = () => {
         amount: 0,
         type: "receipt",
         personId: undefined,
+        accountId: accounts.length > 0 ? accounts[0].id : "",
       });
     }
     setFormOpen(true);
@@ -121,6 +133,7 @@ const CashFlowPage = () => {
       description: data.description,
       amount: Number(data.amount),
       type: data.type,
+      accountId: data.accountId,
       customerId:
         selectedPerson?.type === "customer" ? selectedPerson.id : undefined,
       supplierId:
@@ -384,6 +397,25 @@ const CashFlowPage = () => {
                   )}
                 />
               </Box>
+              
+              <Box sx={{ width: "90%" }}>
+                <Controller
+                  name="accountId"
+                  control={control}
+                  rules={{ required: "انتخاب حساب بانکی الزامی است" }}
+                  render={({ field, fieldState }) => (
+                    <FormControl fullWidth size="small" error={!!fieldState.error}>
+                      <InputLabel>حساب بانکی</InputLabel>
+                      <Select {...field} label="حساب بانکی">
+                        {accountOptions.map(acc => (
+                           <MenuItem key={acc.id} value={acc.id}>{acc.name}</MenuItem>
+                        ))}
+                      </Select>
+                       {fieldState.error && <Typography color="error" variant="caption">{fieldState.error.message}</Typography>}
+                    </FormControl>
+                  )}
+                />
+              </Box>
 
               <Box sx={{ width: "90%" }}>
                 <Controller
@@ -408,7 +440,7 @@ const CashFlowPage = () => {
                       renderInput={(params) => (
                         <TextField
                           {...params}
-                          label="نام"
+                          label="نام طرف حساب (اختیاری)"
                           variant="outlined"
                           size="small"
                           fullWidth

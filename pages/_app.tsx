@@ -7,8 +7,11 @@ import { store, persistor } from "../src/store/store";
 import { theme } from "../src/styles/theme";
 import { MainLayout } from "../src/components/layout/MainLayout";
 import "../src/styles/fonts.css";
+import { useRouter } from "next/router";
 
 function MyApp({ Component, pageProps }: AppProps) {
+  const router = useRouter();
+
   React.useEffect(() => {
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
@@ -24,12 +27,25 @@ function MyApp({ Component, pageProps }: AppProps) {
     }
   }, []);
 
+  if (router.pathname === '/login') {
+    return (
+      <Provider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <Component {...pageProps} />
+          </ThemeProvider>
+        </PersistGate>
+      </Provider>
+    );
+  }
+
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
         <ThemeProvider theme={theme}>
           <CssBaseline />
-          <MainLayout>         
+          <MainLayout>
             <Component {...pageProps} />
           </MainLayout>
         </ThemeProvider>

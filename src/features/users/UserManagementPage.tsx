@@ -1,7 +1,4 @@
-// 
-
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button, Box } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -18,9 +15,11 @@ import {
 import FormDialog from "../../components/FormDialog";
 import ConfirmationDialog from "../../components/ConfirmationDialog";
 import EnhancedMuiTable, { type HeadCell, type Action } from '../../components/Table';
-import UserForm from "../../components/UserForm"; 
+import Form, { type FormField } from "../../components/Form"; 
 
 type UserFormData = Omit<User, "id">;
+
+const userRoles: User['role'][] = ["مدیر سیستم", "فروشنده", "حسابدار", "انباردار"];
 
 const UserManagementPage = () => {
   const users = useSelector((state: RootState) => state.users);
@@ -32,6 +31,34 @@ const UserManagementPage = () => {
   const { control, handleSubmit, reset, formState: { errors } } = useForm<UserFormData>({
     defaultValues: { username: "", role: "فروشنده", password: "" },
   });
+
+  const userFormConfig = useMemo<FormField<UserFormData>[]>(
+    () => [
+      {
+        name: "username",
+        label: "نام کاربری",
+        type: "text",
+        rules: { required: "نام کاربری اجباری است" },
+      },
+      {
+        name: "password",
+        label: "رمز عبور",
+        type: "password",
+        rules: {
+          required: "رمز عبور اجباری است",
+          minLength: { value: 4, message: "رمز عبور باید حداقل ۴ حرف باشد" },
+        },
+      },
+      {
+        name: "role",
+        label: "نقش کاربر",
+        type: "select",
+        rules: { required: "انتخاب نقش کاربر اجباری است" },
+        options: userRoles.map((role) => ({ id: role, label: role })),
+      },
+    ],
+    []
+  );
 
   useEffect(() => {
     if (isFormOpen) {
@@ -115,7 +142,7 @@ const UserManagementPage = () => {
         title={editingUser ? "ویرایش کاربر" : "افزودن کاربر جدید"}
         onSave={handleSubmit(onSubmit)}
       >
-        <UserForm control={control} errors={errors} />
+        <Form config={userFormConfig} control={control} errors={errors} />
       </FormDialog>
 
       <ConfirmationDialog

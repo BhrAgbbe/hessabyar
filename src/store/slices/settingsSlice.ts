@@ -2,7 +2,7 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 export interface AppSettings {
   checkReminderWarning: boolean;
-  checkReminderDays: number; // Field for check reminder days
+  checkReminderDays: number; 
   invoicePrintSize: 'A4' | 'A5' | 'Receipt';
   syncCustomersToContacts: boolean;
   autoBackupOnExit: boolean;
@@ -19,7 +19,7 @@ export interface AppSettings {
 
 const initialState: AppSettings = {
   checkReminderWarning: true,
-  checkReminderDays: 7, // Default value set to 7 days
+  checkReminderDays: 1, 
   invoicePrintSize: 'A4',
   syncCustomersToContacts: false,
   autoBackupOnExit: true,

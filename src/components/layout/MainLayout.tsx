@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/router";
+import Link from "next/link"; 
+import { useRouter } from "next/router"; 
 import { useSelector, useDispatch } from "react-redux";
 import {
   DragDropContext,
@@ -39,7 +39,7 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const dispatch = useDispatch();
-  const router = useRouter();
+  const router = useRouter(); 
   const dashboardShortcuts = useSelector((state: RootState) => state.dashboard);
   const { backgroundImage } = useSelector((state: RootState) => state.settings);
   const [nestedListOpen, setNestedListOpen] = useState<{
@@ -147,7 +147,7 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
                                       alignItems: "center",
                                       width: "100%",
                                     }}
-                                    selected={router.pathname === child.path}
+                                    selected={router.pathname === child.path} 
                                     onClick={() => {
                                       if (isMobile) {
                                         handleDrawerToggle();
@@ -193,7 +193,7 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
             >
               <ListItemButton
                 component="a"
-                selected={router.pathname === item.path}
+                selected={router.pathname === item.path} 
                 onClick={() => {
                   if (isMobile) {
                     handleDrawerToggle();
@@ -248,7 +248,7 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
                 width: drawerWidth,
               },
             }}
-            anchor="left"
+            anchor="right"
           >
             {drawerContent}
           </Drawer>
@@ -262,7 +262,7 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
               },
             }}
             open
-            anchor="left"
+            anchor="right"
           >
             {drawerContent}
           </Drawer>

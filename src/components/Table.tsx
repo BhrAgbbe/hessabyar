@@ -18,6 +18,7 @@ import {
 } from '@mui/material';
 import { visuallyHidden } from '@mui/utils';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { toPersianDigits } from '../utils/utils';
 
 interface Data {
   id: number | string;
@@ -143,7 +144,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
     >
       {numSelected > 0 ? (
         <Typography sx={{ flex: '1 1 100%' }} color="inherit" variant="subtitle1" component="div">
-          {numSelected} مورد انتخاب شده
+          {toPersianDigits(numSelected)} مورد انتخاب شده
         </Typography>
       ) : (
         <Typography sx={{ flex: '1 1 100%' }} variant="h6" id="tableTitle" component="div">
@@ -319,7 +320,11 @@ export default function EnhancedMuiTable<T extends Data>({
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
           labelRowsPerPage="تعداد در صفحه"
-          labelDisplayedRows={({ from, to, count }) => `${from}–${to} از ${count}`}
+          labelDisplayedRows={({ from, to, count }) =>
+            `${toPersianDigits(from)}–${toPersianDigits(to)} از ${toPersianDigits(
+              count
+            )}`
+          }
         />
       </Paper>
     </Box>

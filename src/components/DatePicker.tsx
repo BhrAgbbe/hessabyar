@@ -17,6 +17,7 @@ const ShamsiDatePicker: React.FC<ShamsiDatePickerProps> = ({ label, value, onCha
         label={label}
         value={value}
         onChange={onChange}
+        enableAccessibleFieldDOMStructure={false}
         slots={{ textField: TextField }}
         slotProps={{
           textField: {

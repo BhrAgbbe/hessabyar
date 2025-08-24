@@ -403,7 +403,6 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
         <Table sx={{ tableLayout: "fixed", width: "100%" }}>
           <TableHead>
             <TableRow sx={{ '& .MuiTableCell-root': { p: 0, border: 'none' } }}>
-              {/* ✅ Change: Balanced column widths for mobile */}
               <TableCell sx={{ width: '28%' }} />
               <TableCell sx={{ width: '18%' }} />
               <TableCell sx={{ width: '22%' }} />
@@ -441,12 +440,11 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
                       fontSize: { xs: "0.65rem", sm: "0.875rem" }, 
                       overflow: "hidden",
                       textOverflow: "ellipsis",
-                      // ✅ Change: Removed "whiteSpace: 'nowrap'" to allow wrapping
                     }}
                   >
                     <Typography
                       color={product ? "inherit" : "text.secondary"}
-                      sx={{ fontSize: "inherit", wordBreak: 'break-word' }} // Allow long words to break
+                      sx={{ fontSize: "inherit", wordBreak: 'break-word' }} 
                     >
                       {product ? product.name : "برای انتخاب کلیک کنید"}
                     </Typography>

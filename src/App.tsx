@@ -1,5 +1,3 @@
-
-
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type{ RootState } from './store/store';
@@ -33,6 +31,7 @@ import ThemeSettingsPage from './features/settings/ThemeSettingsPage';
 import DataManagementPage from './features/settings/DataManagementPage';
 import BackupPage from './features/settings/BackupPage';
 import ChangePasswordPage from './features/settings/ChangePasswordPage';
+import TransactionReportPage from './features/reports/TransactionReportPage';
 import type { JSX } from 'react';
 
 const PrivateRoute = ({ children }: { children: JSX.Element }) => {
@@ -76,6 +75,7 @@ function App() {
                 <Route path="/reports/received-checks" element={<CheckListPage />} />
                 <Route path="/reports/issued-checks" element={<IssuedCheckListPage />} />
                 <Route path="/reports/cash-flow" element={<CashFlowPage />} />
+                <Route path="/reports/miscellaneous-transactions" element={<TransactionReportPage />} />
                 <Route path="/features/settings" element={<SettingsPage />} />
                 <Route path="/features/theme" element={<ThemeSettingsPage />} />
                 <Route path="/features/data" element={<DataManagementPage />} />

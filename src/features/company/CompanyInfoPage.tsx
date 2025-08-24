@@ -1,293 +1,242 @@
-// import { useState, type ChangeEvent } from 'react';
-// import { useSelector, useDispatch } from 'react-redux';
-// import { type RootState } from '../../store/store';
-// import { updateCompanyInfo, type CompanyInfo } from '../../store/slices/companySlice';
-// import {
-//     Box,
-//     Paper,
-//     TextField,
-//     Button,
-//     Avatar,
-//     Snackbar,
-//     Alert,
-//     Stepper,
-//     Step,
-//     StepLabel
-// } from '@mui/material';
-// import SaveIcon from '@mui/icons-material/Save';
+import { useMemo, useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { useForm } from "react-hook-form";
+import { type RootState } from "../../store/store";
+import {
+  updateCompanyInfo,
+  type CompanyInfo,
+} from "../../store/slices/companySlice";
+import { Box, Paper, Button, Avatar } from "@mui/material";
+import Stepper from "../../components/Stepper";
+import Form, { type FormField } from "../../components/Form";
+import Snackbar from "@mui/material/Snackbar"; 
+import MuiAlert, { type AlertProps } from "@mui/material/Alert"; 
+import React from "react";
 
-// const CompanyInfoPage = () => {
-//     const dispatch = useDispatch();
-//     const companyInfo = useSelector((state: RootState) => state.company);
-//     const [formData, setFormData] = useState<CompanyInfo>(companyInfo);
-//     const [snackbarOpen, setSnackbarOpen] = useState(false);
-
-//     const [activeStep, setActiveStep] = useState(0);
-//     const steps = ['اطلاعات اصلی', 'اطلاعات تماس', 'لوگو و تبلیغات'];
-
-//     const [errors, setErrors] = useState<{ [key: string]: string }>({});
-
-//     const rtlTextFieldStyle = {
-//         '& .MuiInputLabel-root': {
-//             transformOrigin: 'top right',
-//             right: '1.75rem',
-//             left: 'auto'
-//         },
-//         '& .MuiOutlinedInput-root legend': {
-//             textAlign: 'right',
-//         },
-//         '& .MuiInputBase-input': {
-//             textAlign: 'right',
-//         },
-//     };
-
-//     const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-//         const { name, value } = e.target;
-//         setFormData({ ...formData, [name]: value });
-//         if (errors[name]) {
-//             setErrors({ ...errors, [name]: '' });
-//         }
-//     };
-
-//     const handleLogoChange = (e: ChangeEvent<HTMLInputElement>) => {
-//         if (e.target.files && e.target.files[0]) {
-//             const reader = new FileReader();
-//             reader.onload = (event) => {
-//                 setFormData({ ...formData, logo: event.target?.result as string });
-//             };
-//             reader.readAsDataURL(e.target.files[0]);
-//         }
-//     };
-
-//     const validateStep = (step: number): boolean => {
-//         const newErrors: { [key: string]: string } = {};
-//         let isValid = true;
-
-//         if (step === 0) {
-//             if (!formData.name.trim()) {
-//                 newErrors.name = 'نام شرکت الزامی است';
-//                 isValid = false;
-//             }
-//             if (!formData.managerName.trim()) {
-//                 newErrors.managerName = 'نام مدیر الزامی است';
-//                 isValid = false;
-//             }
-//             if (!formData.economicCode.trim()) {
-//                 newErrors.economicCode = 'کد اقتصادی الزامی است';
-//                 isValid = false;
-//             }
-//         } else if (step === 1) {
-//             if (!formData.phone.trim()) {
-//                 newErrors.phone = 'شماره تلفن الزامی است';
-//                 isValid = false;
-//             }
-//             if (!formData.mobile.trim()) {
-//                 newErrors.mobile = 'شماره همراه الزامی است';
-//                 isValid = false;
-//             }
-//             if (!formData.address.trim()) {
-//                 newErrors.address = 'آدرس الزامی است';
-//                 isValid = false;
-//             }
-//         }
-
-
-//         setErrors(newErrors);
-//         return isValid;
-//     };
-
-
-//     const handleSave = () => {
-//         if (validateStep(activeStep)) {
-//             dispatch(updateCompanyInfo(formData));
-//             setSnackbarOpen(true);
-//         }
-//     };
-
-//     const handleNext = () => {
-//         if (validateStep(activeStep)) {
-//             setActiveStep((prevActiveStep) => prevActiveStep + 1);
-//         }
-//     };
-
-//     const handleBack = () => {
-//         setActiveStep((prevActiveStep) => prevActiveStep - 1);
-//     };
-
-//     return (
-//         <Box>
-//             <Paper sx={{ p: { xs: 2, sm: 3 }, maxWidth: 600, mx: 'auto', direction: 'rtl' }}>
-//                 <Stepper
-//                     activeStep={activeStep}
-//                     alternativeLabel
-//                     connector={null}
-//                     sx={{ mb: 4 }}
-//                 >
-//                     {steps.map((label) => (
-//                         <Step key={label}>
-//                             <StepLabel>{label}</StepLabel>
-//                         </Step>
-//                     ))}
-//                 </Stepper>
-
-//                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-//                     {activeStep === 0 && (
-//                         <>
-//                             <TextField name="name" label="نام شرکت" value={formData.name} onChange={handleChange} fullWidth autoFocus required error={!!errors.name} helperText={errors.name} sx={{ ...rtlTextFieldStyle, width: '80%' }} />
-//                             <TextField name="managerName" label="نام مدیر" value={formData.managerName} onChange={handleChange} fullWidth required error={!!errors.managerName} helperText={errors.managerName} sx={{ ...rtlTextFieldStyle, width: '80%' }} />
-//                             <TextField name="economicCode" label="کد اقتصادی" value={formData.economicCode} onChange={handleChange} fullWidth required error={!!errors.economicCode} helperText={errors.economicCode} sx={{ ...rtlTextFieldStyle, width: '80%' }} />
-//                         </>
-//                     )}
-
-//                     {activeStep === 1 && (
-//                         <>
-//                             <TextField name="phone" label="شماره تلفن" value={formData.phone} onChange={handleChange} fullWidth autoFocus required error={!!errors.phone} helperText={errors.phone} sx={{ ...rtlTextFieldStyle, width: '80%' }} />
-//                             <TextField name="mobile" label="شماره همراه" value={formData.mobile} onChange={handleChange} fullWidth required error={!!errors.mobile} helperText={errors.mobile} sx={{ ...rtlTextFieldStyle, width: '80%' }} />
-//                             <TextField name="fax" label="فکس" value={formData.fax} onChange={handleChange} fullWidth sx={{ ...rtlTextFieldStyle, width: '80%' }} />
-//                             <TextField name="address" label="آدرس" value={formData.address} onChange={handleChange} fullWidth multiline rows={3} required error={!!errors.address} helperText={errors.address} sx={{ ...rtlTextFieldStyle, width: '80%' }} />
-//                         </>
-//                     )}
-
-//                     {activeStep === 2 && (
-//                         <>
-//                             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 2 }}>
-//                                 <Avatar src={formData.logo || undefined} sx={{ width: 100, height: 100, mb: 2 }} />
-//                                 <Button variant="outlined" component="label">
-//                                     آپلود لوگو
-//                                     <input type="file" hidden accept="image/*" onChange={handleLogoChange} />
-//                                 </Button>
-//                             </Box>
-//                             <TextField name="promoMessage" label="پیام تبلیغاتی" value={formData.promoMessage} onChange={handleChange} fullWidth multiline rows={3} sx={{ ...rtlTextFieldStyle, width: '80%' }} />
-//                         </>
-//                     )}
-//                 </Box>
-
-//                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
-//                     <Button
-//                         disabled={activeStep === 0}
-//                         onClick={handleBack}
-//                     >
-//                         قبلی
-//                     </Button>
-
-//                     {activeStep === steps.length - 1 ? (
-//                         <Button variant="contained" startIcon={<SaveIcon />} onClick={handleSave}>
-//                             ذخیره اطلاعات
-//                         </Button>
-//                     ) : (
-//                         <Button variant="contained" onClick={handleNext}>
-//                             بعدی
-//                         </Button>
-//                     )}
-//                 </Box>
-//             </Paper>
-
-//             <Snackbar
-//                 open={snackbarOpen}
-//                 autoHideDuration={4000}
-//                 onClose={() => setSnackbarOpen(false)}
-//                 anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-//             >
-//                 <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: '100%' }}>
-//                     اطلاعات شرکت با موفقیت ذخیره شد.
-//                 </Alert>
-//             </Snackbar>
-//         </Box>
-//     );
-// };
-
-// export default CompanyInfoPage;
-
-
-
-
-import { useState, type ChangeEvent } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { type RootState } from '../../store/store';
-import { updateCompanyInfo, type CompanyInfo } from '../../store/slices/companySlice';
-import { Box, Paper, Snackbar, Alert } from '@mui/material';
-import Stepper from '../../components/Stepper';
-import PrimaryInfoStep from '../../components/PrimaryInfoStep';
-import ContactInfoStep from '../../components/ContactInfoStep';
-import LogoAndBrandingStep from '../../components/LogoAndBrandingStep';
+const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
+  props,
+  ref
+) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 const CompanyInfoPage = () => {
   const dispatch = useDispatch();
   const companyInfo = useSelector((state: RootState) => state.company);
-  const [formData, setFormData] = useState<CompanyInfo>(companyInfo);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const steps = ['اطلاعات اصلی', 'اطلاعات تماس', 'لوگو و تبلیغات'];
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [activeStep, setActiveStep] = useState(0);
+  const steps = ["اطلاعات اصلی", "اطلاعات تماس", "لوگو و تبلیغات"];
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-    if (errors[name]) {
-      setErrors({ ...errors, [name]: '' });
+  const [open, setOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
+    "success"
+  );
+
+  const {
+    control,
+    formState: { errors },
+    trigger,
+    getValues,
+    handleSubmit,
+    reset,
+  } = useForm<CompanyInfo>({
+    mode: "onTouched",
+  });
+
+  useEffect(() => {
+    reset(companyInfo);
+  }, [companyInfo, reset]);
+
+  const handleSave = (data: CompanyInfo) => {
+    dispatch(updateCompanyInfo(data));
+    setSnackbarMessage("اطلاعات شرکت با موفقیت ذخیره شد.");
+    setSnackbarSeverity("success");
+    setOpen(true);
+  };
+
+  const handleCloseSnackbar = (
+    _event?: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpen(false);
+  };
+
+  const stepFields: (keyof CompanyInfo)[][] = [
+    ["name", "managerName", "economicCode"],
+    ["phone", "mobile", "address"],
+    ["promoMessage"],
+  ];
+
+  const handleNext = async () => {
+    const fieldsToValidate = stepFields[activeStep];
+    const isValid = await trigger(fieldsToValidate);
+
+    if (isValid) {
+      dispatch(updateCompanyInfo(getValues()));
+      if (activeStep === steps.length - 1) {
+        handleSubmit(handleSave)();
+      } else {
+        setActiveStep((prev) => prev + 1);
+      }
     }
   };
 
-  const handleLogoChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setFormData({ ...formData, logo: event.target?.result as string });
-      };
-      reader.readAsDataURL(e.target.files[0]);
-    }
+  const handleBack = () => {
+    dispatch(updateCompanyInfo(getValues()));
+    setActiveStep((prev) => prev - 1);
   };
 
-  const validateAll = (): boolean => {
-    const newErrors: { [key: string]: string } = {};
-    if (!formData.name.trim()) newErrors.name = 'نام شرکت الزامی است';
-    if (!formData.managerName.trim()) newErrors.managerName = 'نام مدیر الزامی است';
-    if (!formData.economicCode.trim()) newErrors.economicCode = 'کد اقتصادی الزامی است';
-    if (!formData.phone.trim()) newErrors.phone = 'شماره تلفن الزامی است';
-    if (!formData.mobile.trim()) newErrors.mobile = 'شماره همراه الزامی است';
-    if (!formData.address.trim()) newErrors.address = 'آدرس الزامی است';
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  const primaryInfoConfig = useMemo<FormField<CompanyInfo>[]>(
+    () => [
+      {
+        name: "name",
+        label: "نام شرکت",
+        type: "text",
+        rules: { required: "نام شرکت الزامی است" },
+      },
+      {
+        name: "managerName",
+        label: "نام مدیر",
+        type: "text",
+        rules: { required: "نام مدیر الزامی است" },
+      },
+      {
+        name: "economicCode",
+        label: "کد اقتصادی",
+        type: "text",
+        rules: { required: "کد اقتصادی الزامی است" },
+      },
+    ],
+    []
+  );
 
-  const handleSave = () => {
-    if (validateAll()) {
-      dispatch(updateCompanyInfo(formData));
-      setSnackbarOpen(true);
-    }
-  };
+  const contactInfoConfig = useMemo<FormField<CompanyInfo>[]>(
+    () => [
+      {
+        name: "phone",
+        label: "شماره تلفن",
+        type: "text",
+        rules: { required: "شماره تلفن الزامی است" },
+      },
+      {
+        name: "mobile",
+        label: "شماره همراه",
+        type: "text",
+        rules: { required: "شماره همراه الزامی است" },
+      },
+      { name: "fax", label: "فکس", type: "text" },
+      {
+        name: "address",
+        label: "آدرس",
+        type: "textarea",
+        rows: 3,
+        rules: { required: "آدرس الزامی است" },
+      },
+    ],
+    []
+  );
+
+  const brandingConfig = useMemo<FormField<CompanyInfo>[]>(
+    () => [
+      {
+        name: "promoMessage",
+        label: "پیام تبلیغاتی",
+        type: "textarea",
+        rows: 3,
+      },
+    ],
+    []
+  );
 
   const getStepContent = (step: number) => {
     switch (step) {
       case 0:
-        return <PrimaryInfoStep formData={formData} handleChange={handleChange} errors={errors} />;
+        return (
+          <Form config={primaryInfoConfig} control={control} errors={errors} />
+        );
       case 1:
-        return <ContactInfoStep formData={formData} handleChange={handleChange} errors={errors} />;
+        return (
+          <Form config={contactInfoConfig} control={control} errors={errors} />
+        );
       case 2:
-        return <LogoAndBrandingStep formData={formData} handleChange={handleChange} handleLogoChange={handleLogoChange} />;
+        return (
+          <>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                mb: 2,
+              }}
+            >
+              <Avatar
+                src={companyInfo.logo || undefined}
+                sx={{ width: 100, height: 100, mb: 2 }}
+              />
+              <Button variant="outlined" component="label">
+                آپلود لوگو
+                <input
+                  type="file"
+                  hidden
+                  accept="image/*"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      const reader = new FileReader();
+                      reader.onload = (event) => {
+                        dispatch(
+                          updateCompanyInfo({
+                            ...getValues(),
+                            logo: event.target?.result as string,
+                          })
+                        );
+                      };
+                      reader.readAsDataURL(e.target.files[0]);
+                    }
+                  }}
+                />
+              </Button>
+            </Box>
+            <Form config={brandingConfig} control={control} errors={errors} />
+          </>
+        );
       default:
-        return 'مرحله ناشناخته';
+        return "مرحله ناشناخته";
     }
   };
 
   return (
     <Box>
-      <Paper sx={{ p: { xs: 2, sm: 3 }, maxWidth: 600, mx: 'auto', direction: 'rtl' }}>
+      <Paper
+        sx={{
+          p: { xs: 2, sm: 3 },
+          maxWidth: 600,
+          mx: "auto",
+          direction: "rtl",
+        }}
+      >
         <Stepper
           steps={steps}
           getStepContent={getStepContent}
-          onFinish={handleSave}
+          activeStep={activeStep}
+          onNext={handleNext}
+          onBack={handleBack}
         />
       </Paper>
-
       <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={4000}
-        onClose={() => setSnackbarOpen(false)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        open={open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
-        <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: '100%' }}>
-          اطلاعات شرکت با موفقیت ذخیره شد.
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
         </Alert>
       </Snackbar>
     </Box>
