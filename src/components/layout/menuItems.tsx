@@ -39,7 +39,7 @@ export const navItems: NavItem[] = [
     icon: <PointOfSaleIcon />,
     children: [
       { text: "صدور فاکتور فروش", path: "/invoices/sale", id: "/invoices/sale", iconName: "ReceiptLong" },
-      { text: "فاکتور خرید", path: "/invoices/purchase", id: "/invoices/purchase", iconName: "ShoppingCart" },
+      { text: "صدور فاکتور خرید", path: "/invoices/purchase", id: "/invoices/purchase", iconName: "ShoppingCart" },
       { text: "صدور پیش فاکتور", path: "/invoices/proforma", id: "/invoices/proforma", iconName: "FactCheck" },
       { text: "برگشت از فروش", path: "/invoices/return", id: "/invoices/return", iconName: "AssignmentReturn" },
       { text: "موجودی انبار", path: "/inventory/stock", id: "/inventory/stock", iconName: "Inventory2" },

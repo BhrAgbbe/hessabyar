@@ -2,22 +2,24 @@ import { useState, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   Box, Paper, Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, FormControl, InputLabel, Select, MenuItem, TextField, IconButton,
-  Snackbar, Alert, Button
+  TableHead, TableRow, FormControl, InputLabel, Select, MenuItem, IconButton, Button
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
-import {type RootState } from '../../store/store';
+import { type RootState } from '../../store/store';
 import { updateStock } from '../../store/slices/productsSlice';
-import { ProductFormDialog } from '../products/ProductFormDialog';
+import { ProductFormDialog } from '../../components/ProductFormDialog';
+import { useToast } from '../../hooks/useToast';
+import CustomTextField from '../../components/TextField';
+import { toPersianDigits } from '../../utils/utils';
 
 const InventoryPage = () => {
   const dispatch = useDispatch();
+  const { showToast } = useToast();
   const { products, warehouses } = useSelector((state: RootState) => state);
   
   const [selectedWarehouse, setSelectedWarehouse] = useState<number>(warehouses[0]?.id || 0);
   const [editingRow, setEditingRow] = useState<{ [productId: number]: string }>({});
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' } | null>(null);
   const [isProductFormOpen, setProductFormOpen] = useState(false);
 
   const filteredProducts = useMemo(() => {
@@ -33,24 +35,23 @@ const InventoryPage = () => {
     const newQuantity = Number(editingRow[productId]);
     if (!isNaN(newQuantity) && selectedWarehouse) {
       dispatch(updateStock({ productId, warehouseId: selectedWarehouse, quantity: newQuantity }));
-      setSnackbar({ open: true, message: 'موجودی با موفقیت به‌روز شد.', severity: 'success' });
+      showToast('موجودی با موفقیت به‌روز شد.', 'success');
       setEditingRow(prev => {
         const newState = { ...prev };
         delete newState[productId];
         return newState;
       });
     } else {
-      setSnackbar({ open: true, message: 'لطفا مقدار عددی معتبر وارد کنید.', severity: 'error' });
+      showToast('لطفا مقدار عددی معتبر وارد کنید.', 'error');
     }
   };
 
   return (
     <Box>
       <Box sx={{ textAlign: 'center' ,display:'flex',justifyItems:'right', mb: 3 }}>
-            <Button variant="contained" onClick={() => setProductFormOpen(true)}>
-              افزودن کالا
-            </Button>
-        
+        <Button variant="contained" onClick={() => setProductFormOpen(true)}>
+          افزودن کالا
+        </Button>
       </Box>
       <FormControl fullWidth sx={{ mb: 3 }}>
         <InputLabel>انتخاب انبار</InputLabel>
@@ -82,10 +83,10 @@ const InventoryPage = () => {
                 return (
                   <TableRow key={product.id}>
                     <TableCell>{product.name}</TableCell>
-                    <TableCell align="center">{(product.retailPrice || 0).toLocaleString()} تومان</TableCell>
+                    <TableCell align="center">{toPersianDigits(product.retailPrice || 0)} تومان</TableCell>
                     <TableCell align="center">
                       {isEditing ? (
-                        <TextField
+                        <CustomTextField
                           size="small"
                           type="number"
                           value={editingRow[product.id]}
@@ -93,7 +94,7 @@ const InventoryPage = () => {
                           sx={{ width: 80 }}
                         />
                       ) : (
-                        stock
+                        toPersianDigits(stock)
                       )}
                     </TableCell>
                     <TableCell align="center">
@@ -121,19 +122,6 @@ const InventoryPage = () => {
             onClose={() => setProductFormOpen(false)} 
             product={null} 
         />
-      )}
-
-      {snackbar && (
-        <Snackbar
-            open={snackbar.open}
-            autoHideDuration={4000}
-            onClose={() => setSnackbar(null)}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        >
-            <Alert onClose={() => setSnackbar(null)} severity={snackbar.severity} sx={{ width: '100%' }}>
-                {snackbar.message}
-            </Alert>
-        </Snackbar>
       )}
     </Box>
   );

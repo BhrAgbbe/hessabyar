@@ -2,15 +2,17 @@ import { useState, useMemo, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   Box, Typography, Button, Paper, TextField,
-  FormControl, InputLabel, Select, MenuItem, Table, TableContainer,
-  TableHead, TableRow, TableCell, TableBody
+  FormControl, InputLabel, Select, MenuItem
 } from '@mui/material';
-import Inventory2Icon from '@mui/icons-material/Inventory2';
-import toast, { Toaster } from 'react-hot-toast';
-import { useForm, Controller, type SubmitHandler, useWatch } from 'react-hook-form';
+import { useForm, type SubmitHandler, useWatch } from 'react-hook-form';
+
 import { type RootState } from '../../store/store';
 import { addWastage } from '../../store/slices/wastageSlice';
-import {type Product, updateStock } from '../../store/slices/productsSlice';
+import { type Product, updateStock } from '../../store/slices/productsSlice';
+import { useToast } from '../../hooks/useToast';
+
+import Form, { type FormField } from '../../components/Form'; 
+import EnhancedMuiTable, { type HeadCell } from '../../components/Table'; 
 
 type WastageFormData = {
   productId: number;
@@ -18,14 +20,12 @@ type WastageFormData = {
   reason: string;
 };
 
-type ProductWithDetails = Product & {
-  code?: string;
-};
-
 const WastagePage = () => {
   const dispatch = useDispatch();
   const { products, warehouses, wastage } = useSelector((state: RootState) => state);
-  const [selectedProduct, setSelectedProduct] = useState<ProductWithDetails | null>(null);
+  const { showToast } = useToast(); 
+
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<number>(0);
   const [viewMode, setViewMode] = useState<'form' | 'report'>('form');
 
@@ -37,7 +37,7 @@ const WastagePage = () => {
 
   useEffect(() => {
     if (watchedProductId) {
-      const product = products.find(p => p.id === watchedProductId) as ProductWithDetails;
+      const product = products.find(p => p.id === watchedProductId);
       setSelectedProduct(product || null);
     } else {
       setSelectedProduct(null);
@@ -70,7 +70,7 @@ const WastagePage = () => {
       date: new Date().toISOString(),
     }));
 
-    toast.success('ضایعات با موفقیت ثبت شد.');
+    showToast('ضایعات با موفقیت ثبت شد.', 'success'); 
     reset({ productId: 0, quantity: 1, reason: '' });
     setSelectedWarehouseId(0);
   };
@@ -81,6 +81,56 @@ const WastagePage = () => {
     day: '2-digit'
   });
 
+  const formConfig: FormField<WastageFormData>[] = [
+    {
+      name: 'productId',
+      label: 'نام کالا',
+      type: 'select',
+      rules: { required: true, min: 1 },
+      options: filteredProducts.map(p => ({ id: p.id, label: p.name }))
+    },
+    {
+      name: 'quantity',
+      label: 'تعداد',
+      type: 'number',
+      rules: {
+        required: 'تعداد اجباری است',
+        min: { value: 1, message: 'تعداد باید مثبت باشد' },
+        validate: value => (selectedProduct && (selectedProduct.stock?.[selectedWarehouseId] || 0) >= value) || 'تعداد ضایعات از موجودی بیشتر است'
+      }
+    },
+    {
+      name: 'reason',
+      label: 'علت کسری',
+      type: 'textarea',
+      rules: { required: 'علت کسری اجباری است' },
+      rows: 4
+    }
+  ];
+
+  const reportHeadCells: HeadCell<typeof wastage[0]>[] = [
+    {
+      id: 'productId',
+      label: 'کالا',
+      numeric: false,
+      cell: (row) => products.find(p => p.id === row.productId)?.name || 'یافت نشد'
+    },
+    {
+      id: 'warehouseId',
+      label: 'انبار',
+      numeric: false,
+      cell: (row) => warehouses.find(w => w.id === row.warehouseId)?.name || 'یافت نشد'
+    },
+    { id: 'quantity', label: 'تعداد', numeric: true },
+    { 
+      id: 'date',
+      label: 'تاریخ',
+      numeric: false,
+      cell: (row) => new Date(row.date).toLocaleDateString('fa-IR')
+    },
+    { id: 'reason', label: 'علت', numeric: false },
+  ];
+
   if (viewMode === 'report') {
     return (
       <Paper sx={{ p: 2, direction: 'rtl' }}>
@@ -88,163 +138,55 @@ const WastagePage = () => {
           <Typography variant="h5" sx={{ fontWeight: 'bold' }}>گزارش ضایعات</Typography>
           <Button variant="contained" onClick={() => setViewMode('form')}>ثبت ضایعات جدید</Button>
         </Box>
-        <TableContainer>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell align="right">کالا</TableCell>
-                <TableCell align="right">انبار</TableCell>
-                <TableCell align="center">تعداد</TableCell>
-                <TableCell align="right">تاریخ</TableCell>
-                <TableCell align="right">علت</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {wastage.map(entry => {
-                const product = products.find(p => p.id === entry.productId);
-                const warehouse = warehouses.find(w => w.id === entry.warehouseId);
-                return (
-                  <TableRow key={entry.id}>
-                    <TableCell align="right">{product?.name || 'یافت نشد'}</TableCell>
-                    <TableCell align="right">{warehouse?.name || 'یافت نشد'}</TableCell>
-                    <TableCell align="center">{entry.quantity}</TableCell>
-                    <TableCell align="right">{new Date(entry.date).toLocaleDateString('fa-IR')}</TableCell>
-                    <TableCell align="right">{entry.reason}</TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
+        <EnhancedMuiTable
+          rows={wastage}
+          headCells={reportHeadCells}
+          title=""
+        />
       </Paper>
     );
   }
 
   return (
     <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', height: '100%', direction: 'rtl' }}>
-      <Toaster position="top-center" />
       <Paper sx={{ p: 2, flexGrow: 1, border: '1px solid #e0e0e0', borderRadius: '12px' }}>
         <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
           <Box sx={{ mb: 2 }}>
               <Typography>تاریخ صدور: {today}</Typography>
           </Box>
 
-          <Paper variant="outlined" sx={{ p: 2, borderRadius: '8px' }}>
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 2,
-              }}
-            >
-              <FormControl fullWidth size="small">
-                  <InputLabel>انتخاب انبار</InputLabel>
-                  <Select
-                    value={selectedWarehouseId}
-                    label="انتخاب انبار"
-                    onChange={(e) => {
-                      setSelectedWarehouseId(e.target.value as number);
-                      setValue('productId', 0);
-                    }}
-                    sx={{ '& .MuiInputBase-input': { fontSize: '0.75rem' } }}
-                  >
-                    <MenuItem value={0} disabled><em>یک انبار انتخاب کنید</em></MenuItem>
-                    {warehouses.map(w => <MenuItem key={w.id} value={w.id}>{w.name}</MenuItem>)}
-                  </Select>
-              </FormControl>
-
-              <FormControl fullWidth error={!!errors.productId} size="small">
-                <InputLabel shrink>نام کالا</InputLabel>
-                <Controller
-                  name="productId"
-                  control={control}
-                  rules={{ required: true, min: 1 }}
-                  render={({ field }) => (
-                    <Select
-                      {...field}
-                      label="نام کالا"
-                      notched
-                      disabled={!selectedWarehouseId}
-                      renderValue={(selectedId) => {
-                        const product = products.find(p => p.id === selectedId);
-                        return product?.name || '';
-                      }}
-                      sx={{ '& .MuiInputBase-input': { fontSize: '0.75rem' } }}
-                    >
-                      <MenuItem value={0} disabled><em>یک کالا انتخاب کنید</em></MenuItem>
-                      {filteredProducts.map(p => (
-                        <MenuItem key={p.id} value={p.id}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                            <Inventory2Icon fontSize="small" />
-                            {p.name}
-                          </Box>
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  )}
-                />
-              </FormControl>
-
-               <TextField
-                 label="موجودی انبار"
-                 value={selectedProduct?.stock?.[selectedWarehouseId] || 0}
-                 fullWidth
-                 disabled
-                 size="small"
-                 InputLabelProps={{ shrink: true }}
-                 sx={{ '& .MuiInputBase-input': { fontSize: '0.75rem' } }}
-               />
-
-               <Controller
-                name="quantity"
-                control={control}
-                rules={{
-                  required: 'تعداد اجباری است',
-                  min: {value: 1, message: 'تعداد باید مثبت باشد'},
-                  validate: value => (selectedProduct && (selectedProduct.stock?.[selectedWarehouseId] || 0) >= value) || 'تعداد ضایعات از موجودی بیشتر است'
+          <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+              <InputLabel>انتخاب انبار</InputLabel>
+              <Select
+                value={selectedWarehouseId}
+                label="انتخاب انبار"
+                onChange={(e) => {
+                  setSelectedWarehouseId(e.target.value as number);
+                  setValue('productId', 0);
                 }}
-                render={({ field }) => (
-                  <TextField
-                      {...field}
-                      label="تعداد"
-                      type="number"
-                      fullWidth
-                      size="small"
-                      error={!!errors.quantity}
-                      helperText={errors.quantity?.message}
-                      InputLabelProps={{ shrink: true }}
-                      sx={{ '& .MuiInputBase-input': { fontSize: '0.75rem' } }}
-                  />
-                )}
-              />
-            </Box>
-          </Paper>
+              >
+                <MenuItem value={0} disabled><em>یک انبار انتخاب کنید</em></MenuItem>
+                {warehouses.map(w => <MenuItem key={w.id} value={w.id}>{w.name}</MenuItem>)}
+              </Select>
+          </FormControl>
 
-          <Box sx={{ mt: 2, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-            <Typography sx={{ mb: 1 }}>علت کسری</Typography>
-            <Controller
-              name="reason"
-              control={control}
-              rules={{ required: 'علت کسری اجباری است' }}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  fullWidth
-                  multiline
-                  rows={4}
-                  size="small"
-                  error={!!errors.reason}
-                  helperText={errors.reason?.message}
-                  sx={{ flexGrow: 1, '& .MuiInputBase-input': { fontSize: '0.75rem' } }}
-                />
-              )}
-            />
+           <TextField
+             label="موجودی انبار"
+             value={selectedProduct?.stock?.[selectedWarehouseId] || 0}
+             fullWidth
+             disabled
+             size="small"
+             InputLabelProps={{ shrink: true }}
+             sx={{ mb: 2 }}
+           />
+          
+          <Box sx={{ flexGrow: 1 }}>
+            <Form config={formConfig} control={control} errors={errors} />
           </Box>
 
           <Box
             sx={{
               display: 'flex',
-              flexDirection: { xs: 'column', sm: 'row' },
               gap: 1,
               pt: 2,
               mt: 'auto',

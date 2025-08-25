@@ -2,21 +2,24 @@ import { useState, useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  FormControl, InputLabel, Select, MenuItem, TextField, Button, Dialog, DialogTitle,
-  DialogContent, DialogContentText, DialogActions, Snackbar, Alert
+  FormControl, InputLabel, Select, MenuItem, Button
 } from '@mui/material';
 import {type RootState } from '../../store/store';
 import { updateStock } from '../../store/slices/productsSlice';
-import { ProductFormDialog } from '../products/ProductFormDialog';
+import { ProductFormDialog } from '../../components/ProductFormDialog';
+import { useToast } from '../../hooks/useToast';
+import ConfirmationDialog from '../../components/ConfirmationDialog';
+import CustomTextField from '../../components/TextField';
+import { toPersianDigits } from '../../utils/utils'; 
 
 const StockTakingPage = () => {
   const dispatch = useDispatch();
+  const { showToast } = useToast();
   const { products, warehouses } = useSelector((state: RootState) => state);
   
   const [selectedWarehouse, setSelectedWarehouse] = useState<number>(warehouses[0]?.id || 0);
   const [stockCounts, setStockCounts] = useState<{ [productId: number]: string }>({});
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; } | null>(null);
   const [isProductFormOpen, setProductFormOpen] = useState(false);
 
   const filteredProducts = useMemo(() => {
@@ -44,13 +47,14 @@ const StockTakingPage = () => {
             quantity: Number(stockCounts[productId])
         }));
     }
-    setSnackbar({ open: true, message: 'موجودی انبار با موفقیت به‌روزرسانی شد.' });
+    showToast('موجودی انبار با موفقیت به‌روزرسانی شد.', 'success');
     setConfirmOpen(false);
   };
 
+  const warehouseName = warehouses.find(w => w.id === selectedWarehouse)?.name || '';
+
   return (
     <Box>
-      
         <Box mb={3}>
           <Button variant="contained"  onClick={() => setProductFormOpen(true)}>
             افزودن کالا
@@ -82,9 +86,10 @@ const StockTakingPage = () => {
               {filteredProducts.map((product) => (
                 <TableRow key={product.id}>
                   <TableCell align="right">{product.name}</TableCell>
-                  <TableCell align="center">{(product.retailPrice || 0).toLocaleString()} تومان</TableCell>
+                  {/* استفاده از تابع فارسی‌ساز برای قیمت */}
+                  <TableCell align="center">{toPersianDigits(product.retailPrice || 0)} تومان</TableCell>
                   <TableCell align="center">
-                    <TextField
+                    <CustomTextField
                       size="small"
                       type="number"
                       value={stockCounts[product.id] || ''}
@@ -104,20 +109,13 @@ const StockTakingPage = () => {
         </Button>
       </Box>
 
-      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
-        <DialogTitle sx={{ textAlign: 'right' }}>تایید عملیات</DialogTitle>
-        <DialogContent>
-            <DialogContentText sx={{ textAlign: 'right' }}>
-                آیا از ثبت موجودی جدید برای انبار "{warehouses.find(w=>w.id === selectedWarehouse)?.name}" اطمینان دارید؟ 
-            </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-            <Button onClick={() => setConfirmOpen(false)}>انصراف</Button>
-            <Button onClick={handleApplyChanges} color="primary" variant="contained">
-                تایید و ثبت
-            </Button>
-        </DialogActions>
-      </Dialog>
+      <ConfirmationDialog
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={handleApplyChanges}
+        title="تایید عملیات"
+        message={`آیا از ثبت موجودی جدید برای انبار "${warehouseName}" اطمینان دارید؟`}
+      />
 
       {isProductFormOpen && (
         <ProductFormDialog 
@@ -125,19 +123,6 @@ const StockTakingPage = () => {
             onClose={() => setProductFormOpen(false)} 
             product={null} 
         />
-      )}
-
-      {snackbar && (
-        <Snackbar
-            open={snackbar.open}
-            autoHideDuration={4000}
-            onClose={() => setSnackbar(null)}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        >
-            <Alert onClose={() => setSnackbar(null)} severity="success" sx={{ width: '100%' }}>
-                {snackbar.message}
-            </Alert>
-        </Snackbar>
       )}
     </Box>
   );

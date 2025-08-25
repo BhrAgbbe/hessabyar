@@ -22,14 +22,12 @@ import {
     MenuItem,
     FormControl,
     InputLabel,
-    Snackbar,
-    Alert,
- 
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useForm, Controller, type SubmitHandler } from "react-hook-form";
 import { type RootState } from "../../store/store";
+import { useToast } from "../../hooks/useToast"; // Import useToast
 import {
     type Product,
     type ProductFormData,
@@ -52,6 +50,7 @@ import { PrintableReportLayout } from "../../components/layout/PrintableReportLa
 import Stepper from "../../components/Stepper";
 import GenericCrudPanel from "../../components/GenericCrudPanel";
 import SearchAndSortPanel from "../../components/SearchAndSortPanel";
+import ConfirmationDialog from "../../components/ConfirmationDialog"; // Import ConfirmationDialog
 
 function TabPanel(props: {
     children?: React.ReactNode;
@@ -78,22 +77,35 @@ function TabPanel(props: {
 
 const BasicDataPage = () => {
     const dispatch = useDispatch();
+    const { showToast } = useToast(); // Use the custom toast hook
     const [tab, setTab] = useState(0);
     const [productView, setProductView] = useState<"form" | "report">("report");
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [sortBy, setSortBy] = useState<"name" | "code">("name");
     const [activeStep, setActiveStep] = useState(0);
-    const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' } | null>(null);
+    const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; id: number | null }>({ open: false, id: null });
     
-
     const steps = ["اطلاعات اصلی", "اطلاعات قیمت", "انبار و تنظیمات"];
 
     const { products, groups, units, warehouses } = useSelector(
         (state: RootState) => state
     );
 
-    const { control, handleSubmit, reset, trigger } = useForm<ProductFormData>();
+    const { control, handleSubmit, reset, trigger } = useForm<ProductFormData>({
+        defaultValues: {
+            name: "",
+            unitId: 0,
+            groupId: 0,
+            model: "",
+            purchasePrice: 0,
+            wholesalePrice: 0,
+            retailPrice: 0,
+            warehouseId: 0,
+            barcode: "",
+            allowDuplicate: false,
+        }
+    });
 
     const getNextProductId = () => {
         const maxId =
@@ -101,29 +113,10 @@ const BasicDataPage = () => {
         return maxId < 15 ? 15 : maxId + 1;
     };
 
-    const handleShowToast = (message: string, severity: 'success' | 'error') => {
-        setSnackbar({ open: true, message, severity });
-    };
-
     const handleSetFormView = (product: Product | null = null) => {
         setActiveStep(0);
         setEditingProduct(product);
-        if (product) {
-            reset(product);
-        } else {
-            reset({
-                name: "",
-                unitId: 0,
-                groupId: 0,
-                model: "",
-                purchasePrice: 0,
-                wholesalePrice: 0,
-                retailPrice: 0,
-                warehouseId: 0,
-                barcode: "",
-                allowDuplicate: false,
-            });
-        }
+        reset(product || undefined); // Use reset with the product or undefined to fall back to defaultValues
         setProductView("form");
     };
 
@@ -136,19 +129,23 @@ const BasicDataPage = () => {
         };
         if (editingProduct) {
             dispatch(editProduct({ ...processedData, id: editingProduct.id }));
-            handleShowToast("کالا با موفقیت ویرایش شد.", "success");
+            showToast("کالا با موفقیت ویرایش شد.", "success");
         } else {
             dispatch(addProduct(processedData));
-            handleShowToast("کالا با موفقیت ثبت شد.", "success");
+            showToast("کالا با موفقیت ثبت شد.", "success");
         }
-        handleSetFormView(null);
         setProductView("report");
     };
 
     const handleProductDelete = (id: number) => {
-        if (window.confirm("آیا از حذف این کالا اطمینان دارید؟")) {
-            dispatch(deleteProduct(id));
-            handleShowToast("کالا با موفقیت حذف شد.", "success");
+        setDeleteConfirm({ open: true, id });
+    };
+
+    const handleConfirmDelete = () => {
+        if (deleteConfirm.id !== null) {
+            dispatch(deleteProduct(deleteConfirm.id));
+            showToast("کالا با موفقیت حذف شد.", "success");
+            setDeleteConfirm({ open: false, id: null });
         }
     };
 
@@ -426,7 +423,7 @@ const BasicDataPage = () => {
                         add_action={addGroup} 
                         edit_action={editGroup} 
                         delete_action={deleteGroup} 
-                        showToast={handleShowToast}
+                        showToast={showToast}
                     />
                 </TabPanel>
                 <TabPanel value={tab} index={2}>
@@ -436,7 +433,7 @@ const BasicDataPage = () => {
                         add_action={addUnit} 
                         edit_action={editUnit} 
                         delete_action={deleteUnit}
-                        showToast={handleShowToast}
+                        showToast={showToast}
                     />
                 </TabPanel>
                 <TabPanel value={tab} index={3}>
@@ -446,23 +443,18 @@ const BasicDataPage = () => {
                         add_action={addWarehouse} 
                         edit_action={editWarehouse} 
                         delete_action={deleteWarehouse}
-                        showToast={handleShowToast}
+                        showToast={showToast}
                     />
                 </TabPanel>
             </Paper>
 
-            {snackbar && (
-                <Snackbar 
-                    open={snackbar.open} 
-                    autoHideDuration={4000} 
-                    onClose={() => setSnackbar(null)}
-                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-                >
-                    <Alert onClose={() => setSnackbar(null)} severity={snackbar.severity} sx={{ width: '100%' }}>
-                        {snackbar.message}
-                    </Alert>
-                </Snackbar>
-            )}
+            <ConfirmationDialog
+                open={deleteConfirm.open}
+                onClose={() => setDeleteConfirm({ open: false, id: null })}
+                onConfirm={handleConfirmDelete}
+                title="تایید حذف"
+                message="آیا از حذف این کالا اطمینان دارید؟"
+            />
         </Box>
     );
 };

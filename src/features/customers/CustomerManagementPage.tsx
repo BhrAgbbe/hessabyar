@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { type RootState } from '../../store/store';
 import { Box, Paper, RadioGroup, FormControlLabel, Radio, Typography, TextField } from '@mui/material';
 import { useForm, type SubmitHandler } from 'react-hook-form';
-import toast, { Toaster } from 'react-hot-toast';
+import { useToast } from '../../hooks/useToast';
 import {
   type Customer,
   addCustomer,
@@ -21,10 +21,11 @@ import SearchAndSortPanel from '../../components/SearchAndSortPanel';
 import PageHeader from '../../components/PageHeader';
 import EnhancedMuiTable, { type HeadCell, type Action } from '../../components/Table';
 import FormDialog from '../../components/FormDialog';
-import ConfirmationDialog from '../../components/ConfirmationDialog';
 import Form, { type FormField } from '../../components/Form';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import SearchableSelect, { type SelectOption } from '../../components/SearchableSelect';
+import ConfirmationDialog from '../../components/ConfirmationDialog';
 
 type Person = Customer | Supplier;
 type PersonFormData = Omit<Person, 'id'>;
@@ -37,14 +38,18 @@ const moeinCategories: MoeinCategory[] = [
   "ضایعات",
 ];
 
+const moeinOptions = moeinCategories.map(cat => ({ id: cat, label: cat }));
+
 const CustomerManagementPage = () => {
   const dispatch = useDispatch();
+  const { showToast } = useToast();
   const [personType, setPersonType] = useState<'customer' | 'supplier'>('customer');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'city'>('name');
   const [formOpen, setFormOpen] = useState(false);
   const [editingPerson, setEditingPerson] = useState<Person | null>(null);
   const [deleteModal, setDeleteModal] = useState<{ open: boolean; id: number | null }>({ open: false, id: null });
+  const [selectedMoein, setSelectedMoein] = useState<SelectOption | null>(null);
 
   const { customers, suppliers } = useSelector((state: RootState) => state);
   const { control, handleSubmit, reset, formState: { errors } } = useForm<PersonFormData>();
@@ -69,7 +74,9 @@ const CustomerManagementPage = () => {
 
   const handleOpenForm = (person: Person | null = null) => {
     setEditingPerson(person);
-    reset(person || { name: '', phone: '', city: '', address: '', moein: 'بدهکاران' });
+    const initialMoein = person ? moeinOptions.find(opt => opt.id === person.moein) || null : moeinOptions[0];
+    setSelectedMoein(initialMoein);
+    reset(person || { name: '', phone: '', city: '', address: '' });
     setFormOpen(true);
   };
 
@@ -83,27 +90,29 @@ const CustomerManagementPage = () => {
       const allPersons = [...customers, ...suppliers];
       const existing = allPersons.find(p => p.phone === formData.phone && p.id !== editingPerson?.id);
       if (existing) {
-        toast.error(`این شماره همراه قبلا برای کاربر با کد ${existing.id} ثبت شده است.`);
+        showToast(`این شماره همراه قبلا برای کاربر با کد ${existing.id} ثبت شده است.`, 'error');
         return;
       }
     }
     
+    const moein = selectedMoein?.id as MoeinCategory;
+    
     if (editingPerson) {
-      const payload = { ...formData, id: editingPerson.id };
+      const payload = { ...formData, id: editingPerson.id, moein };
       if (personType === 'customer') {
         dispatch(editCustomer(payload));
       } else {
         dispatch(editSupplier(payload));
       }
-      toast.success('ویرایش با موفقیت انجام شد');
+      showToast('ویرایش با موفقیت انجام شد', 'success');
     } else {
-      const payload = formData;
+      const payload = { ...formData, moein };
       if (personType === 'customer') {
         dispatch(addCustomer(payload));
       } else {
         dispatch(addSupplier(payload));
       }
-      toast.success('شخص جدید با موفقیت اضافه شد');
+      showToast('شخص جدید با موفقیت اضافه شد', 'success');
     }
     
     handleCloseForm();
@@ -115,7 +124,7 @@ const CustomerManagementPage = () => {
   const handleConfirmDelete = () => {
     if (deleteModal.id === null) return;
     dispatch(personType === 'customer' ? deleteCustomer(deleteModal.id) : deleteSupplier(deleteModal.id));
-    toast.success('شخص با موفقیت حذف شد.');
+    showToast('شخص با موفقیت حذف شد.', 'success');
     handleCloseDeleteModal();
   };
   
@@ -139,14 +148,9 @@ const CustomerManagementPage = () => {
     { name: 'city', label: 'نام شهر', type: 'text' },
     { name: 'address', label: 'آدرس', type: 'textarea', multiline: true, rows: 3 },
   ];
-  
-  const moeinField: FormField<PersonFormData>[] = [
-      { name: 'moein', label: 'معین', type: 'select', options: moeinCategories.map(cat => ({ id: cat, label: cat }))}
-  ]
 
   return (
     <Box sx={{ p: { xs: 1, sm: 2, md: 3 }, direction: 'rtl' }}>
-      <Toaster position="top-center" reverseOrder={false} />
       <Paper sx={{ p: { xs: 2, md: 3 }, maxWidth: 1200, mx: 'auto' }}>
         <PageHeader
           personType={personType}
@@ -186,9 +190,22 @@ const CustomerManagementPage = () => {
             </RadioGroup>
           </Box>
 
-          <Box sx={{ display: 'flex', gap: 2, width: '100%' }}>
-            <TextField label="کد" value={editingPerson ? editingPerson.id : getNextId()} disabled size="small" sx={{ width: 100 }} />
-            <Form config={moeinField} control={control} errors={errors} />
+          <Box sx={{ display: 'flex', gap: 2, width: '100%', flexWrap: 'wrap', alignItems: 'center' }}>
+            <TextField
+              label="کد"
+              value={editingPerson ? editingPerson.id : getNextId()}
+              disabled
+              size="small"
+              sx={{ flex: '1 1 45%' }}
+            />
+            <SearchableSelect
+              options={moeinOptions}
+              value={selectedMoein}
+              onChange={(newValue) => setSelectedMoein(newValue)}
+              label="معین"
+              size="small"
+              sx={{ flex: '1 1 45%' }}
+            />
           </Box>
           
           <Form config={formFields} control={control} errors={errors} />

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Autocomplete, CircularProgress } from '@mui/material';
+import { Autocomplete, CircularProgress, type SxProps, type Theme } from '@mui/material';
 import CustomTextField from './TextField';
 
 export interface SelectOption {
@@ -14,6 +14,8 @@ interface SearchableSelectProps {
   label: string;
   loading?: boolean;
   placeholder?: string;
+  size?: 'small' | 'medium';
+  sx?: SxProps<Theme>; // Accept the 'sx' prop
 }
 
 const SearchableSelect: React.FC<SearchableSelectProps> = ({
@@ -23,6 +25,8 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
   label,
   loading = false,
   placeholder,
+  size,
+  sx, // Get the sx prop
 }) => {
   return (
     <Autocomplete
@@ -32,11 +36,12 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
       }}
       options={options}
       loading={loading}
-      sx={{ width: 300 }} 
+      sx={sx} // Apply the sx prop here
       getOptionLabel={(option) => option.label || ''}
       isOptionEqualToValue={(option, val) => option.id === val.id}
       noOptionsText="موردی یافت نشد"
       loadingText="در حال بارگذاری..."
+      size={size}
       renderInput={(params) => (
         <CustomTextField
           {...params}

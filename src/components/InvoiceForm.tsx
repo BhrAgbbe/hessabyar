@@ -17,14 +17,9 @@ import {
   FormControlLabel,
   Radio,
   FormControl,
-  Snackbar,
-  Alert,
-  AlertColor,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-
 import { toPersianDigits } from "../utils/utils";
-
 import { type RootState } from "../store/store";
 import {
   addInvoice,
@@ -35,6 +30,7 @@ import {
   type InvoiceItem,
 } from "../store/slices/invoicesSlice";
 import { type Product } from "../store/slices/productsSlice";
+import { useToast } from "../hooks/useToast"; 
 
 import SearchableSelect, { type SelectOption } from "./SearchableSelect";
 import ShamsiDatePicker from "./DatePicker";
@@ -230,6 +226,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
   const { products, customers, suppliers, invoices, settings } = useSelector(
     (state: RootState) => state
   );
+  const { showToast } = useToast();
   const defaultQuantity = settings.autoAddQuantity ? 1 : 0;
 
   const [state, localDispatch] = useReducer(
@@ -241,18 +238,6 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
   const [returnPersonType, setReturnPersonType] = useState<
     "customer" | "supplier"
   >("customer");
-  
-  const [toastOpen, setToastOpen] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const [toastSeverity, setToastSeverity] = useState<AlertColor>('info');
-
-  const handleToastClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-    setToastOpen(false);
-  };
-
 
   const nextSalesInvoiceNumber =
     (invoices.sales?.length > 0
@@ -290,9 +275,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
 
     const isPersonSelected = state.customerId || state.supplierId;
     if (!isPersonSelected || validItems.length === 0) {
-      setToastMessage(`لطفا ${personLabel} و حداقل یک کالا با تعداد معتبر انتخاب کنید.`);
-      setToastSeverity('error');
-      setToastOpen(true);
+      showToast(`لطفا ${personLabel} و حداقل یک کالا با تعداد معتبر انتخاب کنید.`, 'error');
       return;
     }
 
@@ -300,9 +283,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
       for (const item of validItems) {
         const product = products.find((p) => p.id === item.productId);
         if (product && (product.stock[item.warehouseId] ?? 0) < item.quantity) {
-          setToastMessage(`موجودی کالای "${product.name}" کافی نیست (موجودی: ${product.stock[item.warehouseId] ?? 0})`);
-          setToastSeverity('error');
-          setToastOpen(true);
+          showToast(`موجودی کالای "${product.name}" کافی نیست (موجودی: ${product.stock[item.warehouseId] ?? 0})`, 'error');
           return;
         }
       }
@@ -324,9 +305,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
       else reduxDispatch(addPurchaseReturn(invoiceData));
     }
 
-    setToastMessage("سند با موفقیت صادر شد!");
-    setToastSeverity('success');
-    setToastOpen(true);
+    showToast("سند با موفقیت صادر شد!", 'success');
 
     const savedInvoiceForCallback: Invoice = {
       ...invoiceData,
@@ -339,12 +318,6 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
 
   return (
     <Paper sx={{ p: { xs: 2, sm: 3 }, direction: "rtl" }}>
-      <Snackbar open={toastOpen} autoHideDuration={6000} onClose={handleToastClose}>
-        <Alert onClose={handleToastClose} severity={toastSeverity} sx={{ width: '100%' }}>
-          {toastMessage}
-        </Alert>
-      </Snackbar>
-
       {mode === "return" && (
         <FormControl component="fieldset" sx={{ mb: 2 }}>
           <RadioGroup
