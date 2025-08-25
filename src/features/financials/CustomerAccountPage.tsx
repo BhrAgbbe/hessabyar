@@ -11,7 +11,7 @@ import { type RootState } from '../../store/store';
 import { PrintableReportLayout } from '../../components/layout/PrintableReportLayout';
 import { deleteTransaction } from '../../store/slices/transactionsSlice';
 import { deleteInvoice, deletePurchase, deleteSalesReturn, deletePurchaseReturn, type Invoice } from '../../store/slices/invoicesSlice';
-import { InvoiceDetailDialog } from '../invoices/InvoiceDetailDialog';
+import { InvoiceDetailDialog } from '../../components/InvoiceDetailDialog';
 
 interface CustomerAccountPageProps {
   accountType: 'sales' | 'purchases';

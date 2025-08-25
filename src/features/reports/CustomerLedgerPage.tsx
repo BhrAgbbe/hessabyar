@@ -22,7 +22,7 @@ import { type RootState } from "../../store/store";
 import { PrintableReportLayout } from "../../components/layout/PrintableReportLayout";
 import { deleteTransaction } from "../../store/slices/transactionsSlice";
 import { deleteInvoice, type Invoice } from "../../store/slices/invoicesSlice";
-import { InvoiceDetailDialog } from "../invoices/InvoiceDetailDialog";
+import { InvoiceDetailDialog } from "../../components/InvoiceDetailDialog";
 
 const CustomerLedgerPage = () => {
   const dispatch = useDispatch();

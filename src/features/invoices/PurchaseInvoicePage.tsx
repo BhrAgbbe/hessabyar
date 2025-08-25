@@ -9,11 +9,12 @@ import {
     DialogContentText, 
     DialogTitle 
 } from '@mui/material';
-import InvoiceForm from './InvoiceForm';
+import InvoiceForm from '../../components/InvoiceForm';
 import { PrintableReportLayout } from '../../components/layout/PrintableReportLayout';
-import { InvoicePrintView } from './InvoicePrintView';
+import { InvoicePrintView } from '../../components/InvoicePrintView';
 import { type Invoice } from '../../store/slices/invoicesSlice';
 import { type RootState } from '../../store/store';
+import { toPersianDigits } from '../../utils/utils'; 
 
 const PurchaseInvoicePage = () => {
     const settings = useSelector((state: RootState) => state.settings);
@@ -52,7 +53,7 @@ const PurchaseInvoicePage = () => {
 
     if (viewMode === 'preview' && currentInvoice) {
         return (
-            <PrintableReportLayout title={`پیش‌نمایش فاکتور خرید شماره ${currentInvoice.invoiceNumber}`}>
+            <PrintableReportLayout title={`پیش‌نمایش فاکتور خرید شماره ${toPersianDigits(currentInvoice.invoiceNumber)}`}>
                 <InvoicePrintView invoice={currentInvoice} />
                 <Box className="no-print" sx={{ mt: 2, direction: 'rtl' }}>
                     <Button variant="outlined" onClick={handleCreateNewInvoice}>

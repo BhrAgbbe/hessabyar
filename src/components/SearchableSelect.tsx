@@ -32,6 +32,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
       }}
       options={options}
       loading={loading}
+      sx={{ width: 300 }} 
       getOptionLabel={(option) => option.label || ''}
       isOptionEqualToValue={(option, val) => option.id === val.id}
       noOptionsText="موردی یافت نشد"

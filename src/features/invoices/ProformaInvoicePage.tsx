@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Box, Button } from '@mui/material';
-import InvoiceForm from './InvoiceForm';
+import InvoiceForm from '../../components/InvoiceForm';
 import { PrintableReportLayout } from '../../components/layout/PrintableReportLayout';
 import { type Invoice } from '../../store/slices/invoicesSlice';
-import { InvoicePrintView } from './InvoicePrintView'; 
+import { InvoicePrintView } from '../../components/InvoicePrintView'; 
+import { toPersianDigits } from '../../utils/utils';
 
 const ProformaInvoicePage = () => {
     const [savedInvoice, setSavedInvoice] = useState<Invoice | null>(null);
@@ -18,7 +19,7 @@ const ProformaInvoicePage = () => {
 
     if (savedInvoice) {
         return (
-            <PrintableReportLayout title={`پیش‌نمایش پیش فاکتور شماره ${savedInvoice.invoiceNumber}`}>
+            <PrintableReportLayout title={`پیش‌نمایش پیش فاکتور شماره ${toPersianDigits(savedInvoice.invoiceNumber)}`}>
                 <InvoicePrintView invoice={savedInvoice} />
                 <Box className="no-print" sx={{ mt: 2, direction: 'rtl' }}>
                     <Button variant="outlined" onClick={handleCreateNewInvoice}>

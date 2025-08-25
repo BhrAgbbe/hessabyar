@@ -9,3 +9,9 @@ export const toPersianDigits = (num: number | string, options: Intl.NumberFormat
     if (num === null || num === undefined || num === '') return '';
     return new Intl.NumberFormat('fa-IR', options).format(Number(num));
 };
+
+export const toPersianDigitsString = (str: string | number | null | undefined): string => {
+  if (str === null || str === undefined) return '';
+  const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+  return String(str).replace(/[0-9]/g, (digit) => persianDigits[parseInt(digit)]);
+};

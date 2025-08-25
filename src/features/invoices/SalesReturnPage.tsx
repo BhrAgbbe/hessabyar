@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import { Box } from "@mui/material";
-import InvoiceForm from "./InvoiceForm";
+import InvoiceForm from "../../components/InvoiceForm";
 import { type Invoice } from "../../store/slices/invoicesSlice";
 
 const SalesReturnPage = () => {

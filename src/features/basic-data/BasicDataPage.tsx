@@ -16,8 +16,6 @@ import {
     IconButton,
     FormControlLabel,
     Checkbox,
-    RadioGroup,
-    Radio,
     Tabs,
     Tab,
     Select,
@@ -25,7 +23,8 @@ import {
     FormControl,
     InputLabel,
     Snackbar,
-    Alert
+    Alert,
+ 
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -52,6 +51,7 @@ import {
 import { PrintableReportLayout } from "../../components/layout/PrintableReportLayout";
 import Stepper from "../../components/Stepper";
 import GenericCrudPanel from "../../components/GenericCrudPanel";
+import SearchAndSortPanel from "../../components/SearchAndSortPanel";
 
 function TabPanel(props: {
     children?: React.ReactNode;
@@ -82,10 +82,11 @@ const BasicDataPage = () => {
     const [productView, setProductView] = useState<"form" | "report">("report");
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
-    const [searchBy, setSearchBy] = useState<"name" | "code">("name");
+    const [sortBy, setSortBy] = useState<"name" | "code">("name");
     const [activeStep, setActiveStep] = useState(0);
     const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' } | null>(null);
     
+
     const steps = ["اطلاعات اصلی", "اطلاعات قیمت", "انبار و تنظیمات"];
 
     const { products, groups, units, warehouses } = useSelector(
@@ -153,12 +154,14 @@ const BasicDataPage = () => {
 
     const filteredProducts = useMemo(() => {
         return products.filter((p) => {
-            if (searchBy === "name") {
-                return p.name.toLowerCase().includes(searchTerm.toLowerCase());
+            const term = searchTerm.trim();
+            if (!term) return true;
+            if (sortBy === "name") {
+                return p.name.toLowerCase().includes(term.toLowerCase());
             }
-            return String(p.id).includes(searchTerm);
+            return String(p.id).includes(term);
         });
-    }, [products, searchTerm, searchBy]);
+    }, [products, searchTerm, sortBy]);
 
     const handleNext = async () => {
         const isValid = await trigger();
@@ -331,6 +334,11 @@ const BasicDataPage = () => {
         p: { xs: 1, sm: 2 },
     };
 
+    const productSortOptions = [
+        { value: 'name', label: 'نام کالا' },
+        { value: 'code', label: 'کد کالا' }
+    ];
+
     return (
         <Box>
             <Paper sx={{ overflow: "hidden" }}>
@@ -371,39 +379,31 @@ const BasicDataPage = () => {
                                 لیست گزارش کالا
                             </Typography>
                         }>
-                            <Box className="no-print" sx={{ display: "flex", gap: 2, alignItems: "center", mb: 2 }}>
-                                <TextField
-                                    label="جستجو..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    size="small"
-                                />
-                                <RadioGroup
-                                    row
-                                    value={searchBy}
-                                    onChange={(e) => setSearchBy(e.target.value as "name" | "code")}
-                                >
-                                    <FormControlLabel value="name" control={<Radio size="small" />} label="نام کالا" />
-                                    <FormControlLabel value="code" control={<Radio size="small" />} label="کد کالا" />
-                                </RadioGroup>
-                            </Box>
-                            <TableContainer component={Paper} variant="outlined">
+                            <SearchAndSortPanel 
+                                searchTerm={searchTerm}
+                                onSearchTermChange={setSearchTerm}
+                                sortBy={sortBy}
+                                onSortByChange={(value) => setSortBy(value as 'name' | 'code')}
+                                sortOptions={productSortOptions}
+                            />
+                            
+                            <TableContainer component={Paper} sx={{ boxShadow: 'none' }}>
                                 <Table>
                                     <TableHead>
                                         <TableRow>
-                                            <TableCell sx={responsiveCellSx}>کد</TableCell>
-                                            <TableCell sx={responsiveCellSx}>نام کالا</TableCell>
-                                            <TableCell sx={responsiveCellSx}>قیمت فروش</TableCell>
-                                            <TableCell className="no-print" sx={responsiveCellSx}>عملیات</TableCell>
+                                            <TableCell align="center" sx={responsiveCellSx}>کد</TableCell>
+                                            <TableCell align="center" sx={responsiveCellSx}>نام کالا</TableCell>
+                                            <TableCell align="center" sx={responsiveCellSx}>قیمت فروش</TableCell>
+                                            <TableCell align="center" className="no-print" sx={responsiveCellSx}>عملیات</TableCell>
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
                                         {filteredProducts.map((p) => (
                                             <TableRow key={p.id}>
-                                                <TableCell sx={responsiveCellSx}>{p.id}</TableCell>
-                                                <TableCell sx={responsiveCellSx}>{p.name}</TableCell>
-                                                <TableCell sx={responsiveCellSx}>{p.retailPrice.toLocaleString()}</TableCell>
-                                                <TableCell className="no-print" sx={responsiveCellSx}>
+                                                <TableCell align="center" sx={responsiveCellSx}>{p.id}</TableCell>
+                                                <TableCell align="center" sx={responsiveCellSx}>{p.name}</TableCell>
+                                                <TableCell align="center" sx={responsiveCellSx}>{p.retailPrice.toLocaleString()}</TableCell>
+                                                <TableCell align="center" className="no-print" sx={responsiveCellSx}>
                                                     <IconButton size="small" onClick={() => handleSetFormView(p)}><EditIcon /></IconButton>
                                                     <IconButton size="small" onClick={() => handleProductDelete(p.id)}><DeleteIcon color="error" /></IconButton>
                                                 </TableCell>

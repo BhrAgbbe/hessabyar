@@ -12,8 +12,8 @@ import SaveIcon from '@mui/icons-material/Save';
 import CloseIcon from '@mui/icons-material/Close';
 import InfoIcon from '@mui/icons-material/Info';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import { type RootState } from '../../store/store';
-import { type Invoice, updateInvoice } from '../../store/slices/invoicesSlice';
+import { type RootState } from '../store/store';
+import { type Invoice, updateInvoice } from '../store/slices/invoicesSlice';
 
 const toPersianDigits = (num: number | string) => {
     if (num === null || num === undefined || num === '') return '';

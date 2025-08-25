@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { Box, Button, TextField } from '@mui/material';
+import { Box, Button, TextField, Paper } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { type PayloadAction, type ActionCreatorWithOptionalPayload } from '@reduxjs/toolkit';
@@ -93,13 +93,15 @@ const GenericCrudPanel: React.FC<GenericCrudPanelProps> = ({
       <Button variant="contained" onClick={() => handleOpenDialog()} sx={{ mb: 2 }}>
         افزودن {title} جدید
       </Button>
-      <EnhancedMuiTable
-        rows={items}
-        headCells={headCells}
-        title={`لیست ${title}‌ها`}
-        actions={actions}
-        onDelete={handleDeleteRequest}
-      />
+      <Paper sx={{ boxShadow: 'none' }}>
+          <EnhancedMuiTable
+            rows={items}
+            headCells={headCells}
+            title={``}
+            actions={actions}
+            onDelete={handleDeleteRequest}
+          />
+      </Paper>
       <FormDialog
         open={dialogOpen}
         onClose={handleCloseDialog}

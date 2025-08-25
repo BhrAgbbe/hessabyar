@@ -132,6 +132,10 @@ interface EnhancedTableToolbarProps {
 function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
   const { numSelected, title, onDelete } = props;
 
+  if (numSelected === 0 && !title) {
+    return null;
+  }
+  
   return (
     <Toolbar
       sx={{
@@ -248,7 +252,7 @@ export default function EnhancedMuiTable<T extends Data>({
 
   return (
     <Box sx={{ width: '100%' }}>
-      <Paper sx={{ width: '100%', mb: 2 }}>
+      <Paper sx={{ width: '100%', mb: 2, boxShadow: 'none' }}>
         <EnhancedTableToolbar numSelected={selected.length} title={title} onDelete={onDelete ? handleDelete : undefined} />
         <TableContainer>
           <Table aria-labelledby="tableTitle">
