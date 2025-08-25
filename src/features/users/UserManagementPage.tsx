@@ -15,7 +15,8 @@ import {
 import FormDialog from "../../components/FormDialog";
 import ConfirmationDialog from "../../components/ConfirmationDialog";
 import EnhancedMuiTable, { type HeadCell, type Action } from '../../components/Table';
-import Form, { type FormField } from "../../components/Form"; 
+import Form, { type FormField } from "../../components/Form";
+import { useToast } from "../../hooks/useToast";
 
 type UserFormData = Omit<User, "id">;
 
@@ -24,6 +25,7 @@ const userRoles: User['role'][] = ["مدیر سیستم", "فروشنده", "ح�
 const UserManagementPage = () => {
   const users = useSelector((state: RootState) => state.users);
   const dispatch = useDispatch();
+  const { showToast } = useToast();
   const [isFormOpen, setFormOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
@@ -85,19 +87,23 @@ const UserManagementPage = () => {
   const handleDelete = () => {
     if (userToDelete) {
       dispatch(deleteUser(userToDelete.id));
+      showToast("کاربر با موفقیت حذف شد", "success");
       setUserToDelete(null);
     }
   };
 
   const handleDeleteSelected = (selectedIds: readonly (string | number)[]) => {
      selectedIds.forEach(id => dispatch(deleteUser(id as number)));
+     showToast("کاربران انتخاب شده با موفقیت حذف شدند", "success");
   };
 
   const onSubmit: SubmitHandler<UserFormData> = (data) => {
     if (editingUser) {
       dispatch(editUser({ ...data, id: editingUser.id }));
+      showToast("کاربر با موفقیت ویرایش شد", "success");
     } else {
       dispatch(addUser(data));
+      showToast("کاربر با موفقیت اضافه شد", "success");
     }
     handleCloseForm();
   };

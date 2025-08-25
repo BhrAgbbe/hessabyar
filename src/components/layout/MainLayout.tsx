@@ -93,7 +93,7 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
     setNestedListOpen((prev) => ({ ...prev, [item]: !prev[item] }));
 
   const drawerContent = (
-    <div>
+    <Box>
       <Toolbar />
       <List>
         {navItems.map((item) => {
@@ -207,7 +207,7 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
           );
         })}
       </List>
-    </div>
+    </Box>
   );
 
   return (

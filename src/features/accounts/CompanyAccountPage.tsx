@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Box, Button, Snackbar, Alert, useTheme, useMediaQuery } from '@mui/material';
+import { Box, Button, useTheme, useMediaQuery } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useForm, type SubmitHandler } from 'react-hook-form';
@@ -15,6 +15,7 @@ import { type RootState } from '../../store/store';
 import { addAccount, editAccount, deleteAccount, updateBalance, type BankAccount } from '../../store/slices/accountsSlice';
 import { addTransaction, editTransaction, deleteTransaction, type Transaction } from '../../store/slices/transactionsSlice';
 import { initialIranianBanks, toPersianDigits } from '../../utils/utils';
+import { useToast } from '../../hooks/useToast';
 
 type AccountFormData = {
   bankName: string;
@@ -34,6 +35,7 @@ type TransactionFormData = {
 
 const CompanyAccountPage = () => {
     const dispatch = useDispatch();
+    const { showToast } = useToast(); 
     const accounts = useSelector((state: RootState) => state.accounts);
     const transactions = useSelector((state: RootState) => state.transactions);
     const theme = useTheme();
@@ -49,9 +51,6 @@ const CompanyAccountPage = () => {
     const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
     const [transactionDeleteConfirm, setTransactionDeleteConfirm] = useState<{ open: boolean, ids: string[] }>({ open: false, ids: [] });
     const [transactionModalView, setTransactionModalView] = useState<'form' | 'report'>('form');
-
-    const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' } | null>(null);
-
     const { 
         control: accountControl, 
         handleSubmit: handleAccountSubmit, 
@@ -104,10 +103,10 @@ const CompanyAccountPage = () => {
         const processedData = { ...data, balance: Number(data.balance) };
         if (editingAccount) {
             dispatch(editAccount({ ...processedData, id: editingAccount.id }));
-            setSnackbar({ open: true, message: 'حساب با موفقیت ویرایش شد.', severity: 'success' });
+            showToast('حساب با موفقیت ویرایش شد.', 'success');
         } else {
             dispatch(addAccount(processedData));
-            setSnackbar({ open: true, message: 'حساب با موفقیت اضافه شد.', severity: 'success' });
+            showToast('حساب با موفقیت اضافه شد.', 'success');
         }
         handleCloseAccountForm();
     };
@@ -119,7 +118,7 @@ const CompanyAccountPage = () => {
     const confirmAccountDelete = () => {
         accountDeleteConfirm.ids.forEach(id => dispatch(deleteAccount(String(id))));
         setAccountDeleteConfirm({ open: false, ids: [] });
-        setSnackbar({ open: true, message: 'حساب‌های انتخاب شده حذف شدند.', severity: 'success' });
+        showToast('حساب‌های انتخاب شده حذف شدند.', 'success');
     };
 
     const handleAddNewBank = (newBankName: string) => {
@@ -129,7 +128,7 @@ const CompanyAccountPage = () => {
             setAccountValue('bankName', newBankName); 
             setNewBankDialogOpen(false);
         } else {
-            setSnackbar({ open: true, message: 'نام بانک نمی‌تواند خالی یا تکراری باشد.', severity: 'error' });
+            showToast('نام بانک نمی‌تواند خالی یا تکراری باشد.', 'error');
         }
     };
     
@@ -166,11 +165,11 @@ const CompanyAccountPage = () => {
             }
 
             dispatch(editTransaction({ ...data, id: editingTransaction.id }));
-            setSnackbar({ open: true, message: 'تراکنش با موفقیت ویرایش شد.', severity: 'success' });
+            showToast('تراکنش با موفقیت ویرایش شد.', 'success');
         } else {
             dispatch(addTransaction(data));
             dispatch(updateBalance({ id: data.accountId, amount: balanceChange }));
-            setSnackbar({ open: true, message: 'تراکنش با موفقیت ثبت شد.', severity: 'success' });
+            showToast('تراکنش با موفقیت ثبت شد.', 'success');
         }
         
         handleCloseTransactionForm();
@@ -190,7 +189,7 @@ const CompanyAccountPage = () => {
             }
         });
         setTransactionDeleteConfirm({ open: false, ids: [] });
-        setSnackbar({ open: true, message: 'تراکنش‌های انتخاب شده حذف شدند.', severity: 'success' });
+        showToast('تراکنش‌های انتخاب شده حذف شدند.', 'success');
     };
 
     const accountHeadCells = useMemo<readonly HeadCell<BankAccount>[]>(() => [
@@ -336,12 +335,6 @@ const CompanyAccountPage = () => {
                 title="تایید حذف تراکنش"
                 message={`آیا از حذف ${toPersianDigits(transactionDeleteConfirm.ids.length)} تراکنش اطمینان دارید؟`}
             />
-            
-            {snackbar && (
-                <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={() => setSnackbar(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
-                    <Alert onClose={() => setSnackbar(null)} severity={snackbar.severity} sx={{ width: '100%' }}>{snackbar.message}</Alert>
-                </Snackbar>
-            )}
         </Box>
     );
 };

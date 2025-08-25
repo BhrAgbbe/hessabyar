@@ -40,7 +40,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
         gap: 2,
       }}
     >
-      <div>
+      
         <Button
           id="person-type-button"
           aria-controls={menuOpen ? 'person-type-menu' : undefined}
@@ -74,7 +74,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
             مشتریان خرید
           </MenuItem>
         </Menu>
-      </div>
+      
 
       <Button
         variant="contained"

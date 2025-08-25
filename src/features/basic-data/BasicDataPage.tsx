@@ -60,7 +60,7 @@ function TabPanel(props: {
 }) {
     const { children, value, index, ...other } = props;
     return (
-        <div role="tabpanel" hidden={value !== index} {...other}>
+        <Box role="tabpanel" hidden={value !== index} {...other}>
             {value === index && (
                 <Box
                     sx={{
@@ -72,7 +72,7 @@ function TabPanel(props: {
                     {children}
                 </Box>
             )}
-        </div>
+        </Box>
     );
 }
 

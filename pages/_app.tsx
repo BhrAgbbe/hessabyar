@@ -8,6 +8,7 @@ import { theme } from "../src/styles/theme";
 import { MainLayout } from "../src/components/layout/MainLayout";
 import "../src/styles/fonts.css";
 import { useRouter } from "next/router";
+import { ToastProvider } from "../src/components/ToastProvider"; 
 
 function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
@@ -32,8 +33,10 @@ function MyApp({ Component, pageProps }: AppProps) {
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
           <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <Component {...pageProps} />
+            <ToastProvider>
+              <CssBaseline />
+              <Component {...pageProps} />
+            </ToastProvider>
           </ThemeProvider>
         </PersistGate>
       </Provider>
@@ -44,10 +47,12 @@ function MyApp({ Component, pageProps }: AppProps) {
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
         <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <MainLayout>
-            <Component {...pageProps} />
-          </MainLayout>
+          <ToastProvider>
+            <CssBaseline />
+            <MainLayout>
+              <Component {...pageProps} />
+            </MainLayout>
+          </ToastProvider>
         </ThemeProvider>
       </PersistGate>
     </Provider>
