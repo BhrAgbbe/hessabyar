@@ -86,7 +86,6 @@ const StockTakingPage = () => {
               {filteredProducts.map((product) => (
                 <TableRow key={product.id}>
                   <TableCell align="right">{product.name}</TableCell>
-                  {/* استفاده از تابع فارسی‌ساز برای قیمت */}
                   <TableCell align="center">{toPersianDigits(product.retailPrice || 0)} تومان</TableCell>
                   <TableCell align="center">
                     <CustomTextField

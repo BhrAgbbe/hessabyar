@@ -15,7 +15,7 @@ interface SearchableSelectProps {
   loading?: boolean;
   placeholder?: string;
   size?: 'small' | 'medium';
-  sx?: SxProps<Theme>; // Accept the 'sx' prop
+  sx?: SxProps<Theme>; 
 }
 
 const SearchableSelect: React.FC<SearchableSelectProps> = ({
@@ -26,7 +26,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
   loading = false,
   placeholder,
   size,
-  sx, // Get the sx prop
+  sx,
 }) => {
   return (
     <Autocomplete
@@ -36,7 +36,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
       }}
       options={options}
       loading={loading}
-      sx={sx} // Apply the sx prop here
+      sx={sx} 
       getOptionLabel={(option) => option.label || ''}
       isOptionEqualToValue={(option, val) => option.id === val.id}
       noOptionsText="موردی یافت نشد"

@@ -1,30 +1,23 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useContext } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Box, Button, Chip, Tabs, Tab } from '@mui/material';
+import { Box, Button, Chip, Tabs, Tab, Typography } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { differenceInCalendarDays, isToday, isTomorrow, startOfDay, isPast } from 'date-fns';
 
-// Store and Slices
 import { type RootState } from '../../store/store';
 import { addCheck, editCheck, deleteCheck, type Check, type CheckStatus } from '../../store/slices/checksSlice';
-import { toPersianDigits } from '../../utils/utils';
+import { ToastContext } from '../../contexts/toast.context';
 
-// Generic Components
-import { useToast } from '../../hooks/useToast';
 import EnhancedMuiTable, { type HeadCell, type Action } from '../../components/Table';
 import FormDialog from '../../components/FormDialog';
-import Form, { type FormField } from '../../components/Form';
 import ConfirmationDialog from '../../components/ConfirmationDialog';
-import { type SelectOption } from '../../components/SearchableSelect';
+import SearchAndSortPanel from '../../components/SearchAndSortPanel';
+import Form from '../../components/Form';
 
-// Define a new type that extends the original Check type
-type ProcessedCheck = Check & { derivedStatus: CheckStatus };
-
-// Form Data Types
 type CheckFormData = Omit<Check, 'id' | 'status'>;
-type EditFormData = { amount: number; dueDate: string; status: CheckStatus; };
+type EditFormData = Pick<Check, 'status' | 'amount' | 'dueDate'>;
 type UpdateBySerialData = { serial: string; status: CheckStatus };
 
 const getStatusChipColor = (status: CheckStatus) => {
@@ -33,60 +26,85 @@ const getStatusChipColor = (status: CheckStatus) => {
     return 'warning';
 };
 
-const checkStatusOptions: SelectOption[] = [
-    { id: 'در جریان', label: 'در جریان' },
-    { id: 'پاس شده', label: 'پاس شده' },
-    { id: 'برگشتی', label: 'برگشتی' },
-];
-
 const CheckManagementPage = () => {
     const dispatch = useDispatch();
     const allChecks = useSelector((state: RootState) => state.checks);
-    const { showToast } = useToast();
+    const { showToast } = useContext(ToastContext);
+
     const [tab, setTab] = useState(0);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [dialogState, setDialogState] = useState({ add: false, edit: false, updateBySerial: false });
+    const [editingCheck, setEditingCheck] = useState<Check | null>(null);
+    const [deletingCheckId, setDeletingCheckId] = useState<string | null>(null);
 
-    // State Management for Dialogs
-    const [addFormOpen, setAddFormOpen] = useState(false);
-    const [editFormOpen, setEditFormOpen] = useState(false);
-    const [updateBySerialOpen, setUpdateBySerialOpen] = useState(false);
-    const [checkToDelete, setCheckToDelete] = useState<string | null>(null);
-    const [selectedCheck, setSelectedCheck] = useState<Check | null>(null);
-
-    // React Hook Form instances
-    const { control: addFormControl, handleSubmit: handleAddSubmit, reset: resetAddForm } = useForm<CheckFormData>();
+    const { control: addFormControl, handleSubmit: handleAddSubmit, reset: resetAddForm } = useForm<CheckFormData>({
+        defaultValues: { serial: '', amount: 0, payee: '', dueDate: new Date().toISOString(), type: 'received' }
+    });
     const { control: editFormControl, handleSubmit: handleEditSubmit, reset: resetEditForm } = useForm<EditFormData>();
-    const { control: updateSerialFormControl, handleSubmit: handleUpdateBySerialSubmit, reset: resetUpdateSerialForm } = useForm<UpdateBySerialData>();
+    const { control: updateSerialFormControl, handleSubmit: handleUpdateBySerialSubmit, reset: resetUpdateSerialForm } = useForm<UpdateBySerialData>({
+        defaultValues: { serial: '', status: 'پاس شده' }
+    });
 
     useEffect(() => {
-        if (selectedCheck) {
+        if (editingCheck) {
             resetEditForm({
-                status: selectedCheck.status,
-                amount: selectedCheck.amount,
-                dueDate: selectedCheck.dueDate,
+                status: editingCheck.status,
+                amount: editingCheck.amount,
+                dueDate: editingCheck.dueDate,
             });
         }
-    }, [selectedCheck, resetEditForm]);
+    }, [editingCheck, resetEditForm]);
 
-    const processedChecks: ProcessedCheck[] = useMemo(() => allChecks.map(check => ({
-        ...check,
-        derivedStatus: (check.status === 'در جریان' && isPast(new Date(check.dueDate)) && !isToday(new Date(check.dueDate)))
-            ? 'برگشتی'
-            : check.status,
-    })), [allChecks]);
+    const processedChecks = useMemo(() => {
+        return allChecks.map(check => {
+            let derivedStatus = check.status;
+            if (check.status === 'در جریان' && isPast(new Date(check.dueDate)) && !isToday(new Date(check.dueDate))) {
+                derivedStatus = 'برگشتی';
+            }
+            return { ...check, derivedStatus };
+        });
+    }, [allChecks]);
+
+    const filteredChecks = useMemo(() => {
+        const today = startOfDay(new Date());
+        let checks = processedChecks;
+
+        checks = checks.filter(check => {
+            const dueDate = startOfDay(new Date(check.dueDate));
+            const diffDays = differenceInCalendarDays(dueDate, today);
+            switch (tab) {
+                case 1: return isToday(dueDate) && check.derivedStatus === 'در جریان';
+                case 2: return isTomorrow(dueDate) && check.derivedStatus === 'در جریان';
+                case 3: return diffDays > 1 && diffDays <= 5 && check.derivedStatus === 'در جریان';
+                case 4: return check.derivedStatus === 'برگشتی';
+                default: return true;
+            }
+        });
+
+        if (searchTerm) {
+            checks = checks.filter(c =>
+                c.serial.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                c.payee.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
+
+        return checks;
+    }, [processedChecks, tab, searchTerm]);
+
 
     const onAddSubmit: SubmitHandler<CheckFormData> = (data) => {
         dispatch(addCheck({ ...data, amount: Number(data.amount) }));
         showToast('چک جدید با موفقیت ثبت شد.', 'success');
-        setAddFormOpen(false);
-        resetAddForm();
+        setDialogState({ ...dialogState, add: false });
+        resetAddForm({ serial: '', amount: 0, payee: '', dueDate: new Date().toISOString(), type: 'received' });
     };
-    
+
     const onEditSubmit: SubmitHandler<EditFormData> = (data) => {
-        if (selectedCheck) {
-            dispatch(editCheck({ id: selectedCheck.id, ...data, amount: Number(data.amount) }));
+        if (editingCheck) {
+            dispatch(editCheck({ id: editingCheck.id, ...data, amount: Number(data.amount) }));
             showToast('چک با موفقیت ویرایش شد.', 'success');
-            setEditFormOpen(false);
-            setSelectedCheck(null);
+            setDialogState({ ...dialogState, edit: false });
+            setEditingCheck(null);
         }
     };
 
@@ -95,7 +113,7 @@ const CheckManagementPage = () => {
         if (checkToUpdate) {
             dispatch(editCheck({ id: checkToUpdate.id, status: data.status }));
             showToast(`وضعیت چک با سریال ${data.serial} به‌روزرسانی شد.`, 'success');
-            setUpdateBySerialOpen(false);
+            setDialogState({ ...dialogState, updateBySerial: false });
             resetUpdateSerialForm();
         } else {
             showToast('چکی با این سریال یافت نشد.', 'error');
@@ -103,102 +121,92 @@ const CheckManagementPage = () => {
     };
 
     const handleConfirmDelete = () => {
-        if (checkToDelete) {
-            dispatch(deleteCheck(checkToDelete));
+        if (deletingCheckId) {
+            dispatch(deleteCheck(deletingCheckId));
             showToast('چک با موفقیت حذف شد.', 'success');
         }
-        setCheckToDelete(null);
+        setDeletingCheckId(null);
     };
 
-    const today = startOfDay(new Date());
-    const filteredChecks: ProcessedCheck[] = useMemo(() => processedChecks.filter(check => {
-        const dueDate = startOfDay(new Date(check.dueDate));
-        const diffDays = differenceInCalendarDays(dueDate, today);
-        switch (tab) {
-            case 1: return isToday(dueDate) && check.derivedStatus === 'در جریان';
-            case 2: return isTomorrow(dueDate) && check.derivedStatus === 'در جریان';
-            case 3: return diffDays > 1 && diffDays <= 5 && check.derivedStatus === 'در جریان';
-            case 4: return check.derivedStatus === 'برگشتی';
-            default: return true;
-        }
-    }), [processedChecks, tab, today]);
-
-    const headCells: readonly HeadCell<ProcessedCheck>[] = [
+    const headCells: readonly HeadCell<Check & { derivedStatus: CheckStatus }>[] = [
         { id: 'serial', numeric: false, label: 'سریال' },
         { id: 'payee', numeric: false, label: 'شخص' },
         { id: 'type', numeric: false, label: 'نوع', cell: (row) => row.type === 'received' ? 'دریافتی' : 'پرداختی' },
-        { id: 'amount', numeric: true, label: 'مبلغ', cell: (row) => toPersianDigits(row.amount) },
+        { id: 'amount', numeric: true, label: 'مبلغ', cell: (row) => row.amount.toLocaleString('fa-IR') },
         { id: 'dueDate', numeric: false, label: 'سررسید', cell: (row) => new Date(row.dueDate).toLocaleDateString('fa-IR') },
-        { id: 'derivedStatus', numeric: false, label: 'وضعیت', cell: (row) => <Chip label={row.derivedStatus} color={getStatusChipColor(row.derivedStatus as CheckStatus)} size="small" /> },
+        { id: 'status', numeric: false, label: 'وضعیت', cell: (row) => <Chip label={row.derivedStatus} color={getStatusChipColor(row.derivedStatus)} size="small" /> },
     ];
 
     const actions: readonly Action<Check>[] = [
-        { icon: <EditIcon fontSize="small" />, tooltip: 'ویرایش', onClick: (check) => { setSelectedCheck(check); setEditFormOpen(true); } },
-        { icon: <DeleteIcon fontSize="small" color="error" />, tooltip: 'حذف', onClick: (check) => setCheckToDelete(check.id) },
-    ];
-
-    const addFormConfig: FormField<CheckFormData>[] = [
-        { name: 'serial', label: 'سریال چک', type: 'text', rules: { required: true } },
-        { name: 'payee', label: 'نام شخص', type: 'text', rules: { required: true } },
-        { name: 'amount', label: 'مبلغ', type: 'number', rules: { required: true, min: 1 } },
-        { name: 'dueDate', label: 'تاریخ سررسید', type: 'date', rules: { required: true } },
-        { name: 'type', label: 'نوع چک', type: 'select', rules: { required: true }, options: [{ id: 'received', label: 'دریافتی' }, { id: 'issued', label: 'پرداختی' }] },
-    ];
-
-    const editFormConfig: FormField<EditFormData>[] = [
-        { name: 'amount', label: 'مبلغ', type: 'number', rules: { required: true, min: 1 } },
-        { name: 'dueDate', label: 'تاریخ سررسید', type: 'date', rules: { required: true } },
-        { name: 'status', label: 'وضعیت', type: 'select', rules: { required: true }, options: checkStatusOptions },
-    ];
-    
-    const updateBySerialFormConfig: FormField<UpdateBySerialData>[] = [
-        { name: 'serial', label: 'سریال چک', type: 'text', rules: { required: true } },
-        { name: 'status', label: 'وضعیت جدید', type: 'select', rules: { required: true }, options: checkStatusOptions },
+        { icon: <EditIcon fontSize="small" />, tooltip: 'ویرایش', onClick: (row) => { setEditingCheck(row); setDialogState({ ...dialogState, edit: true }); } },
+        { icon: <DeleteIcon color="error" fontSize="small" />, tooltip: 'حذف', onClick: (row) => setDeletingCheckId(row.id) },
     ];
 
     return (
-        <Box sx={{ p: { xs: 1, sm: 2, md: 3 }, width: '100%', overflowX: 'auto' }}>
-                <Box sx={{ display: 'flex', gap: 1, flexShrink: 0, pt: { xs: 1, sm: 0 } }}>
-                    <Button variant="outlined" size="small" onClick={() => setUpdateBySerialOpen(true)}>تغییر وضعیت با سریال</Button>
-                    <Button variant="contained" size="small" onClick={() => setAddFormOpen(true)}>ثبت چک جدید</Button>
-                </Box>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', mb: 2 }}>
-                <Box sx={{ flexGrow: 1, flexShrink: 1, minWidth: 0 }}>
-                    <Tabs value={tab} onChange={(_e, newValue) => setTab(newValue)} variant="scrollable" scrollButtons="auto" allowScrollButtonsMobile>
-                        <Tab label="همه چک‌ها" />
-                        <Tab label="چک‌های امروز" />
-                        <Tab label="چک‌های فردا" />
-                        <Tab label="چک‌های تا ۵ روز آینده" />
-                        <Tab label="چک‌های برگشتی" />
-                    </Tabs>
-                </Box>
+        <Box sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'flex-end', gap: 1, mb: 2 }}>
+                <Button variant="outlined" onClick={() => setDialogState({ ...dialogState, updateBySerial: true })}>تغییر وضعیت با سریال</Button>
+                <Button variant="contained" onClick={() => setDialogState({ ...dialogState, add: true })}>ثبت چک جدید</Button>
+            </Box>
+
+            <SearchAndSortPanel
+              searchTerm={searchTerm}
+              onSearchTermChange={setSearchTerm}
+              sortBy={''} 
+              onSortByChange={() => {}}
+              sortOptions={[{label: 'سریال', value: 'serial'}, {label: 'شخص', value: 'payee'}]}
+            />
+
+            <Box sx={{ width: '100%', borderBottom: 1, borderColor: 'divider', mt: 2 }}>
+                <Tabs value={tab} onChange={(_e, newValue) => setTab(newValue)} variant="scrollable" scrollButtons="auto" allowScrollButtonsMobile>
+                    <Tab label="همه چک‌ها" />
+                    <Tab label="سررسید امروز" />
+                    <Tab label="سررسید فردا" />
+                    <Tab label="۵ روز آینده" />
+                    <Tab label="چک‌های برگشتی" />
+                </Tabs>
             </Box>
 
             <EnhancedMuiTable
                 rows={filteredChecks}
                 headCells={headCells}
-                actions={actions}
                 title="لیست چک‌ها"
+                actions={actions}
+                onDelete={(selectedIds) => selectedIds.forEach(id => dispatch(deleteCheck(id.toString())))}
             />
 
-            <FormDialog open={addFormOpen} onClose={() => setAddFormOpen(false)} onSave={handleAddSubmit(onAddSubmit)} title="ثبت چک جدید">
-                <Form config={addFormConfig} control={addFormControl} errors={{}} />
+            <FormDialog open={dialogState.add} onClose={() => setDialogState({ ...dialogState, add: false })} title="ثبت چک جدید" onSave={handleAddSubmit(onAddSubmit)}>
+                <Form config={[
+                    { name: 'serial', label: 'سریال چک', type: 'text', rules: { required: 'این فیلد الزامی است' } },
+                    { name: 'payee', label: 'نام شخص', type: 'text', rules: { required: 'این فیلد الزامی است' } },
+                    { name: 'amount', label: 'مبلغ', type: 'number', rules: { required: 'این فیلد الزامی است', min: { value: 1, message: 'مبلغ باید مثبت باشد' } } },
+                    { name: 'dueDate', label: 'تاریخ سررسید', type: 'date', rules: { required: 'این فیلد الزامی است' } },
+                    { name: 'type', label: 'نوع چک', type: 'select', options: [{ id: 'received', label: 'دریافتی' }, { id: 'issued', label: 'پرداختی' }], rules: { required: 'این فیلد الزامی است' } },
+                ]} control={addFormControl} errors={{}} />
             </FormDialog>
 
-            <FormDialog open={editFormOpen} onClose={() => setEditFormOpen(false)} onSave={handleEditSubmit(onEditSubmit)} title={`ویرایش چک: ${selectedCheck?.serial || ''}`}>
-                <Form config={editFormConfig} control={editFormControl} errors={{}} />
+            <FormDialog open={dialogState.edit} onClose={() => setDialogState({ ...dialogState, edit: false })} title={`ویرایش چک ${editingCheck?.serial}`} onSave={handleEditSubmit(onEditSubmit)}>
+                <Typography sx={{ mb: 2 }}>سریال: {editingCheck?.serial}</Typography>
+                <Form config={[
+                    { name: 'amount', label: 'مبلغ', type: 'number', rules: { required: 'این فیلد الزامی است', min: { value: 1, message: 'مبلغ باید مثبت باشد' } } },
+                    { name: 'dueDate', label: 'تاریخ سررسید', type: 'date', rules: { required: 'این فیلد الزامی است' } },
+                    { name: 'status', label: 'وضعیت', type: 'select', options: [{ id: 'در جریان', label: 'در جریان' }, { id: 'پاس شده', label: 'پاس شده' }, { id: 'برگشتی', label: 'برگشتی' }], rules: { required: 'این فیلد الزامی است' } },
+                ]} control={editFormControl} errors={{}} />
             </FormDialog>
-            
-            <FormDialog open={updateBySerialOpen} onClose={() => setUpdateBySerialOpen(false)} onSave={handleUpdateBySerialSubmit(onUpdateBySerial)} title="تغییر وضعیت با سریال">
-                <Form config={updateBySerialFormConfig} control={updateSerialFormControl} errors={{}} />
+
+            <FormDialog open={dialogState.updateBySerial} onClose={() => setDialogState({ ...dialogState, updateBySerial: false })} title="تغییر وضعیت با سریال" onSave={handleUpdateBySerialSubmit(onUpdateBySerial)}>
+                <Form config={[
+                     { name: 'serial', label: 'سریال چک', type: 'text', rules: { required: 'این فیلد الزامی است' } },
+                     { name: 'status', label: 'وضعیت جدید', type: 'select', options: [{ id: 'در جریان', label: 'در جریان' }, { id: 'پاس شده', label: 'پاس شده' }, { id: 'برگشتی', label: 'برگشتی' }], rules: { required: 'این فیلد الزامی است' } },
+                ]} control={updateSerialFormControl} errors={{}} />
             </FormDialog>
 
             <ConfirmationDialog
-                open={!!checkToDelete}
-                onClose={() => setCheckToDelete(null)}
+                open={!!deletingCheckId}
+                onClose={() => setDeletingCheckId(null)}
                 onConfirm={handleConfirmDelete}
                 title="تایید حذف چک"
-                message="آیا از حذف این چک اطمینان دارید؟ این عمل قابل بازگشت نیست."
+                message="آیا از حذف این چک اطمینان دارید؟ این عملیات غیرقابل بازگشت است."
             />
         </Box>
     );

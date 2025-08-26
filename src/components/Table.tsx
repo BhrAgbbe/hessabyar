@@ -86,7 +86,7 @@ function EnhancedTableHead<T>(props: EnhancedTableHeadProps<T>) {
   return (
     <TableHead>
       <TableRow>
-        <TableCell padding="checkbox">
+        <TableCell padding="none" sx={{ width: '48px', textAlign: 'center', verticalAlign: 'bottom' }}>
           <Checkbox
             color="primary"
             indeterminate={numSelected > 0 && numSelected < rowCount}
@@ -101,7 +101,7 @@ function EnhancedTableHead<T>(props: EnhancedTableHeadProps<T>) {
             align={headCell.numeric ? 'left' : 'right'}
             padding="normal"
             sortDirection={orderBy === headCell.id ? order : false}
-            sx={{ fontSize: { xs: '0.6rem', md: '0.7rem' }, p: { xs: 1, sm: 2 } }}
+            sx={{ fontSize: { xs: '0.6rem', md: '0.7rem' }, p: { xs: 1, sm: 2 }, verticalAlign: 'bottom' }}
           >
             <TableSortLabel
               active={orderBy === headCell.id}
@@ -117,7 +117,7 @@ function EnhancedTableHead<T>(props: EnhancedTableHeadProps<T>) {
             </TableSortLabel>
           </TableCell>
         ))}
-        {hasActions && <TableCell align="center" sx={{ fontSize: { xs: '0.7rem', md: '0.875rem' }, p: { xs: 1, sm: 2 } }}>عملیات</TableCell>}
+        {hasActions && <TableCell align="center" sx={{ fontSize: { xs: '0.7rem', md: '0.875rem' }, p: { xs: 1, sm: 2 }, width: '90px', verticalAlign: 'bottom' }}>عملیات</TableCell>}
       </TableRow>
     </TableHead>
   );
@@ -152,7 +152,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           {toPersianDigits(numSelected)} مورد انتخاب شده
         </Typography>
       ) : (
-        <Typography sx={{ flex: '1 1 100%', fontSize: { xs: '0.7rem', md: '1rem' } }} variant="h6" id="tableTitle" component="div">
+        <Typography sx={{ flex: '1 1 100%', fontSize: { xs: '0.7rem', md: '0.8rem' } }} variant="h6" id="tableTitle" component="div">
           {title}
         </Typography>
       )}
@@ -173,6 +173,7 @@ interface EnhancedMuiTableProps<T> {
   title: string;
   onDelete?: (selected: readonly (string | number)[]) => void;
   actions?: readonly Action<T>[];
+  onRowClick?: (row: T) => void;
 }
 
 export default function EnhancedMuiTable<T extends Data>({
@@ -181,6 +182,7 @@ export default function EnhancedMuiTable<T extends Data>({
   title,
   onDelete,
   actions,
+  onRowClick,
 }: EnhancedMuiTableProps<T>) {
   const [order, setOrder] = useState<Order>('asc');
   const [orderBy, setOrderBy] = useState<keyof T>(headCells[0]?.id);
@@ -221,7 +223,7 @@ export default function EnhancedMuiTable<T extends Data>({
     }
     setSelected(newSelected);
   };
-
+  
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
   };
@@ -251,11 +253,14 @@ export default function EnhancedMuiTable<T extends Data>({
   );
 
   return (
-    <Box sx={{ width: '100%' }}>
+    <Box sx={{ width: '100%', minWidth: 0 }}>
       <Paper sx={{ width: '100%', mb: 2, boxShadow: 'none' }}>
         <EnhancedTableToolbar numSelected={selected.length} title={title} onDelete={onDelete ? handleDelete : undefined} />
-        <TableContainer>
-          <Table aria-labelledby="tableTitle">
+        <TableContainer sx={{ width: '100%', overflowX: 'auto' }}>
+          <Table
+            aria-labelledby="tableTitle"
+            sx={{ tableLayout: 'fixed' }}
+          >
             <EnhancedTableHead
               numSelected={selected.length}
               order={order}
@@ -274,30 +279,34 @@ export default function EnhancedMuiTable<T extends Data>({
                 return (
                   <TableRow
                     hover
-                    onClick={(event) => handleClick(event, row.id)}
+                    onClick={() => onRowClick && onRowClick(row)}
                     role="checkbox"
                     aria-checked={isItemSelected}
                     tabIndex={-1}
                     key={row.id}
                     selected={isItemSelected}
-                    sx={{ cursor: 'pointer' }}
+                    sx={{ cursor: onRowClick ? 'pointer' : 'default' }}
                   >
-                    <TableCell padding="checkbox">
+                    <TableCell padding="none" sx={{ width: '48px', textAlign: 'center', verticalAlign: 'bottom' }}>
                       <Checkbox
                         color="primary"
                         checked={isItemSelected}
                         inputProps={{ 'aria-labelledby': labelId }}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleClick(event, row.id);
+                        }}
                       />
                     </TableCell>
                     {headCells.map((cell) => (
                       <TableCell key={cell.id as string} align={cell.numeric ? 'left' : 'right'}
-                        sx={{ fontSize: { xs: '0.7rem', md: '0.875rem' }, p: { xs: 1, sm: 2 } }}>
+                        sx={{ fontSize: { xs: '0.7rem', md: '0.875rem' }, p: { xs: 1, sm: 2 }, verticalAlign: 'bottom' }}>
                         {cell.cell ? cell.cell(row) : row[cell.id] as ReactNode}
                       </TableCell>
                     ))}
                     {actions && (
                       <TableCell align="center"
-                        sx={{ fontSize: { xs: '0.7rem', md: '0.875rem' }, p: { xs: 1, sm: 2 } }}>
+                        sx={{ fontSize: { xs: '0.7rem', md: '0.875rem' }, p: { xs: 1, sm: 2 }, width: '90px', verticalAlign: 'bottom' }}>
                         {actions.map((action, i) => (
                           <Tooltip title={action.tooltip} key={i}>
                             <IconButton onClick={(e) => {

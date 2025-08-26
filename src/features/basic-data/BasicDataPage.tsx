@@ -27,7 +27,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useForm, Controller, type SubmitHandler } from "react-hook-form";
 import { type RootState } from "../../store/store";
-import { useToast } from "../../hooks/useToast"; // Import useToast
+import { useToast } from "../../hooks/useToast"; 
 import {
     type Product,
     type ProductFormData,
@@ -50,7 +50,7 @@ import { PrintableReportLayout } from "../../components/layout/PrintableReportLa
 import Stepper from "../../components/Stepper";
 import GenericCrudPanel from "../../components/GenericCrudPanel";
 import SearchAndSortPanel from "../../components/SearchAndSortPanel";
-import ConfirmationDialog from "../../components/ConfirmationDialog"; // Import ConfirmationDialog
+import ConfirmationDialog from "../../components/ConfirmationDialog"; 
 
 function TabPanel(props: {
     children?: React.ReactNode;
@@ -77,7 +77,7 @@ function TabPanel(props: {
 
 const BasicDataPage = () => {
     const dispatch = useDispatch();
-    const { showToast } = useToast(); // Use the custom toast hook
+    const { showToast } = useToast(); 
     const [tab, setTab] = useState(0);
     const [productView, setProductView] = useState<"form" | "report">("report");
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -116,7 +116,7 @@ const BasicDataPage = () => {
     const handleSetFormView = (product: Product | null = null) => {
         setActiveStep(0);
         setEditingProduct(product);
-        reset(product || undefined); // Use reset with the product or undefined to fall back to defaultValues
+        reset(product || undefined); 
         setProductView("form");
     };
 
