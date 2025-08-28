@@ -76,11 +76,11 @@ function App() {
                 <Route path="/reports/issued-checks" element={<IssuedCheckListPage />} />
                 <Route path="/reports/cash-flow" element={<CashFlowPage />} />
                 <Route path="/reports/miscellaneous-transactions" element={<TransactionReportPage />} />
-                <Route path="/features/settings" element={<SettingsPage />} />
-                <Route path="/features/theme" element={<ThemeSettingsPage />} />
-                <Route path="/features/data" element={<DataManagementPage />} />
-                <Route path="/features/backup" element={<BackupPage />} />
-                <Route path="/features/change-password" element={<ChangePasswordPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/theme" element={<ThemeSettingsPage />} />
+                <Route path="/data" element={<DataManagementPage />} />
+                <Route path="/backup" element={<BackupPage />} />
+                <Route path="/change-password" element={<ChangePasswordPage />} />
               </Routes>
             </MainLayout>
           </PrivateRoute>

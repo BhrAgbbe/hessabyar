@@ -67,11 +67,11 @@ export const navItems: NavItem[] = [
     text: "امکانات",
     icon: <SettingsIcon />,
     children: [
-      { text: "تنظیمات عمومی", path: "/features/settings", id: "/features/settings", iconName: "Tune" },
-      { text: "تنظیمات ظاهری", path: "/features/theme", id: "/features/theme", iconName: "Palette" },
-      { text: "مدیریت داده‌ها", path: "/features/data", id: "/features/data", iconName: "DataSaverOn" },
-      { text: "نسخه پشتیبان", path: "/features/backup", id: "/features/backup", iconName: "Backup" },
-      { text: "تغییر کلمه عبور", path: "/features/change-password", id: "/features/change-password", iconName: "Security" },
+      { text: "تنظیمات عمومی", path: "/settings", id: "/settings", iconName: "Tune" },
+      { text: "تنظیمات ظاهری", path: "/theme", id: "/theme", iconName: "Palette" },
+      { text: "مدیریت داده‌ها", path: "/data", id: "/data", iconName: "DataSaverOn" },
+      { text: "نسخه پشتیبان", path: "/backup", id: "/backup", iconName: "Backup" },
+      { text: "تغییر کلمه عبور", path: "/change-password", id: "/change-password", iconName: "Security" },
     ],
   },
 ];

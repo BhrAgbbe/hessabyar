@@ -1,5 +1,5 @@
 
-import ThemeSettingsPage from '../../src/features/settings/ThemeSettingsPage';
+import ThemeSettingsPage from '../src/features/settings/ThemeSettingsPage';
 
 const FeaturesTheme = () => {
   return <ThemeSettingsPage />;

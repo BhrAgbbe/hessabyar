@@ -1,4 +1,4 @@
-import BackupPage from '../../src/features/settings/BackupPage';
+import BackupPage from '../src/features/settings/BackupPage';
 
 const FeaturesBackup = () => {
   return <BackupPage />;

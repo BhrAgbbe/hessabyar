@@ -1,5 +1,5 @@
 
-import DataManagementPage from '../../src/features/settings/DataManagementPage';
+import DataManagementPage from '../src/features/settings/DataManagementPage';
 
 const FeaturesData = () => {
   return <DataManagementPage />;

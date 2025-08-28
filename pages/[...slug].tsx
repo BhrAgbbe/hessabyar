@@ -29,7 +29,6 @@ import ThemeSettingsPage from '../src/features/settings/ThemeSettingsPage';
 import DataManagementPage from '../src/features/settings/DataManagementPage';
 import BackupPage from '../src/features/settings/BackupPage';
 import ChangePasswordPage from '../src/features/settings/ChangePasswordPage';
-import LoginPage from '../src/features/auth/LoginPage';
 
 const routeMap: Record<string, React.ComponentType<any>> = {
   '/': DashboardPage,
@@ -56,11 +55,11 @@ const routeMap: Record<string, React.ComponentType<any>> = {
   '/reports/received-checks': CheckListPage,
   '/reports/issued-checks': IssuedCheckListPage,
   '/reports/cash-flow': CashFlowPage,
-  '/features/settings': SettingsPage,
-  '/features/theme': ThemeSettingsPage,
-  '/features/data': DataManagementPage,
-  '/features/backup': BackupPage,
-  '/features/change-password': ChangePasswordPage,
+  '/settings': SettingsPage,
+  '/theme': ThemeSettingsPage,
+  '/data': DataManagementPage,
+  '/backup': BackupPage,
+  '/change-password': ChangePasswordPage,
 };
 
 export default function DummyPage() {

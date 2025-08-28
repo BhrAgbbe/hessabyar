@@ -1,5 +1,5 @@
 
-import ChangePasswordPage from '../../src/features/settings/ChangePasswordPage';
+import ChangePasswordPage from '../src/features/settings/ChangePasswordPage';
 
 
 const FeaturesChangePassword = () => {

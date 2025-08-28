@@ -1,5 +1,5 @@
 
-import SettingsPage from '../../src/features/settings/SettingsPage';
+import SettingsPage from '../src/features/settings/SettingsPage';
 
 
 
