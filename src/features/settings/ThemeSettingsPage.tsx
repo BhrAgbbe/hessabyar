@@ -8,7 +8,6 @@ import type { AppSettings } from '../../store/slices/settingsSlice';
 const ThemeSettingsPage = () => {
     const dispatch = useDispatch();
     const settings = useSelector((state: RootState) => state.settings);
-
     const handleSettingChange = (key: keyof AppSettings, value: string) => {
         dispatch(updateSetting({ key, value }));
     };
@@ -25,17 +24,19 @@ const ThemeSettingsPage = () => {
         }
     };
 
+
     return (
-        <Box
+        <Paper 
             sx={{
+                p: 3, 
+                width: '100%', 
+                height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
-                alignItems: 'center',
-                width: '100%',
+                alignItems: 'center' 
             }}
         >
-
-            <Paper sx={{p: 3, maxWidth: 600, width: '100%' }}>
+            <Box sx={{ maxWidth: 600, width: '100%' }}>
                 <Typography variant="h6">رنگ پس‌زمینه</Typography>
                 <TextField
                     type="color"
@@ -59,8 +60,8 @@ const ThemeSettingsPage = () => {
                         حذف تصویر
                     </Button>
                 )}
-            </Paper>
-        </Box>
+            </Box>
+        </Paper>
     );
 };
 

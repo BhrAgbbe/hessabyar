@@ -1,5 +1,6 @@
-import { createSlice,type PayloadAction } from '@reduxjs/toolkit';
-import {type MoeinCategory } from './customersSlice'; 
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import { type MoeinCategory } from './customersSlice'; 
+export { type MoeinCategory } from './customersSlice'; 
 
 export interface Supplier {
   id: number;

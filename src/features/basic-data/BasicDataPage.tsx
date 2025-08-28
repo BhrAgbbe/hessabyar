@@ -186,7 +186,7 @@ const BasicDataPage = () => {
                                 control={control}
                                 rules={{ required: "نام کالا الزامی است" }}
                                 render={({ field, fieldState }) => (
-                                    <TextField {...field} label="نام کالا" fullWidth autoFocus error={!!fieldState.error} helperText={fieldState.error?.message}/>
+                                 <TextField {...field} label="نام کالا" fullWidth autoFocus error={!!fieldState.error} helperText={fieldState.error?.message}/>
                                 )}
                             />
                         </Grid>
@@ -371,11 +371,7 @@ const BasicDataPage = () => {
                               </Button>
                         </Paper>
                     ) : (
-                        <PrintableReportLayout title={
-                            <Typography variant="h4" sx={{ fontSize: { xs: "1rem", sm: "1.5rem", md: "2rem" } }}>
-                                لیست گزارش کالا
-                            </Typography>
-                        }>
+                        <PrintableReportLayout>
                             <SearchAndSortPanel 
                                 searchTerm={searchTerm}
                                 onSearchTermChange={setSearchTerm}

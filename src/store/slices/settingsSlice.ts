@@ -1,5 +1,4 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-
 export interface AppSettings {
   checkReminderWarning: boolean;
   checkReminderDays: number; 
@@ -15,6 +14,7 @@ export interface AppSettings {
   quickPrintInvoice: boolean;
   backgroundColor: string;
   backgroundImage: string;
+  primaryColor: string; 
 }
 
 const initialState: AppSettings = {
@@ -30,8 +30,9 @@ const initialState: AppSettings = {
   showDebtOnInvoice: true,
   showProfitOnInvoice: false,
   quickPrintInvoice: false,
-  backgroundColor: '#F8F7FA',
+  backgroundColor: '#F8F7FA', 
   backgroundImage: '',
+  primaryColor: '#7367F0', 
 };
 
 type SettingValue = AppSettings[keyof AppSettings];

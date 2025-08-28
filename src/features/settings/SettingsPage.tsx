@@ -1,10 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import type { RootState } from "../../store/store";
-import {
-  setAllSettings,
-  type AppSettings,
-} from "../../store/slices/settingsSlice";
 import {
   Box,
   Typography,
@@ -18,24 +13,23 @@ import {
   MenuItem,
   TextField,
   Button,
-  Snackbar,
-  Alert,
 } from "@mui/material";
 import type { SelectChangeEvent } from "@mui/material";
 
-
-type InvoicePrintSize = "A4" | "A5" | "Receipt";
+import type { RootState } from "../../store/store";
+import {
+  setAllSettings,
+  type AppSettings,
+} from "../../store/slices/settingsSlice";
+import { useToast } from "../../hooks/useToast";
 
 const SettingsPage = () => {
   const dispatch = useDispatch();
+  const { showToast } = useToast();
   const savedSettings = useSelector((state: RootState) => state.settings);
 
   const [localSettings, setLocalSettings] =
     useState<AppSettings>(savedSettings);
-  const [snackbar, setSnackbar] = useState<{
-    open: boolean;
-    message: string;
-  } | null>(null);
 
   useEffect(() => {
     setLocalSettings(savedSettings);
@@ -57,7 +51,9 @@ const SettingsPage = () => {
     }
   };
 
-  const handleSelectChange = (event: SelectChangeEvent<InvoicePrintSize>) => {
+  const handleSelectChange = (
+    event: SelectChangeEvent<AppSettings["invoicePrintSize"]>
+  ) => {
     const { name, value } = event.target;
     setLocalSettings((prev) => ({
       ...prev,
@@ -67,11 +63,12 @@ const SettingsPage = () => {
 
   const handleSaveChanges = () => {
     dispatch(setAllSettings(localSettings));
-    setSnackbar({ open: true, message: "تنظیمات با موفقیت ذخیره شد!" });
+    showToast("تنظیمات با موفقیت ذخیره شد!", "success");
   };
 
   const handleResetChanges = () => {
     setLocalSettings(savedSettings);
+    showToast("تغییرات بازنشانی شد.", "info");
   };
 
   const SettingItem: React.FC<{
@@ -80,165 +77,135 @@ const SettingsPage = () => {
     children?: React.ReactNode;
   }> = ({ name, label, children }) => (
     <Box>
-      <Box>
-        <FormControlLabel
-          labelPlacement="start"
-          sx={{
-            width: "100%",
-            justifyContent: "space-between",
-            ml: 0,
-            "& .MuiFormControlLabel-label": {
-              fontSize: "0.8rem",
-              lineHeight: "1.4",
-              textAlign: "right",
-            },
-          }}
-          control={
-            <Switch
-              checked={localSettings[name] as boolean}
-              onChange={handleSwitchChange}
-              name={name}
-            />
-          }
-          label={label}
-        />
-      </Box>
+      <FormControlLabel
+        labelPlacement="start"
+        sx={{
+          width: "100%",
+          justifyContent: "space-between",
+          ml: 0,
+          "& .MuiFormControlLabel-label": { fontSize: "0.9rem" },
+        }}
+        control={
+          <Switch
+            checked={!!localSettings[name]}
+            onChange={handleSwitchChange}
+            name={name}
+          />
+        }
+        label={label}
+      />
       {children}
     </Box>
   );
 
   return (
-    <Box>
-      <Paper sx={{ p: 3, maxHeight: "calc(100vh - 120px)", overflowY: "auto" }}>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          تنظیمات عمومی
-        </Typography>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-          <SettingItem
-            name="checkReminderWarning"
-            label="هشدار اعلام زمان باقی مانده چک"
-          >
-            {localSettings.checkReminderWarning && (
-              <TextField
-                label="تعداد روز قبل از سررسید"
-                name="checkReminderDays"
-                type="number"
-                value={localSettings.checkReminderDays}
-                onChange={handleTextChange}
-                variant="outlined"
-                size="small"
-                sx={{ mt: 1.5, width: "100%", maxWidth: "250px" }}
-                InputProps={{ inputProps: { min: 1 } }}
-              />
-            )}
-          </SettingItem>
-          <Divider />
-          <SettingItem
-            name="syncCustomersToContacts"
-            label="ارتباط و افزودن اطلاعات مشتریان به دفترچه تلفن"
-          />
-          <Divider />
-          <SettingItem
-            name="autoBackupOnExit"
-            label="انجام خودکار پشتیبان گیری هنگام بستن برنامه"
-          />
-        </Box>
-        <Divider sx={{ my: 3 }} />
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          تنظیمات فاکتور
-        </Typography>
+    <Paper sx={{ p: { xs: 2, sm: 3 }, maxWidth: "800px", margin: "auto" }}>
+      <Typography variant="h5" sx={{ mb: 3 }}>
+        تنظیمات برنامه
+      </Typography>
 
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-          <SettingItem
-            name="allowUserDiscount"
-            label="فعال کردن تخفیف ویژه برای کاربر عادی"
-          />
-          <Divider />
-          <SettingItem
-            name="autoAddQuantity"
-            label="درج خودکار تعداد کالا در فاکتور فروش (پیش‌فرض ۱)"
-          />
-          <Divider />
-          <SettingItem
-            name="useBarcodeScanner"
-            label="از دستگاه بارکدخوان استفاده می‌شود"
-          />
-          <Divider />
-          <SettingItem
-            name="checkStockOnHand"
-            label="بررسی موجودی انبار در فروش (جلوگیری از فروش منفی)"
-          />
-          <Divider />
-          <SettingItem
-            name="showDebtOnInvoice"
-            label="نمایش بدهی در چاپ فاکتور"
-          />
-          <Divider />
-          <SettingItem
-            name="showProfitOnInvoice"
-            label="نمایش سود در فاکتور فروش (فقط مدیر)"
-          />
-          <Divider />
-          <SettingItem name="quickPrintInvoice" label="چاپ سریع فاکتور" />
-        </Box>
-
-        <FormControl
-          sx={{ mt: 3, width: { xs: "100%", sm: 250 } }}
-          size="small"
+      <Typography variant="h6" sx={{ mb: 2 }}>
+        تنظیمات عمومی
+      </Typography>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pl: 1 }}>
+        <SettingItem
+          name="checkReminderWarning"
+          label="هشدار اعلام زمان باقی مانده چک"
         >
-          <InputLabel>اندازه چاپ فاکتور</InputLabel>
-          <Select
-            value={localSettings.invoicePrintSize}
-            label="اندازه چاپ فاکتور"
-            name="invoicePrintSize"
-            onChange={handleSelectChange}
-          >
-            <MenuItem value="A4">A4</MenuItem>
-            <MenuItem value="A5">A5</MenuItem>
-            <MenuItem value="Receipt">فیش پرینتر</MenuItem>
-          </Select>
-        </FormControl>
+          {localSettings.checkReminderWarning && (
+            <TextField
+              label="تعداد روز قبل از سررسید"
+              name="checkReminderDays"
+              type="number"
+              value={localSettings.checkReminderDays}
+              onChange={handleTextChange}
+              variant="outlined"
+              size="small"
+              sx={{ mt: 1.5, width: "100%", maxWidth: "250px" }}
+              InputProps={{ inputProps: { min: 1 } }}
+            />
+          )}
+        </SettingItem>
+        <Divider />
+        <SettingItem
+          name="syncCustomersToContacts"
+          label="ارتباط و افزودن اطلاعات مشتریان به دفترچه تلفن"
+        />
+        <Divider />
+        <SettingItem
+          name="autoBackupOnExit"
+          label="انجام خودکار پشتیبان گیری هنگام بستن برنامه"
+        />
+      </Box>
 
-        <Divider sx={{ my: 3 }} />
+      <Divider sx={{ my: 4 }} />
 
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: { xs: "column", sm: "row" }, 
-            gap: 2,
-            width: "100%", 
-          }}
+      <Typography variant="h6" sx={{ mb: 2 }}>
+        تنظیمات فاکتور
+      </Typography>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pl: 1 }}>
+        <SettingItem
+          name="allowUserDiscount"
+          label="فعال کردن تخفیف ویژه برای کاربر عادی"
+        />
+        <Divider />
+        <SettingItem
+          name="autoAddQuantity"
+          label="درج خودکار تعداد کالا در فاکتور فروش (پیش‌فرض ۱)"
+        />
+        <Divider />
+        <SettingItem
+          name="useBarcodeScanner"
+          label="از دستگاه بارکدخوان استفاده می‌شود"
+        />
+        <Divider />
+        <SettingItem
+          name="checkStockOnHand"
+          label="بررسی موجودی انبار در فروش (جلوگیری از فروش منفی)"
+        />
+        <Divider />
+        <SettingItem
+          name="showDebtOnInvoice"
+          label="نمایش بدهی در چاپ فاکتور"
+        />
+        <Divider />
+        <SettingItem
+          name="showProfitOnInvoice"
+          label="نمایش سود در فاکتور فروش (فقط مدیر)"
+        />
+        <Divider />
+        <SettingItem name="quickPrintInvoice" label="چاپ سریع فاکتور" />
+      </Box>
+
+      <FormControl sx={{ mt: 3, width: { xs: "100%", sm: 250 } }} size="small">
+        <InputLabel>اندازه چاپ فاکتور</InputLabel>
+        <Select
+          value={localSettings.invoicePrintSize}
+          label="اندازه چاپ فاکتور"
+          name="invoicePrintSize"
+          onChange={handleSelectChange}
         >
-          <Button
-            variant="contained"
-            onClick={handleSaveChanges}
-          >
-            ذخیره تغییرات
-          </Button>
-          <Button
-            variant="outlined"
-            onClick={handleResetChanges}
-          >
-            بازنشانی
-          </Button>
-        </Box>
-      </Paper>
+          <MenuItem value="A4">A4</MenuItem>
+          <MenuItem value="A5">A5</MenuItem>
+          <MenuItem value="Receipt">فیش پرینتر</MenuItem>
+        </Select>
+      </FormControl>
 
-      <Snackbar
-        open={snackbar?.open}
-        autoHideDuration={4000}
-        onClose={() => setSnackbar(null)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert
-          onClose={() => setSnackbar(null)}
-          severity="success"
-          sx={{ width: "100%" }}
+      <Divider sx={{ my: 4 }} />
+
+      <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
+        <Button variant="contained" onClick={handleSaveChanges}>
+          ذخیره تغییرات
+        </Button>
+        <Button
+          variant="outlined"
+          color="secondary"
+          onClick={handleResetChanges}
         >
-          {snackbar?.message}
-        </Alert>
-      </Snackbar>
-    </Box>
+          بازنشانی
+        </Button>
+      </Box>
+    </Paper>
   );
 };
 

@@ -1,11 +1,10 @@
-import { useState } from 'react';
-import { Box, Paper, TextField, Button, Snackbar, Alert, InputAdornment, IconButton } from '@mui/material';
-import { useForm, Controller } from 'react-hook-form';
+import { Box, Paper, Button } from '@mui/material';
+import { useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
 import { editUser } from '../../store/slices/usersSlice';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { useToast } from '../../hooks/useToast'; 
+import Form, { type FormField } from '../../components/Form'; 
 
 type ChangePasswordFormData = {
     currentPassword: string;
@@ -15,83 +14,65 @@ type ChangePasswordFormData = {
 
 const ChangePasswordPage = () => {
     const dispatch = useDispatch();
+    const { showToast } = useToast();
     const currentUser = useSelector((state: RootState) => state.auth.currentUser);
-    const [snackbar, setSnackbar] = useState<{open: boolean, message: string, severity: 'success' | 'error'} | null>(null);
-    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-    const [showNewPassword, setShowNewPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
     const { control, handleSubmit, watch, formState: { errors } } = useForm<ChangePasswordFormData>({
         defaultValues: { currentPassword: '', newPassword: '', confirmPassword: '' }
     });
+    
     const newPassword = watch('newPassword');
 
+    const formConfig: FormField<ChangePasswordFormData>[] = [
+        {
+            name: 'currentPassword',
+            label: 'کلمه عبور فعلی',
+            type: 'password',
+            rules: { required: 'این فیلد الزامی است' }
+        },
+        {
+            name: 'newPassword',
+            label: 'کلمه عبور جدید',
+            type: 'password',
+            rules: { 
+                required: 'این فیلد الزامی است',
+                minLength: { value: 4, message: 'کلمه عبور باید حداقل ۴ کاراکتر باشد' }
+            }
+        },
+        {
+            name: 'confirmPassword',
+            label: 'تکرار کلمه عبور جدید',
+            type: 'password',
+            rules: {
+                required: 'این فیلد الزامی است',
+                validate: value => value === newPassword || 'کلمه‌های عبور یکسان نیستند'
+            }
+        }
+    ];
+    
     const onSubmit = (data: ChangePasswordFormData) => {
         if (currentUser && data.currentPassword === currentUser.password) {
             dispatch(editUser({ ...currentUser, password: data.newPassword }));
-            setSnackbar({open: true, message: 'رمز عبور با موفقیت تغییر کرد.', severity: 'success'});
+            showToast('رمز عبور با موفقیت تغییر کرد.', 'success');
         } else {
-            setSnackbar({open: true, message: 'رمز عبور فعلی اشتباه است.', severity: 'error'});
+            showToast('رمز عبور فعلی اشتباه است.', 'error');
         }
     };
 
-    const rtlInputStyle = {
-        '& .MuiInputLabel-root': {
-            transformOrigin: 'top right',
-            right: '1.75rem',
-            left: 'auto'
-        },
-        '& label.Mui-focused': {
-            right: '1.75rem',
-        },
-        '& .MuiInputLabel-shrink': {
-            transformOrigin: 'top right',
-        },
-        '& .MuiOutlinedInput-root legend': {
-            textAlign: 'right',
-        },
-        '& .MuiInputBase-input': {
-            textAlign: 'right',
-        },
-    };
-
     return (
-        <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%'}}>
-            <Paper sx={{ p: 3, width: '100%', maxWidth: 400, direction: 'rtl' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+            <Paper sx={{ p: 3, width: '100%', maxWidth: 400 }}>
                 <form onSubmit={handleSubmit(onSubmit)}>
-                    <Controller name="currentPassword" control={control} rules={{required: true}}
-                        render={({ field }) => (
-                            <TextField {...field} label="کلمه عبور فعلی" type={showCurrentPassword ? 'text' : 'password'} fullWidth margin="normal"
-                                sx={rtlInputStyle} 
-                                InputProps={{
-                                    endAdornment: <InputAdornment position="end"><IconButton onClick={() => setShowCurrentPassword(!showCurrentPassword)} edge="end">{showCurrentPassword ? <VisibilityOff /> : <Visibility />}</IconButton></InputAdornment>
-                                }}
-                            />
-                        )}
+                    <Form
+                        config={formConfig}
+                        control={control}
+                        errors={errors}
                     />
-                    <Controller name="newPassword" control={control} rules={{required: true, minLength: 4}}
-                        render={({ field }) => (
-                            <TextField {...field} label="کلمه عبور جدید" type={showNewPassword ? 'text' : 'password'} fullWidth margin="normal" error={!!errors.newPassword} helperText={errors.newPassword ? 'حداقل ۴ کاراکتر' : ''}
-                                sx={rtlInputStyle} 
-                                InputProps={{
-                                    endAdornment: <InputAdornment position="end"><IconButton onClick={() => setShowNewPassword(!showNewPassword)} edge="end">{showNewPassword ? <VisibilityOff /> : <Visibility />}</IconButton></InputAdornment>
-                                }}
-                            />
-                        )}
-                    />
-                    <Controller name="confirmPassword" control={control} rules={{required: true, validate: value => value === newPassword || 'رمزهای عبور یکسان نیستند'}}
-                        render={({ field }) => (
-                            <TextField {...field} label="تکرار کلمه عبور جدید" type={showConfirmPassword ? 'text' : 'password'} fullWidth margin="normal" error={!!errors.confirmPassword} helperText={errors.confirmPassword?.message}
-                                sx={rtlInputStyle} 
-                                InputProps={{
-                                    endAdornment: <InputAdornment position="end"><IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end">{showConfirmPassword ? <VisibilityOff /> : <Visibility />}</IconButton></InputAdornment>
-                                }}
-                            />
-                        )}
-                    />
-                    <Button type="submit" variant="contained" fullWidth sx={{ mt: 2 }}>تغییر کلمه عبور</Button>
+                    <Button type="submit" variant="contained" fullWidth sx={{ mt: 3 }}>
+                        تغییر کلمه عبور
+                    </Button>
                 </form>
             </Paper>
-            {snackbar && <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={() => setSnackbar(null)}><Alert severity={snackbar.severity}>{snackbar.message}</Alert></Snackbar>}
         </Box>
     );
 };

@@ -36,6 +36,9 @@ const themeOptions: ThemeOptions = {
     MuiTextField: {
       styleOverrides: {
         root: {
+          '& .MuiInputBase-input': {
+            textAlign: 'right',
+          },
           '& .MuiInputLabel-root': {
             transformOrigin: 'top right',
             right: '1.75rem',

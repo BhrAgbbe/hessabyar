@@ -1,23 +1,39 @@
-import { TextField, TextFieldProps } from '@mui/material';
-import React from 'react';
+import { TextField, TextFieldProps, InputAdornment, IconButton } from '@mui/material';
+import React, { useState } from 'react';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
 const CustomTextField: React.FC<TextFieldProps> = (props) => {
+  const [showPassword, setShowPassword] = useState(false);
+
+  if (props.type === 'password') {
+    return (
+      <TextField
+        {...props} 
+        variant="outlined"
+        fullWidth
+        type={showPassword ? 'text' : 'password'}
+        sx={{ input: { textAlign: 'right' }, ...props.sx }}
+        InputProps={{
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                {showPassword ? <VisibilityOff /> : <Visibility />}
+              </IconButton>
+            </InputAdornment>
+          ),
+          ...props.InputProps, 
+        }}
+      />
+    );
+  }
+
   return (
     <TextField
-      {...props}
+      {...props} 
       variant="outlined"
       fullWidth
-      sx={{
-        direction: 'rtl',
-        '& .MuiInputLabel-root': {
-          transformOrigin: 'top right', 
-          left: 'auto',                
-        },
-        '& .MuiOutlinedInput-root legend': {
-          textAlign: 'right',         
-        },
-        ...props.sx,
-      }}
+      sx={{ input: { textAlign: 'right' }, ...props.sx }}
     />
   );
 };

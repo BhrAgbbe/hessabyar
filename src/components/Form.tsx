@@ -1,14 +1,27 @@
-import React from 'react';
-import { Controller, type FieldValues, type Control, type FieldErrors, type Path } from 'react-hook-form';
-import { Box } from '@mui/material';
-import CustomTextField from './TextField';
-import SearchableSelect, { type SelectOption } from './SearchableSelect';
-import ShamsiDatePicker from './DatePicker'; 
+import React from "react";
+import {
+  Controller,
+  type FieldValues,
+  type Control,
+  type FieldErrors,
+  type Path,
+} from "react-hook-form";
+import { Box } from "@mui/material";
+import CustomTextField from "./TextField";
+import SearchableSelect, { type SelectOption } from "./SearchableSelect";
+import ShamsiDatePicker from "./DatePicker";
 
 export interface FormField<T extends FieldValues> {
   name: keyof T;
   label: string;
-  type: 'text' | 'password' | 'number' | 'textarea' | 'select' | 'radio' | 'date'; 
+  type:
+    | "text"
+    | "password"
+    | "number"
+    | "textarea"
+    | "select"
+    | "radio"
+    | "date";
   rules?: object;
   options?: SelectOption[];
   multiline?: boolean;
@@ -21,7 +34,11 @@ interface GenericFormProps<T extends FieldValues> {
   errors: FieldErrors<T>;
 }
 
-const Form = <T extends FieldValues>({ config, control, errors }: GenericFormProps<T>) => {
+const Form = <T extends FieldValues>({
+  config,
+  control,
+  errors,
+}: GenericFormProps<T>) => {
   const renderField = (fieldConfig: FormField<T>) => {
     const { name, label, type, rules, options, rows } = fieldConfig;
 
@@ -40,27 +57,42 @@ const Form = <T extends FieldValues>({ config, control, errors }: GenericFormPro
           };
 
           switch (type) {
-            case 'select':
+            case "select":
               return (
                 <SearchableSelect
                   options={options || []}
-                  value={options?.find(opt => opt.id === field.value) || null}
-                  onChange={(val) => field.onChange(val ? val.id : '')}
+                  value={options?.find((opt) => opt.id === field.value) || null}
+                  onChange={(val) => field.onChange(val ? val.id : "")}
                   label={label}
                 />
               );
-            case 'date':
+            case "date":
               return (
                 <ShamsiDatePicker
                   label={label}
                   value={field.value ? new Date(field.value) : null}
-                  onChange={(date) => field.onChange(date ? date.toISOString() : null)}
+                  onChange={(date) =>
+                    field.onChange(date ? date.toISOString() : null)
+                  }
                 />
               );
-            case 'textarea':
-              return <CustomTextField {...commonProps} multiline rows={rows || 3} />;
+            case "textarea":
+              return (
+                <CustomTextField
+                  {...commonProps}
+                  value={field.value || ""}
+                  multiline
+                  rows={rows || 3}
+                />
+              );
             default:
-              return <CustomTextField {...commonProps} type={type} />;
+              return (
+                <CustomTextField
+                  {...commonProps}
+                  value={field.value || ""}
+                  type={type}
+                />
+              );
           }
         }}
       />
@@ -68,7 +100,7 @@ const Form = <T extends FieldValues>({ config, control, errors }: GenericFormPro
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 1 }}>
       {config.map(renderField)}
     </Box>
   );

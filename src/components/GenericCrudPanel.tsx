@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { Box, Button, TextField, Paper } from '@mui/material';
+import { Box, Button, Paper } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { type PayloadAction, type ActionCreatorWithOptionalPayload } from '@reduxjs/toolkit';
@@ -8,6 +8,7 @@ import { type PayloadAction, type ActionCreatorWithOptionalPayload } from '@redu
 import EnhancedMuiTable, { type HeadCell, type Action } from './Table';
 import FormDialog from './FormDialog';
 import ConfirmationDialog from './ConfirmationDialog';
+import CustomTextField from './TextField'; 
 
 interface CrudItem {
   id: number;
@@ -108,7 +109,7 @@ const GenericCrudPanel: React.FC<GenericCrudPanelProps> = ({
         onSave={handleSave}
         title={editingItem ? `ویرایش ${title}` : `افزودن ${title} جدید`}
       >
-        <TextField
+        <CustomTextField
           autoFocus
           margin="dense"
           label={`نام ${title}`}

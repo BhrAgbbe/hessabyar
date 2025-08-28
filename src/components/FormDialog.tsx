@@ -5,9 +5,7 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  IconButton,
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
 
 interface FormDialogProps {
   open: boolean;
@@ -30,13 +28,7 @@ const FormDialog: React.FC<FormDialogProps> = ({
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle>
         {title}
-        <IconButton
-          aria-label="close"
-          onClick={onClose}
-          sx={{ position: 'absolute', left: 8, top: 8 }}
-        >
-          <CloseIcon />
-        </IconButton>
+
       </DialogTitle>
       <DialogContent dividers>{children}</DialogContent>
       <DialogActions sx={{ padding: '16px 24px', gap: '8px' }}>

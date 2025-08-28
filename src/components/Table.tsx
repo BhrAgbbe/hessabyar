@@ -1,4 +1,4 @@
-import React, { useState, useMemo, ReactNode } from 'react';
+import React, { useState, useMemo, ReactNode } from "react";
 import {
   Box,
   Table,
@@ -15,10 +15,10 @@ import {
   Typography,
   Tooltip,
   IconButton,
-} from '@mui/material';
-import { visuallyHidden } from '@mui/utils';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { toPersianDigits } from '../utils/utils';
+} from "@mui/material";
+import { visuallyHidden } from "@mui/utils";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { toPersianDigits } from "../utils/utils";
 
 interface Data {
   id: number | string;
@@ -29,14 +29,17 @@ export interface HeadCell<T> {
   label: string;
   numeric: boolean;
   cell?: (row: T) => ReactNode;
+  width?: string | number;
+  align?: "center" | "left" | "right" | "justify";
 }
+
 export interface Action<T> {
   icon: React.ReactElement;
   tooltip: string;
   onClick: (row: T) => void;
 }
 
-type Order = 'asc' | 'desc';
+type Order = "asc" | "desc";
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (b[orderBy] < a[orderBy]) {
@@ -48,13 +51,19 @@ function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   return 0;
 }
 
-function getComparator<T>(order: Order, orderBy: keyof T): (a: T, b: T) => number {
-  return order === 'desc'
+function getComparator<T>(
+  order: Order,
+  orderBy: keyof T
+): (a: T, b: T) => number {
+  return order === "desc"
     ? (a, b) => descendingComparator(a, b, orderBy)
     : (a, b) => -descendingComparator(a, b, orderBy);
 }
 
-function stableSort<T>(array: readonly T[], comparator: (a: T, b: T) => number) {
+function stableSort<T>(
+  array: readonly T[],
+  comparator: (a: T, b: T) => number
+) {
   const stabilizedThis = array.map((el, index) => [el, index] as [T, number]);
   stabilizedThis.sort((a, b) => {
     const order = comparator(a[0], b[0]);
@@ -78,51 +87,75 @@ interface EnhancedTableHeadProps<T> {
 }
 
 function EnhancedTableHead<T>(props: EnhancedTableHeadProps<T>) {
-  const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort, headCells, hasActions } = props;
-  const createSortHandler = (property: keyof T) => (event: React.MouseEvent<unknown>) => {
-    onRequestSort(event, property);
-  };
+  const {
+    onSelectAllClick,
+    order,
+    orderBy,
+    numSelected,
+    rowCount,
+    onRequestSort,
+    headCells,
+    hasActions,
+  } = props;
+  const createSortHandler =
+    (property: keyof T) => (event: React.MouseEvent<unknown>) => {
+      onRequestSort(event, property);
+    };
 
   return (
     <TableHead>
       <TableRow>
-        <TableCell padding="none" sx={{ width: '48px', textAlign: 'center', verticalAlign: 'bottom' }}>
+        <TableCell padding="none" sx={{ width: "48px", textAlign: "center" }}>
           <Checkbox
             color="primary"
             indeterminate={numSelected > 0 && numSelected < rowCount}
             checked={rowCount > 0 && numSelected === rowCount}
             onChange={onSelectAllClick}
-            inputProps={{ 'aria-label': 'select all items' }}
+            inputProps={{ "aria-label": "select all items" }}
           />
         </TableCell>
         {headCells.map((headCell) => (
           <TableCell
             key={headCell.id as string}
-            align={headCell.numeric ? 'left' : 'right'}
+            align={headCell.align || (headCell.numeric ? "left" : "right")}
             padding="normal"
             sortDirection={orderBy === headCell.id ? order : false}
-            sx={{ fontSize: { xs: '0.6rem', md: '0.7rem' }, p: { xs: 1, sm: 2 }, verticalAlign: 'bottom' }}
+            sx={{
+              fontSize: { xs: "0.6rem", md: "0.7rem" },
+              p: { xs: 1, sm: 2 },
+              width: headCell.width,
+            }}
           >
             <TableSortLabel
               active={orderBy === headCell.id}
-              direction={orderBy === headCell.id ? order : 'asc'}
+              direction={orderBy === headCell.id ? order : "asc"}
               onClick={createSortHandler(headCell.id)}
             >
               {headCell.label}
               {orderBy === headCell.id ? (
                 <Box component="span" sx={visuallyHidden}>
-                  {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
+                  {order === "desc" ? "sorted descending" : "sorted ascending"}
                 </Box>
               ) : null}
             </TableSortLabel>
           </TableCell>
         ))}
-        {hasActions && <TableCell align="center" sx={{ fontSize: { xs: '0.7rem', md: '0.875rem' }, p: { xs: 1, sm: 2 }, width: '90px', verticalAlign: 'bottom' }}>عملیات</TableCell>}
+        {hasActions && (
+          <TableCell
+            align="center"
+            sx={{
+              fontSize: { xs: "0.7rem", md: "0.875rem" },
+              p: { xs: 1, sm: 2 },
+              width: "90px",
+            }}
+          >
+            عملیات
+          </TableCell>
+        )}
       </TableRow>
     </TableHead>
   );
 }
-
 interface EnhancedTableToolbarProps {
   numSelected: number;
   title: string;
@@ -135,7 +168,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
   if (numSelected === 0 && !title) {
     return null;
   }
-  
+
   return (
     <Toolbar
       sx={{
@@ -148,11 +181,21 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
       }}
     >
       {numSelected > 0 ? (
-        <Typography sx={{ flex: '1 1 100%', fontSize: { xs: '0.7rem', md: '0.875rem' } }} color="inherit" variant="subtitle1" component="div">
+        <Typography
+          sx={{ flex: "1 1 100%", fontSize: { xs: "0.7rem", md: "0.875rem" } }}
+          color="inherit"
+          variant="subtitle1"
+          component="div"
+        >
           {toPersianDigits(numSelected)} مورد انتخاب شده
         </Typography>
       ) : (
-        <Typography sx={{ flex: '1 1 100%', fontSize: { xs: '0.7rem', md: '0.8rem' } }} variant="h6" id="tableTitle" component="div">
+        <Typography
+          sx={{ flex: "1 1 100%", fontSize: { xs: "0.7rem", md: "0.8rem" } }}
+          variant="h6"
+          id="tableTitle"
+          component="div"
+        >
           {title}
         </Typography>
       )}
@@ -184,15 +227,18 @@ export default function EnhancedMuiTable<T extends Data>({
   actions,
   onRowClick,
 }: EnhancedMuiTableProps<T>) {
-  const [order, setOrder] = useState<Order>('asc');
+  const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<keyof T>(headCells[0]?.id);
   const [selected, setSelected] = useState<readonly (string | number)[]>([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  const handleRequestSort = (event: React.MouseEvent<unknown>, property: keyof T) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
+  const handleRequestSort = (
+    event: React.MouseEvent<unknown>,
+    property: keyof T
+  ) => {
+    const isAsc = orderBy === property && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
   };
 
@@ -205,7 +251,10 @@ export default function EnhancedMuiTable<T extends Data>({
     setSelected([]);
   };
 
-  const handleClick = (event: React.MouseEvent<unknown>, id: string | number) => {
+  const handleClick = (
+    event: React.MouseEvent<unknown>,
+    id: string | number
+  ) => {
     const selectedIndex = selected.indexOf(id);
     let newSelected: readonly (string | number)[] = [];
 
@@ -223,12 +272,14 @@ export default function EnhancedMuiTable<T extends Data>({
     }
     setSelected(newSelected);
   };
-  
+
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
@@ -241,7 +292,8 @@ export default function EnhancedMuiTable<T extends Data>({
   };
 
   const isSelected = (id: string | number) => selected.indexOf(id) !== -1;
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
+  const emptyRows =
+    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
   const visibleRows = useMemo(
     () =>
@@ -253,14 +305,15 @@ export default function EnhancedMuiTable<T extends Data>({
   );
 
   return (
-    <Box sx={{ width: '100%', minWidth: 0 }}>
-      <Paper sx={{ width: '100%', mb: 2, boxShadow: 'none' }}>
-        <EnhancedTableToolbar numSelected={selected.length} title={title} onDelete={onDelete ? handleDelete : undefined} />
-        <TableContainer sx={{ width: '100%', overflowX: 'auto' }}>
-          <Table
-            aria-labelledby="tableTitle"
-            sx={{ tableLayout: 'fixed' }}
-          >
+    <Box sx={{ width: "100%", minWidth: 0 }}>
+      <Paper sx={{ width: "100%", mb: 2, boxShadow: "none" }}>
+        <EnhancedTableToolbar
+          numSelected={selected.length}
+          title={title}
+          onDelete={onDelete ? handleDelete : undefined}
+        />
+        <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+          <Table aria-labelledby="tableTitle" sx={{ tableLayout: "fixed" }}>
             <EnhancedTableHead
               numSelected={selected.length}
               order={order}
@@ -285,13 +338,16 @@ export default function EnhancedMuiTable<T extends Data>({
                     tabIndex={-1}
                     key={row.id}
                     selected={isItemSelected}
-                    sx={{ cursor: onRowClick ? 'pointer' : 'default' }}
+                    sx={{ cursor: onRowClick ? "pointer" : "default" }}
                   >
-                    <TableCell padding="none" sx={{ width: '48px', textAlign: 'center', verticalAlign: 'bottom' }}>
+                    <TableCell
+                      padding="none"
+                      sx={{ width: "48px", textAlign: "center" }}
+                    >
                       <Checkbox
                         color="primary"
                         checked={isItemSelected}
-                        inputProps={{ 'aria-labelledby': labelId }}
+                        inputProps={{ "aria-labelledby": labelId }}
                         onClick={(event) => {
                           event.stopPropagation();
                           handleClick(event, row.id);
@@ -299,20 +355,38 @@ export default function EnhancedMuiTable<T extends Data>({
                       />
                     </TableCell>
                     {headCells.map((cell) => (
-                      <TableCell key={cell.id as string} align={cell.numeric ? 'left' : 'right'}
-                        sx={{ fontSize: { xs: '0.7rem', md: '0.875rem' }, p: { xs: 1, sm: 2 }, verticalAlign: 'bottom' }}>
-                        {cell.cell ? cell.cell(row) : row[cell.id] as ReactNode}
+                      <TableCell
+                        key={cell.id as string}
+                        align={cell.align || (cell.numeric ? "left" : "right")}
+                        sx={{
+                          fontSize: { xs: "0.7rem", md: "0.875rem" },
+                          p: { xs: 1, sm: 2 },
+                          width: cell.width,
+                          wordBreak: "break-word",
+                        }}
+                      >
+                        {cell.cell
+                          ? cell.cell(row)
+                          : (row[cell.id] as ReactNode)}
                       </TableCell>
                     ))}
                     {actions && (
-                      <TableCell align="center"
-                        sx={{ fontSize: { xs: '0.7rem', md: '0.875rem' }, p: { xs: 1, sm: 2 }, width: '90px', verticalAlign: 'bottom' }}>
+                      <TableCell
+                        align="center"
+                        sx={{
+                          fontSize: { xs: "0.7rem", md: "0.875rem" },
+                          p: { xs: 1, sm: 2 },
+                          width: "90px",
+                        }}
+                      >
                         {actions.map((action, i) => (
                           <Tooltip title={action.tooltip} key={i}>
-                            <IconButton onClick={(e) => {
-                              e.stopPropagation();
-                              action.onClick(row);
-                            }}>
+                            <IconButton
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                action.onClick(row);
+                              }}
+                            >
                               {action.icon}
                             </IconButton>
                           </Tooltip>
@@ -340,9 +414,9 @@ export default function EnhancedMuiTable<T extends Data>({
           onRowsPerPageChange={handleChangeRowsPerPage}
           labelRowsPerPage="تعداد در صفحه"
           labelDisplayedRows={({ from, to, count }) =>
-            `${toPersianDigits(from)}–${toPersianDigits(to)} از ${toPersianDigits(
-              count
-            )}`
+            `${toPersianDigits(from)}–${toPersianDigits(
+              to
+            )} از ${toPersianDigits(count)}`
           }
         />
       </Paper>

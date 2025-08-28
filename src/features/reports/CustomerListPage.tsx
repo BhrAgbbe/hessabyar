@@ -1,50 +1,116 @@
-import { useSelector } from 'react-redux';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper ,Typography} from '@mui/material';
-import { PrintableReportLayout } from '../../components/layout/PrintableReportLayout';
-import { type RootState } from '../../store/store';
+import { useState, useMemo } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { Box } from "@mui/material";
+
+import EnhancedMuiTable, { type HeadCell } from "../../components/Table";
+import SearchAndSortPanel from "../../components/SearchAndSortPanel";
+import { PrintableReportLayout } from "../../components/layout/PrintableReportLayout";
+import AddPerson from "../../components/Addperson";
+import { type SelectOption } from "../../components/SearchableSelect";
+
+import { type RootState } from "../../store/store";
+import { addCustomer, type Customer, type MoeinCategory } from "../../store/slices/customersSlice";
+import { addSupplier } from "../../store/slices/suppliersSlice"; 
+import { useToast } from "../../hooks/useToast";
+
+const moeinCategories: MoeinCategory[] = ["بدهکاران", "طلبکاران", "همکاران", " متفرقه", "ضایعات"];
+const moeinOptions: SelectOption[] = moeinCategories.map(cat => ({ id: cat, label: cat }));
 
 const CustomerListPage = () => {
-    const customers = useSelector((state: RootState) => state.customers);
+  const dispatch = useDispatch();
+  const { showToast } = useToast();
+  const customers = useSelector((state: RootState) => state.customers);
+  const suppliers = useSelector((state: RootState) => state.suppliers);
 
-    const cellStyles = {
-        textAlign: 'center', 
-        fontSize: { xs: '0.6rem', sm: '0.8rem' }, 
-        p: { xs: 1, sm: 2 } 
-    };
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchField, setSearchField] = useState<keyof Customer>("name");
+  const [personType, setPersonType] = useState<'customer' | 'supplier'>('customer');
 
-    return (
-        <>
-        <PrintableReportLayout title={
-                <Typography
-                  variant="h4"
-                  sx={{ fontSize: { xs: "0.75rem", sm: "1rem",md:"1.5rem" } }}
-                >
-                  لیست  مشتریان
-                </Typography>
-              }>
-            <TableContainer component={Paper} elevation={0}>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell sx={cellStyles}>شناسه</TableCell>
-                            <TableCell sx={cellStyles}>نام مشتری</TableCell>
-                            <TableCell sx={cellStyles}>تلفن</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {customers.map(customer => (
-                            <TableRow key={customer.id}>
-                                <TableCell sx={cellStyles}>{customer.id}</TableCell>
-                                <TableCell sx={cellStyles}>{customer.name}</TableCell>
-                                <TableCell sx={cellStyles}>{customer.phone || '-'}</TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-        </PrintableReportLayout>
-        </>
-    );
+  const searchOptions = [
+    { value: "name", label: "نام مشتری" },
+    { value: "phone", label: "تلفن" },
+    { value: "id", label: "شناسه" },
+  ];
+
+  const headCells: readonly HeadCell<Customer>[] = [
+    { id: "id", numeric: true, label: "شناسه", width: '25%', align: 'center' },
+    { id: "name", numeric: false, label: "نام مشتری", width: '25%', align: 'center' },
+    {
+      id: "phone",
+      numeric: false,
+      label: "تلفن",
+      cell: (row) => row.phone || "-",
+      width: '25%',
+      align: 'center',
+    },
+    {
+      id: "address",
+      numeric: false,
+      label: "آدرس",
+      cell: (row) => row.address || "-",
+      width: '25%',
+      align: 'center',
+    },
+  ];
+
+  const getNextId = () => {
+    const allPersons = personType === 'customer' ? customers : suppliers;
+    const maxId = allPersons.length > 0 ? Math.max(...allPersons.map((p) => Number(p.id))) : 99;
+    return maxId < 100 ? 100 : maxId + 1;
+  };
+
+  const handleSaveNewPerson = (personData: Omit<Customer, 'id'>) => {
+    if (personType === 'customer') {
+        dispatch(addCustomer(personData));
+        showToast('مشتری جدید با موفقیت اضافه شد', 'success');
+    } else {
+        dispatch(addSupplier(personData));
+        showToast('فروشنده جدید با موفقیت اضافه شد', 'success');
+    }
+  };
+
+  const filteredCustomers = useMemo(() => {
+    if (!searchTerm) {
+      return customers;
+    }
+    return customers.filter((customer) => {
+      const fieldValue = customer[searchField];
+      return fieldValue
+        ?.toString()
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+    });
+  }, [customers, searchTerm, searchField]);
+
+  return (
+    <PrintableReportLayout
+      primaryAction={
+        <AddPerson
+          personType={personType}
+          onPersonTypeChange={setPersonType}
+          onSave={handleSaveNewPerson}
+          getNextId={getNextId}
+          moeinOptions={moeinOptions}
+        />
+      }
+    >
+      <Box sx={{ mb: 2 }}>
+        <SearchAndSortPanel
+          searchTerm={searchTerm}
+          onSearchTermChange={setSearchTerm}
+          sortBy={searchField}
+          onSortByChange={(value) => setSearchField(value as keyof Customer)}
+          sortOptions={searchOptions}
+        />
+      </Box>
+
+      <EnhancedMuiTable
+        rows={filteredCustomers}
+        headCells={headCells}
+        title=""
+      />
+    </PrintableReportLayout>
+  );
 };
 
 export default CustomerListPage;

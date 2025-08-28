@@ -5,13 +5,13 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 interface PageHeaderProps {
   personType: 'customer' | 'supplier';
   onPersonTypeChange: (type: 'customer' | 'supplier') => void;
-  onAddNew: () => void;
+  actionButton: React.ReactNode; 
 }
 
 const PageHeader: React.FC<PageHeaderProps> = ({
   personType,
   onPersonTypeChange,
-  onAddNew,
+  actionButton,
 }) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const menuOpen = Boolean(anchorEl);
@@ -75,16 +75,8 @@ const PageHeader: React.FC<PageHeaderProps> = ({
           </MenuItem>
         </Menu>
       
+      {actionButton}
 
-      <Button
-        variant="contained"
-        onClick={onAddNew}
-        sx={{
-          width: { xs: '100%', sm: 'auto' },
-        }}
-      >
-        افزودن شخص جدید
-      </Button>
     </Box>
   );
 };

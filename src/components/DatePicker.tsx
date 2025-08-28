@@ -1,22 +1,24 @@
 import React from 'react';
-import { AdapterDateFnsJalali } from '@mui/x-date-pickers/AdapterDateFnsJalali'; 
+import { AdapterDateFnsJalali } from '@mui/x-date-pickers/AdapterDateFnsJalali';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { TextField } from '@mui/material';
+import { TextField, type SxProps, type Theme } from '@mui/material';
 
 interface ShamsiDatePickerProps {
   label: string;
   value: Date | null;
   onChange: (date: Date | null) => void;
+  sx?: SxProps<Theme>; 
 }
 
-const ShamsiDatePicker: React.FC<ShamsiDatePickerProps> = ({ label, value, onChange }) => {
+const ShamsiDatePicker: React.FC<ShamsiDatePickerProps> = ({ label, value, onChange, sx }) => { 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFnsJalali}>
       <DatePicker
         label={label}
         value={value}
         onChange={onChange}
+        sx={sx} 
         enableAccessibleFieldDOMStructure={false}
         slots={{ textField: TextField }}
         slotProps={{

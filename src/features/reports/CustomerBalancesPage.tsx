@@ -1,166 +1,178 @@
 import { useState, useMemo } from "react";
 import { useSelector } from "react-redux";
-import { type RootState } from "../../store/store";
-import { PrintableReportLayout } from "../../components/layout/PrintableReportLayout";
 import {
-  TableContainer,
-  Paper,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
   Typography,
   Box,
-  TextField,
-  ToggleButtonGroup,
-  ToggleButton,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  FormControl,
 } from "@mui/material";
+import { type RootState } from "../../store/store";
+import { PrintableReportLayout } from "../../components/layout/PrintableReportLayout";
+import EnhancedMuiTable, { type HeadCell } from "../../components/Table";
+import SearchAndSortPanel from "../../components/SearchAndSortPanel";
+import { toPersianDigits } from "../../utils/utils"; 
+
+interface BalanceData {
+  id: number;
+  name: string;
+  balance: number;
+}
 
 const CustomerBalancesPage = () => {
-  const customers = useSelector((state: RootState) => state.customers);
-  const suppliers = useSelector((state: RootState) => state.suppliers);
-  const invoices = useSelector((state: RootState) => state.invoices);
-  const transactions = useSelector((state: RootState) => state.transactions);
+  const { customers, suppliers, invoices, transactions } = useSelector(
+    (state: RootState) => state
+  );
 
   const [personType, setPersonType] = useState<"sales" | "purchases">("sales");
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState("name");
 
   const balances = useMemo(() => {
     const personList = personType === "sales" ? customers : suppliers;
 
-    return personList
-      .map((person) => {
-        let balance = 0;
-        if (personType === "sales") {
-          const totalSales =
-            invoices.sales
-              ?.filter((inv) => inv.customerId === person.id)
-              .reduce((sum, inv) => sum + inv.grandTotal, 0) || 0;
+    let calculatedBalances = personList.map((person) => {
+      let balance = 0;
+      if (personType === "sales") {
+        const totalSales =
+          invoices.sales
+            ?.filter((inv) => inv.customerId === person.id)
+            .reduce((sum, inv) => sum + (inv.grandTotal || 0), 0) || 0;
+        const totalReturns =
+          invoices.salesReturns
+            ?.filter((inv) => inv.customerId === person.id)
+            .reduce((sum, inv) => sum + (inv.grandTotal || 0), 0) || 0;
+        const totalPayments =
+          transactions
+            ?.filter(
+              (tx) => tx.customerId === person.id && tx.type === "receipt"
+            )
+            .reduce((sum, tx) => sum + (tx.amount || 0), 0) || 0;
+        balance = totalSales - (totalReturns + totalPayments);
+      } else {
+        const totalPurchases =
+          invoices.purchases
+            ?.filter((inv) => inv.customerId === person.id)
+            .reduce((sum, inv) => sum + (inv.grandTotal || 0), 0) || 0;
+        const totalReturns =
+          invoices.purchaseReturns
+            ?.filter((inv) => inv.customerId === person.id)
+            .reduce((sum, inv) => sum + (inv.grandTotal || 0), 0) || 0;
+        const totalPayments =
+          transactions
+            ?.filter(
+              (tx) => tx.supplierId === person.id && tx.type === "payment"
+            )
+            .reduce((sum, tx) => sum + (tx.amount || 0), 0) || 0;
+        balance = totalPayments + totalReturns - totalPurchases;
+      }
+      return { id: person.id, name: person.name, balance };
+    });
 
-          const totalReturns =
-            invoices.salesReturns
-              ?.filter((inv) => inv.customerId === person.id)
-              .reduce((sum, inv) => sum + inv.grandTotal, 0) || 0;
+    if (searchTerm) {
+      calculatedBalances = calculatedBalances.filter((p) =>
+        p.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
 
-          const totalPayments =
-            transactions
-              ?.filter(
-                (tx) => tx.customerId === person.id && tx.type === "receipt"
-              )
-              .reduce((sum, tx) => sum + tx.amount, 0) || 0;
+    switch (sortBy) {
+      case "balanceHigh":
+        calculatedBalances.sort((a, b) => b.balance - a.balance);
+        break;
+      case "balanceLow":
+        calculatedBalances.sort((a, b) => a.balance - b.balance);
+        break;
+      case "name":
+      default:
+        calculatedBalances.sort((a, b) => a.name.localeCompare(b.name, "fa"));
+        break;
+    }
 
-          balance = totalSales - (totalReturns + totalPayments);
-        } else {
-          const totalPurchases =
-            invoices.purchases
-              ?.filter((inv) => inv.customerId === person.id)
-              .reduce((sum, inv) => sum + inv.grandTotal, 0) || 0;
+    return calculatedBalances;
+  }, [personType, customers, suppliers, invoices, transactions, searchTerm, sortBy]);
 
-          const totalReturns =
-            invoices.purchaseReturns
-              ?.filter((inv) => inv.customerId === person.id)
-              .reduce((sum, inv) => sum + inv.grandTotal, 0) || 0;
+  const sortOptions = [
+    { value: "name", label: "نام" },
+    { value: "balanceHigh", label: "بیشترین مانده" },
+    { value: "balanceLow", label: "کمترین مانده" },
+  ];
 
-          const totalPayments =
-            transactions
-              ?.filter(
-                (tx) => tx.supplierId === person.id && tx.type === "payment"
-              )
-              .reduce((sum, tx) => sum + tx.amount, 0) || 0;
-
-          balance = totalPayments + totalReturns - totalPurchases;
-        }
-
-        return {
-          id: person.id,
-          name: person.name,
-          balance: balance,
-        };
-      })
-      .filter((p) => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
-  }, [personType, customers, suppliers, invoices, transactions, searchTerm]);
+  const headCells: readonly HeadCell<BalanceData>[] = [
+    {
+      id: "name",
+      numeric: false,
+      label: `نام ${personType === "sales" ? "مشتری" : "فروشنده"}`,
+      width: '33.33%',
+      align: "center",
+    },
+    {
+      id: "balance",
+      numeric: true,
+      label: "مانده نهایی",
+      align: "center",
+      cell: (row) => `${toPersianDigits(Math.abs(row.balance))} تومان`,
+      width: '33.33%',
+    },
+    {
+      id: "balance", 
+      numeric: false,
+      label: "وضعیت",
+      align: "center",
+      cell: (row) =>
+        row.balance > 0 ? (
+          <Typography variant="body2" color="error.main" fontWeight="bold">بدهکار</Typography>
+        ) : row.balance < 0 ? (
+          <Typography variant="body2" color="success.main" fontWeight="bold">بستانکار</Typography>
+        ) : (
+          <Typography variant="body2" color="text.secondary">تسویه</Typography>
+        ),
+      width: '33.33%',
+    },
+  ];
 
   return (
-    <>
+    <PrintableReportLayout>
       <Box
-        sx={{ width: "100%", display: "flex", justifyContent: "center", mb: 3 }}
+        className="no-print"
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 2,
+          gap: 2,
+        }}
       >
-        <Typography
-          sx={{
-            textAlign: "center",
-            fontWeight: "800",
-            fontSize: { xs: "0.75rem", sm: "1.5rem" },
-          }}
-        >
-          گزارش مانده حساب مشتریان
-        </Typography>
-      </Box>
-      <PrintableReportLayout>
-        <Box
-          className="no-print"
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mb: 3,
-            gap: 2,
-          }}
-        >
-          <TextField
-            label="جستجو نام..."
-            variant="outlined"
-            size="small"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            sx={{ flexGrow: 1 }}
-          />
-          <ToggleButtonGroup
+        <FormControl component="fieldset">
+          <RadioGroup
+            row
+            name="report-type"
             value={personType}
-            exclusive
-            onChange={(_e, newValue) => {
-              if (newValue) setPersonType(newValue);
-            }}
-            color="primary"
+            onChange={(e) => setPersonType(e.target.value as "sales" | "purchases")}
           >
-            <ToggleButton value="sales">فروش</ToggleButton>
-            <ToggleButton value="purchases">خرید</ToggleButton>
-          </ToggleButtonGroup>
-        </Box>
-        <TableContainer component={Paper} elevation={0}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>
-                  نام {personType === "sales" ? "مشتری" : "فروشنده"}
-                </TableCell>
-                <TableCell align="center">مانده نهایی</TableCell>
-                <TableCell align="center">وضعیت</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {balances.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell>{item.name}</TableCell>
-                  <TableCell align="center">
-                    {Math.abs(item.balance).toLocaleString("fa-IR")} تومان
-                  </TableCell>
-                  <TableCell align="center">
-                    {item.balance > 0 ? (
-                      <Typography color="error">بدهکار</Typography>
-                    ) : item.balance < 0 ? (
-                      <Typography color="success">بستانکار</Typography>
-                    ) : (
-                      <Typography>تسویه</Typography>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </PrintableReportLayout>
-    </>
+            <Typography sx={{ fontWeight: 'bold', alignSelf: 'center', ml: 2 }}>
+              نوع گزارش:
+            </Typography>
+            <FormControlLabel value="sales" control={<Radio />} label="مشتریان" />
+            <FormControlLabel value="purchases" control={<Radio />} label="فروشندگان" />
+          </RadioGroup>
+        </FormControl>
+      </Box>
+
+      <SearchAndSortPanel
+        searchTerm={searchTerm}
+        onSearchTermChange={setSearchTerm}
+        sortBy={sortBy}
+        onSortByChange={setSortBy}
+        sortOptions={sortOptions}
+      />
+
+      <EnhancedMuiTable
+        rows={balances}
+        headCells={headCells}
+        title={`لیست مانده حساب ${personType === "sales" ? "مشتریان" : "فروشندگان"}`}
+      />
+    </PrintableReportLayout>
   );
 };
 

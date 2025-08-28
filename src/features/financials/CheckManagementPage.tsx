@@ -143,7 +143,7 @@ const CheckManagementPage = () => {
     ];
 
     return (
-        <Box sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
+        <Box sx={{ py: { xs: 1, sm: 2, md: 3 } }}>
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'flex-end', gap: 1, mb: 2 }}>
                 <Button variant="outlined" onClick={() => setDialogState({ ...dialogState, updateBySerial: true })}>تغییر وضعیت با سریال</Button>
                 <Button variant="contained" onClick={() => setDialogState({ ...dialogState, add: true })}>ثبت چک جدید</Button>
@@ -157,12 +157,11 @@ const CheckManagementPage = () => {
               sortOptions={[{label: 'سریال', value: 'serial'}, {label: 'شخص', value: 'payee'}]}
             />
 
-            <Box sx={{ width: '100%', borderBottom: 1, borderColor: 'divider', mt: 2 }}>
+            <Box sx={{ borderBottom: 1, borderColor: 'divider', maxWidth: '100%' }}>
                 <Tabs value={tab} onChange={(_e, newValue) => setTab(newValue)} variant="scrollable" scrollButtons="auto" allowScrollButtonsMobile>
                     <Tab label="همه چک‌ها" />
                     <Tab label="سررسید امروز" />
                     <Tab label="سررسید فردا" />
-                    <Tab label="۵ روز آینده" />
                     <Tab label="چک‌های برگشتی" />
                 </Tabs>
             </Box>
