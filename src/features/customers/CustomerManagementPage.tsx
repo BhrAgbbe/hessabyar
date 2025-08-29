@@ -26,7 +26,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchableSelect, { type SelectOption } from '../../components/SearchableSelect';
 import ConfirmationDialog from '../../components/ConfirmationDialog';
-import AddPerson from '../../components/Addperson'; 
+import AddPerson from '../../components/Addperson';
+import { toPersianDigitsString } from '../../utils/utils';
 
 type Person = Customer | Supplier;
 type PersonFormData = Omit<Person, 'id'>;
@@ -48,7 +49,7 @@ const CustomerManagementPage = () => {
   const [personType, setPersonType] = useState<'customer' | 'supplier'>('customer');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'city'>('name');
-  
+
   const [editingPerson, setEditingPerson] = useState<Person | null>(null);
   const [editFormOpen, setEditFormOpen] = useState(false);
   const [deleteModal, setDeleteModal] = useState<{ open: boolean; id: number | null }>({ open: false, id: null });
@@ -79,11 +80,11 @@ const CustomerManagementPage = () => {
     if (personData.phone) {
       const existing = allPersons.find(p => p.phone === personData.phone);
       if (existing) {
-        showToast(`این شماره همراه قبلا برای کاربر با کد ${existing.id} ثبت شده است.`, 'error');
+        showToast(`این شماره همراه قبلا برای کاربر با کد ${toPersianDigitsString(existing.id)} ثبت شده است.`, 'error');
         return;
       }
     }
-    
+
     if (personType === 'customer') {
       dispatch(addCustomer(personData));
     } else {
@@ -110,7 +111,7 @@ const CustomerManagementPage = () => {
     if (formData.phone) {
       const existing = [...customers, ...suppliers].find(p => p.phone === formData.phone && p.id !== editingPerson.id);
       if (existing) {
-        showToast(`این شماره همراه قبلا برای کاربر با کد ${existing.id} ثبت شده است.`, 'error');
+        showToast(`این شماره همراه قبلا برای کاربر با کد ${toPersianDigitsString(existing.id)} ثبت شده است.`, 'error');
         return;
       }
     }
@@ -120,7 +121,7 @@ const CustomerManagementPage = () => {
     showToast('ویرایش با موفقیت انجام شد', 'success');
     handleCloseEditForm();
   };
-  
+
   const handleOpenDeleteModal = (id: number) => setDeleteModal({ open: true, id });
   const handleCloseDeleteModal = () => setDeleteModal({ open: false, id: null });
 
@@ -132,9 +133,9 @@ const CustomerManagementPage = () => {
   };
 
   const headCells: readonly HeadCell<Person>[] = [
-    { id: 'id', numeric: true, label: 'کد' },
+    { id: 'id', numeric: true, label: 'کد', cell: (row) => toPersianDigitsString(row.id) },
     { id: 'name', numeric: false, label: 'نام' },
-    { id: 'phone', numeric: false, label: 'تلفن', cell: (row) => row.phone || '-' },
+    { id: 'phone', numeric: false, label: 'تلفن', cell: (row) => toPersianDigitsString(row.phone || '-') },
     { id: 'city', numeric: false, label: 'شهر', cell: (row) => row.city || '-' },
   ];
 
@@ -184,7 +185,8 @@ const CustomerManagementPage = () => {
         >
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1, width: '100%', maxWidth: '400px', mx: 'auto' }}>
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-              <TextField label="کد" value={editingPerson.id} disabled size="small" sx={{ flex: 1 }}/>
+              {/* اعداد فارسی در فیلد کد فرم ویرایش */}
+              <TextField label="کد" value={toPersianDigitsString(editingPerson.id)} disabled size="small" sx={{ flex: 1 }}/>
               <SearchableSelect
                 options={moeinOptions}
                 value={selectedMoeinForEdit}

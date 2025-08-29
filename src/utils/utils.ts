@@ -15,3 +15,12 @@ export const toPersianDigitsString = (str: string | number | null | undefined): 
   const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
   return String(str).replace(/[0-9]/g, (digit) => persianDigits[parseInt(digit)]);
 };
+
+export const toEnglishDigits = (str: string): string => {
+  if (!str) return '';
+  const persianDigits = /[\u06F0-\u06F9]/g;
+  const arabicDigits = /[\u0660-\u0669]/g;
+  return str
+    .replace(persianDigits, (d) => String(d.charCodeAt(0) - 1776))
+    .replace(arabicDigits, (d) => String(d.charCodeAt(0) - 1632));
+};

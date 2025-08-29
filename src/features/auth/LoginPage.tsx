@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useForm, Controller } from 'react-hook-form';
-import { 
-    Box, Paper, Typography, TextField, Button, Snackbar, Alert, 
-    InputAdornment, IconButton 
+import {
+    Box, Paper, Typography, TextField, Button, Snackbar, Alert,
+    InputAdornment, IconButton
 } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
@@ -20,12 +20,12 @@ const LoginPage = () => {
     const dispatch = useDispatch();
     const users = useSelector((state: RootState) => state.users);
     const settings = useSelector((state: RootState) => state.settings);
-    const checks = useSelector((state: RootState) => state.checks); 
+    const checks = useSelector((state: RootState) => state.checks);
 
     const [error, setError] = useState<string | null>(null);
     const [toast, setToast] = useState<{ message: string; severity: 'info' | 'warning' } | null>(null);
     const [showPassword, setShowPassword] = useState(false);
-    
+
     const { control, handleSubmit } = useForm<LoginFormData>({
         defaultValues: { username: '', password: '' }
     });
@@ -66,15 +66,15 @@ const LoginPage = () => {
                 <Typography variant="h4" gutterBottom>ورود به سیستم</Typography>
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <Controller name="username" control={control} render={({ field }) => <TextField {...field} label="نام کاربری" fullWidth margin="normal" autoFocus />} />
-                    <Controller 
-                        name="password" 
-                        control={control} 
+                    <Controller
+                        name="password"
+                        control={control}
                         render={({ field }) => (
-                            <TextField 
-                                {...field} 
-                                label="رمز عبور" 
-                                type={showPassword ? 'text' : 'password'} 
-                                fullWidth 
+                            <TextField
+                                {...field}
+                                label="رمز عبور"
+                                type={showPassword ? 'text' : 'password'}
+                                fullWidth
                                 margin="normal"
                                 InputProps={{
                                     endAdornment: (
@@ -91,7 +91,7 @@ const LoginPage = () => {
                                     )
                                 }}
                             />
-                        )} 
+                        )}
                     />
                     <Button type="submit" variant="contained" fullWidth sx={{ mt: 2 }}>ورود</Button>
                 </form>

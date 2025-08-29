@@ -9,7 +9,7 @@ const CustomInput: React.FC<CustomInputProps> = (props) => {
     <TextField
       variant="outlined"
       fullWidth
-      {...props} 
+      {...props}
     />
   );
 };

@@ -9,6 +9,7 @@ import {
   StepConnector,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { type StepIconProps } from '@mui/material/StepIcon';
 
 interface StepperProps {
   steps: string[];
@@ -17,6 +18,37 @@ interface StepperProps {
   onNext: () => void;
   onBack: () => void;
 }
+
+const toPersianDigitsString = (num: number | string): string => {
+  const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+  return String(num).replace(/[0-9]/g, (digit) => persianDigits[parseInt(digit)]);
+};
+
+const PersianStepIcon = (props: StepIconProps) => {
+  const { active, completed, className, icon } = props;
+
+  return (
+    <Box
+      sx={{
+        backgroundColor: active || completed ? 'primary.main' : 'grey.400',
+        zIndex: 1,
+        color: '#fff',
+        width: 24,
+        height: 24,
+        display: 'flex',
+        borderRadius: '50%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        fontSize: '0.875rem',
+        fontWeight: 'bold',
+      }}
+      className={className}
+    >
+      {toPersianDigitsString(icon as number)}
+    </Box>
+  );
+};
+
 
 const CustomConnector = styled(StepConnector)({
   '& .MuiStepConnector-line': {
@@ -35,7 +67,7 @@ const Stepper: React.FC<StepperProps> = ({ steps, getStepContent, activeStep, on
       >
         {steps.map((label) => (
           <Step key={label}>
-            <StepLabel>{label}</StepLabel>
+            <StepLabel StepIconComponent={PersianStepIcon}>{label}</StepLabel>
           </Step>
         ))}
       </MuiStepper>

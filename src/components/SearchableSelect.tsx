@@ -9,18 +9,20 @@ export interface SelectOption {
 
 interface SearchableSelectProps {
   options: SelectOption[];
-  value: SelectOption | null;
+  value?: SelectOption | null;
+  defaultValue?: SelectOption | null; 
   onChange: (value: SelectOption | null) => void;
   label: string;
   loading?: boolean;
   placeholder?: string;
   size?: 'small' | 'medium';
-  sx?: SxProps<Theme>; 
+  sx?: SxProps<Theme>;
 }
 
 const SearchableSelect: React.FC<SearchableSelectProps> = ({
   options,
   value,
+  defaultValue, 
   onChange,
   label,
   loading = false,
@@ -31,12 +33,13 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
   return (
     <Autocomplete
       value={value}
+      defaultValue={defaultValue} 
       onChange={(event, newValue) => {
         onChange(newValue);
       }}
       options={options}
       loading={loading}
-      sx={sx} 
+      sx={sx}
       getOptionLabel={(option) => option.label || ''}
       isOptionEqualToValue={(option, val) => option.id === val.id}
       noOptionsText="موردی یافت نشد"

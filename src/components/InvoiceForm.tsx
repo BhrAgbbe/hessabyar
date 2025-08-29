@@ -19,7 +19,7 @@ import {
   FormControl,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { toPersianDigits } from "../utils/utils";
+import { toPersianDigits, toPersianDigitsString, toEnglishDigits } from "../utils/utils";
 import { type RootState } from "../store/store";
 import {
   addInvoice,
@@ -30,7 +30,7 @@ import {
   type InvoiceItem,
 } from "../store/slices/invoicesSlice";
 import { type Product } from "../store/slices/productsSlice";
-import { useToast } from "../hooks/useToast"; 
+import { useToast } from "../hooks/useToast";
 
 import SearchableSelect, { type SelectOption } from "./SearchableSelect";
 import ShamsiDatePicker from "./DatePicker";
@@ -322,7 +322,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
         <FormControl component="fieldset" sx={{ mb: 2 }}>
           <RadioGroup
             row
-            value={returnPersonType}
+            defaultValue={returnPersonType}
             onChange={(e) =>
               setReturnPersonType(e.target.value as "customer" | "supplier")
             }
@@ -341,16 +341,17 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
         </FormControl>
       )}
 
-      <Grid container spacing={2} sx={{ mb: 3  }}>
+      <Grid container spacing={2} sx={{ mb: 3, alignItems: 'center' }}>
         <Grid>
             <SearchableSelect
                 label={`نام ${personLabel}`}
                 options={personOptions}
-                value={selectedPersonValue}
+                defaultValue={selectedPersonValue}
                 onChange={(option) => localDispatch({
                     type: "SET_PERSON",
                     payload: { id: option ? option.id : null, personType },
                 })}
+                sx={{ minWidth: 200 }} 
             />
         </Grid>
         <Grid>
@@ -365,7 +366,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
         <Grid>
           <CustomTextField
             label="شماره فاکتور"
-            value={toPersianDigits(displayInvoiceNumber || 1)}
+            defaultValue={toPersianDigits(displayInvoiceNumber || 1)}
             disabled
             fullWidth
           />
@@ -406,7 +407,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
                         placeholder="انتخاب کالا"
                         label=""
                         options={productOptions}
-                        value={selectedProductValue}
+                        defaultValue={selectedProductValue}
                         onChange={(option) => {
                             if(option) {
                                 const product = products.find(p => p.id === option.id);
@@ -422,14 +423,14 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
                   </TableCell>
                   <TableCell align="center" sx={{ p: 1 }}>
                     <CustomTextField
-                      type="number"
-                      value={item.quantity} 
+                      type="text" 
+                      defaultValue={toPersianDigitsString(item.quantity)} 
                       onChange={(e) =>
                         localDispatch({
                           type: "UPDATE_ITEM_QUANTITY",
                           payload: {
                             rowId: item.rowId,
-                            quantity: Number(e.target.value),
+                            quantity: Number(toEnglishDigits(e.target.value)),
                           },
                         })
                       }
@@ -460,23 +461,23 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
             <Box sx={{ display: 'flex', gap: 1}}>
                 <CustomTextField
                   label="تخفیف (مبلغ)"
-                  type="number"
-                  value={state.discountAmount || ""}
+                  type="text" 
+                  defaultValue={toPersianDigitsString(state.discountAmount || "")} 
                   onChange={(e) =>
                     localDispatch({
                       type: "SET_DISCOUNT_AMOUNT",
-                      payload: Number(e.target.value),
+                      payload: Number(toEnglishDigits(e.target.value)), 
                     })
                   }
                 />
                 <CustomTextField
                   label="تخفیف (درصد)"
-                  type="number"
-                  value={state.discountPercent || ""}
+                  type="text" 
+                  defaultValue={toPersianDigitsString(state.discountPercent || "")} 
                   onChange={(e) =>
                     localDispatch({
                       type: "SET_DISCOUNT_PERCENT",
-                      payload: Number(e.target.value),
+                      payload: Number(toEnglishDigits(e.target.value)), 
                     })
                   }
                 />

@@ -9,7 +9,7 @@ const CustomTextField: React.FC<TextFieldProps> = (props) => {
   if (props.type === 'password') {
     return (
       <TextField
-        {...props} 
+        {...props}
         variant="outlined"
         fullWidth
         type={showPassword ? 'text' : 'password'}
@@ -22,7 +22,7 @@ const CustomTextField: React.FC<TextFieldProps> = (props) => {
               </IconButton>
             </InputAdornment>
           ),
-          ...props.InputProps, 
+          ...props.InputProps,
         }}
       />
     );
@@ -30,7 +30,7 @@ const CustomTextField: React.FC<TextFieldProps> = (props) => {
 
   return (
     <TextField
-      {...props} 
+      {...props}
       variant="outlined"
       fullWidth
       sx={{ input: { textAlign: 'right' }, ...props.sx }}
