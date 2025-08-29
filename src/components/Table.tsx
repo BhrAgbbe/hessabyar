@@ -117,11 +117,12 @@ function EnhancedTableHead<T>(props: EnhancedTableHeadProps<T>) {
         {headCells.map((headCell) => (
           <TableCell
             key={headCell.id as string}
-            align={headCell.align || (headCell.numeric ? "left" : "right")}
+            align="center"
             padding="normal"
             sortDirection={orderBy === headCell.id ? order : false}
             sx={{
-              fontSize: { xs: "0.6rem", md: "0.7rem" },
+              whiteSpace: "nowrap", 
+              fontSize: { xs: "0.7rem", md: "0.8rem" },
               p: { xs: 1, sm: 2 },
               width: headCell.width,
             }}
@@ -130,6 +131,14 @@ function EnhancedTableHead<T>(props: EnhancedTableHeadProps<T>) {
               active={orderBy === headCell.id}
               direction={orderBy === headCell.id ? order : "asc"}
               onClick={createSortHandler(headCell.id)}
+              sx={{
+                "& .MuiTableSortLabel-icon": {
+                  ml: 0.5,
+                },
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}
             >
               {headCell.label}
               {orderBy === headCell.id ? (
@@ -144,6 +153,7 @@ function EnhancedTableHead<T>(props: EnhancedTableHeadProps<T>) {
           <TableCell
             align="center"
             sx={{
+              whiteSpace: "nowrap",
               fontSize: { xs: "0.7rem", md: "0.875rem" },
               p: { xs: 1, sm: 2 },
               width: "90px",
@@ -156,6 +166,7 @@ function EnhancedTableHead<T>(props: EnhancedTableHeadProps<T>) {
     </TableHead>
   );
 }
+
 interface EnhancedTableToolbarProps {
   numSelected: number;
   title: string;
@@ -357,12 +368,14 @@ export default function EnhancedMuiTable<T extends Data>({
                     {headCells.map((cell) => (
                       <TableCell
                         key={cell.id as string}
-                        align={cell.align || (cell.numeric ? "left" : "right")}
+                        align="center"
                         sx={{
-                          fontSize: { xs: "0.7rem", md: "0.875rem" },
-                          p: { xs: 1, sm: 2 },
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          fontSize: { xs: "0.55rem", md: "0.875rem" },
+                          p: { xs: 0.5, sm: 2 },
                           width: cell.width,
-                          wordBreak: "break-word",
                         }}
                       >
                         {cell.cell
@@ -374,7 +387,7 @@ export default function EnhancedMuiTable<T extends Data>({
                       <TableCell
                         align="center"
                         sx={{
-                          fontSize: { xs: "0.7rem", md: "0.875rem" },
+                          fontSize: { xs: "0.65rem", md: "0.875rem" },
                           p: { xs: 1, sm: 2 },
                           width: "90px",
                         }}

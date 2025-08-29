@@ -9,7 +9,7 @@ import EnhancedMuiTable, { type HeadCell, type Action } from '../../components/T
 import FormDialog from '../../components/FormDialog';
 import ConfirmationDialog from '../../components/ConfirmationDialog';
 import Form, { type FormField } from '../../components/Form';
-import NewBankDialog from '../../components/Company-account/NewBankDialog';
+import NewBankDialog from '../../components/NewBankDialog';
 import { type SelectOption } from '../../components/SearchableSelect';
 import { type RootState } from '../../store/store';
 import { addAccount, editAccount, deleteAccount, updateBalance, type BankAccount } from '../../store/slices/accountsSlice';

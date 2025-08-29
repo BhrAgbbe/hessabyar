@@ -1,10 +1,10 @@
 import { useState, useMemo, useEffect, useContext } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Box, Button, Chip, Tabs, Tab, Typography } from '@mui/material';
+import { Box, Button, Chip, Typography, Tabs, Tab } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useForm, type SubmitHandler } from 'react-hook-form';
-import { differenceInCalendarDays, isToday, isTomorrow, startOfDay, isPast } from 'date-fns';
+import { isToday, isTomorrow, isPast } from 'date-fns';
 
 import { type RootState } from '../../store/store';
 import { addCheck, editCheck, deleteCheck, type Check, type CheckStatus } from '../../store/slices/checksSlice';
@@ -31,8 +31,9 @@ const CheckManagementPage = () => {
     const allChecks = useSelector((state: RootState) => state.checks);
     const { showToast } = useContext(ToastContext);
 
-    const [tab, setTab] = useState(0);
+    const [filter, setFilter] = useState('all'); // This state now controls the active tab
     const [searchTerm, setSearchTerm] = useState('');
+    const [searchBy, setSearchBy] = useState('payee');
     const [dialogState, setDialogState] = useState({ add: false, edit: false, updateBySerial: false });
     const [editingCheck, setEditingCheck] = useState<Check | null>(null);
     const [deletingCheckId, setDeletingCheckId] = useState<string | null>(null);
@@ -66,30 +67,36 @@ const CheckManagementPage = () => {
     }, [allChecks]);
 
     const filteredChecks = useMemo(() => {
-        const today = startOfDay(new Date());
         let checks = processedChecks;
 
-        checks = checks.filter(check => {
-            const dueDate = startOfDay(new Date(check.dueDate));
-            const diffDays = differenceInCalendarDays(dueDate, today);
-            switch (tab) {
-                case 1: return isToday(dueDate) && check.derivedStatus === 'در جریان';
-                case 2: return isTomorrow(dueDate) && check.derivedStatus === 'در جریان';
-                case 3: return diffDays > 1 && diffDays <= 5 && check.derivedStatus === 'در جریان';
-                case 4: return check.derivedStatus === 'برگشتی';
-                default: return true;
-            }
-        });
+        // Filtering logic remains the same, driven by the 'filter' state
+        switch (filter) {
+            case 'today':
+                checks = checks.filter(c => isToday(new Date(c.dueDate)) && c.derivedStatus === 'در جریان');
+                break;
+            case 'tomorrow':
+                checks = checks.filter(c => isTomorrow(new Date(c.dueDate)) && c.derivedStatus === 'در جریان');
+                break;
+            case 'bounced':
+                checks = checks.filter(c => c.derivedStatus === 'برگشتی');
+                break;
+            case 'all':
+            default:
+                // No extra filtering needed for 'all'
+                break;
+        }
 
         if (searchTerm) {
-            checks = checks.filter(c =>
-                c.serial.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                c.payee.toLowerCase().includes(searchTerm.toLowerCase())
-            );
+            const term = searchTerm.toLowerCase();
+            if (searchBy === 'serial') {
+                checks = checks.filter(c => c.serial.toLowerCase().includes(term));
+            } else {
+                checks = checks.filter(c => c.payee.toLowerCase().includes(term));
+            }
         }
 
         return checks;
-    }, [processedChecks, tab, searchTerm]);
+    }, [processedChecks, filter, searchTerm, searchBy]);
 
 
     const onAddSubmit: SubmitHandler<CheckFormData> = (data) => {
@@ -152,28 +159,32 @@ const CheckManagementPage = () => {
             <SearchAndSortPanel
               searchTerm={searchTerm}
               onSearchTermChange={setSearchTerm}
-              sortBy={''} 
-              onSortByChange={() => {}}
-              sortOptions={[{label: 'سریال', value: 'serial'}, {label: 'شخص', value: 'payee'}]}
+              sortBy={searchBy}
+              onSortByChange={(val) => setSearchBy(val)}
+              sortOptions={[{label: 'شخص', value: 'payee'}, {label: 'سریال', value: 'serial'}]}
             />
 
-            <Box sx={{ borderBottom: 1, borderColor: 'divider', maxWidth: '100%' }}>
-                <Tabs value={tab} onChange={(_e, newValue) => setTab(newValue)} variant="scrollable" scrollButtons="auto" allowScrollButtonsMobile>
-                    <Tab label="همه چک‌ها" />
-                    <Tab label="سررسید امروز" />
-                    <Tab label="سررسید فردا" />
-                    <Tab label="چک‌های برگشتی" />
+            {/* ========== NEW: Tabs for filtering ========== */}
+            <Box sx={{ borderBottom: 1, borderColor: 'divider', my: 2 }}>
+                <Tabs value={filter} onChange={(event, newValue) => setFilter(newValue)} aria-label="Filter checks">
+                    <Tab label="همه چک‌ها" value="all" />
+                    <Tab label="سررسید امروز" value="today" />
+                    <Tab label="سررسید فردا" value="tomorrow" />
+                    <Tab label="چک‌های برگشتی" value="bounced" />
                 </Tabs>
             </Box>
 
-            <EnhancedMuiTable
-                rows={filteredChecks}
-                headCells={headCells}
-                title="لیست چک‌ها"
-                actions={actions}
-                onDelete={(selectedIds) => selectedIds.forEach(id => dispatch(deleteCheck(id.toString())))}
-            />
+            <Box sx={{ width: '100%', overflowX: 'auto' }}>
+                <EnhancedMuiTable
+                    rows={filteredChecks}
+                    headCells={headCells}
+                    title="لیست چک‌ها"
+                    actions={actions}
+                    onDelete={(selectedIds) => selectedIds.forEach(id => dispatch(deleteCheck(id.toString())))}
+                />
+            </Box>
 
+            {/* --- Dialogs remain unchanged --- */}
             <FormDialog open={dialogState.add} onClose={() => setDialogState({ ...dialogState, add: false })} title="ثبت چک جدید" onSave={handleAddSubmit(onAddSubmit)}>
                 <Form config={[
                     { name: 'serial', label: 'سریال چک', type: 'text', rules: { required: 'این فیلد الزامی است' } },
