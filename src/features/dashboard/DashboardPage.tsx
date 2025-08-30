@@ -17,6 +17,7 @@ import {
     Tune as TuneIcon, Palette as PaletteIcon, DataSaverOn as DataSaverOnIcon,
     Backup as BackupIcon, Security as SecurityIcon
 } from '@mui/icons-material';
+import TouchAppIcon from '@mui/icons-material/TouchApp';
 
 const iconMap: { [key: string]: React.ReactNode } = {
   Dashboard: <DashboardIcon fontSize="large" />, Settings: <SettingsIcon fontSize="large" />,
@@ -39,7 +40,8 @@ const ShortcutCard: React.FC<{ shortcut: Shortcut, index: number, onRemove: (id:
   return (
     <Draggable draggableId={shortcut.id} index={index} isDragDisabled={isDragDisabled}>
       {(provided) => (
-        <Grid 
+        <Grid
+        
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
@@ -82,9 +84,9 @@ const DashboardPage = () => {
   return (
     <>
       <Typography variant="h4" gutterBottom sx={{textAlign:'center', fontSize: { xs: '1.25rem', sm: '1.75rem' } }}>داشبورد دسترسی سریع</Typography>
-      {(
+      {!isMobile && (
         <Typography color="text.secondary" sx={{ mb: 3 , textAlign: 'center'}}>
-          برای افزودن میانبر، آیتم مورد نظر را از منوی کناری به این صفحه بکشید. برای مرتب‌سازی، میانبرها را جابجا کنید
+          برای مرتب‌سازی، میانبرها را جابجا کنید. برای افزودن، آیتم‌ها را از منو بکشید و اینجا رها کنید.
         </Typography>
       )}
 
@@ -98,9 +100,10 @@ const DashboardPage = () => {
             sx={{ 
               backgroundColor: snapshot.isDraggingOver ? 'action.hover' : 'transparent',
               borderRadius: 1,
-              p: 1,
-              minHeight: 200,
+              p: 2, // Add some padding
+              minHeight: 400, // Increase min height
               transition: 'background-color 0.2s ease',
+              alignContent: 'flex-start' // Align items to the top
             }}
           >
             {shortcuts.map((shortcut, index) => (
@@ -108,7 +111,16 @@ const DashboardPage = () => {
             ))}
             {provided.placeholder}
             {shortcuts.length === 0 && (
-              <Grid sx={{minHeight: '200px', display: 'flex'}}> 
+              <Grid sx={{ minHeight: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Paper sx={{ p: 4, textAlign: 'center', backgroundColor: 'rgba(255, 255, 255, 0.7)' }}>
+                  <TouchAppIcon sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }} />
+                  <Typography variant="h6" color="text.secondary">
+                    داشبورد شما خالی است!
+                  </Typography>
+                  <Typography color="text.secondary">
+                    برای افزودن میانبر، یک آیتم را از منوی کناری بکشید و در این قسمت رها کنید.
+                  </Typography>
+                </Paper>
               </Grid>
             )}
           </Grid>

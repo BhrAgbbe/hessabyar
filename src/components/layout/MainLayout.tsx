@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import Link from "next/link"; 
-import { useRouter } from "next/router"; 
+// Link component is no longer needed here for the sidebar items
+import { useRouter } from "next/router";
 import { useSelector, useDispatch } from "react-redux";
 import {
   DragDropContext,
@@ -28,10 +28,11 @@ import MenuIcon from "@mui/icons-material/Menu";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
+import Link from 'next/link'; // Keep for top-level non-draggable items
 import type { RootState } from "../../store/store";
 import { addShortcut, setShortcuts } from "../../store/slices/dashboardSlice";
 import type { Shortcut } from "../../store/slices/dashboardSlice";
-import { navItems, allDraggableItems, type NavChild } from "./menuItems";
+import { navItems, type NavChild, allDraggableItems } from "./menuItems";
 
 const drawerWidth = 240;
 
@@ -39,12 +40,14 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const dispatch = useDispatch();
-  const router = useRouter(); 
-  const dashboardShortcuts = useSelector((state: RootState) => state.dashboard);
+  const router = useRouter();
+  const dashboardShortcuts = useSelector(
+    (state: RootState) => state.dashboard
+  );
   const { backgroundImage } = useSelector((state: RootState) => state.settings);
   const [nestedListOpen, setNestedListOpen] = useState<{
     [key: string]: boolean;
-  }>({ مدیریت: true });
+  }>({ مدیریت: true, عملیات: true, گزارشات: true, امکانات: true });
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const theme = useTheme();
@@ -66,6 +69,7 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
   const handleDragEnd = (result: DropResult) => {
     const { source, destination, draggableId } = result;
     if (!destination) return;
+
     if (
       source.droppableId === "dashboard" &&
       destination.droppableId === "dashboard"
@@ -74,8 +78,7 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
       const [reorderedItem] = items.splice(source.index, 1);
       items.splice(destination.index, 0, reorderedItem);
       dispatch(setShortcuts(items));
-    }
-    if (
+    } else if (
       source.droppableId.startsWith("sidebar-") &&
       destination.droppableId === "dashboard"
     ) {
@@ -115,7 +118,10 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
                   timeout="auto"
                   unmountOnExit
                 >
-                  <Droppable droppableId={`sidebar-${item.text}`}>
+                  <Droppable
+                    droppableId={`sidebar-${item.text}`}
+                    isDropDisabled={true}
+                  >
                     {(provided) => (
                       <List
                         component="div"
@@ -130,48 +136,55 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
                             index={index}
                             isDragDisabled={isMobile}
                           >
-                            {(provided) => (
+                            {(provided, snapshot) => (
                               <ListItem
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
-                                {...provided.dragHandleProps}
+                                {...provided.dragHandleProps} // IMPORTANT: dragHandleProps moved to ListItem
                                 disablePadding
+                                sx={{
+                                  paddingRight: 2, // Indent the item slightly
+                                  backgroundColor: snapshot.isDragging
+                                    ? theme.palette.action.hover
+                                    : "transparent",
+                                }}
                               >
-                                <Link href={child.path} passHref legacyBehavior>
-                                  <ListItemButton
-                                    component="a"
-                                    sx={{
-                                      pr: 4,
-                                      display: "flex",
-                                      justifyContent: "space-between",
-                                      alignItems: "center",
-                                      width: "100%",
-                                    }}
-                                    selected={router.pathname === child.path} 
-                                    onClick={() => {
-                                      if (isMobile) {
-                                        handleDrawerToggle();
-                                      }
-                                    }}
-                                  >
-                                    <ListItemText
-                                      primary={child.text}
-                                      sx={{ textAlign: "right" }}
-                                    />
-                                    {isMobile && (
-                                      <IconButton
-                                        edge="end"
-                                        onClick={(e) => {
-                                          e.preventDefault();
-                                          e.stopPropagation();
-                                          handleAddShortcut(child);
-                                        }}
-                                      >
-                                        <AddCircleOutlineIcon />
-                                      </IconButton>
-                                    )}
-                                  </ListItemButton>
-                                </Link>
+                                {/* REMOVED Link wrapper, using onClick for navigation */}
+                                <ListItemButton
+                                  component="div" // Changed to div to avoid conflicts
+                                  sx={{
+                                    pr: 2,
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    alignItems: "center",
+                                    width: "100%",
+                                  }}
+                                  selected={router.pathname === child.path}
+                                  onClick={() => {
+                                    // Handle navigation programmatically
+                                    router.push(child.path);
+                                    if (isMobile) {
+                                      handleDrawerToggle();
+                                    }
+                                  }}
+                                >
+                                  <ListItemText
+                                    primary={child.text}
+                                    sx={{ textAlign: "right" }}
+                                  />
+                                  {isMobile && (
+                                    <IconButton
+                                      edge="end"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation(); // Stop propagation to prevent navigation
+                                        handleAddShortcut(child);
+                                      }}
+                                    >
+                                      <AddCircleOutlineIcon />
+                                    </IconButton>
+                                  )}
+                                </ListItemButton>
                               </ListItem>
                             )}
                           </Draggable>
@@ -184,6 +197,7 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
               </React.Fragment>
             );
           }
+          // Non-draggable, top-level items like Dashboard still use Link
           return (
             <Link
               href={item.path as string}
@@ -193,7 +207,7 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
             >
               <ListItemButton
                 component="a"
-                selected={router.pathname === item.path} 
+                selected={router.pathname === item.path}
                 onClick={() => {
                   if (isMobile) {
                     handleDrawerToggle();
@@ -212,7 +226,7 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
-      <Box sx={{ display: "flex" }}>
+       <Box sx={{ display: "flex" }}>
         <AppBar
           position="fixed"
           sx={{
