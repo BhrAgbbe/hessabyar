@@ -1,3 +1,6 @@
+
+import { format } from 'date-fns-jalali';
+
 export const initialIranianBanks = [
     'ملت', 'ملی', 'صادرات', 'تجارت', 'سپه', 'مسکن', 'کشاورزی', 'پارسیان', 'پاسارگاد',
     'اقتصاد نوین', 'سامان', 'سینا', 'شهر', 'دی', 'آینده', 'سرمایه', 'پست بانک ایران',
@@ -23,4 +26,17 @@ export const toEnglishDigits = (str: string): string => {
   return str
     .replace(persianDigits, (d) => String(d.charCodeAt(0) - 1776))
     .replace(arabicDigits, (d) => String(d.charCodeAt(0) - 1632));
+};
+
+
+
+export const formatJalaliDate = (date: Date | string | number) => {
+  if (!date) return '';
+  try {
+    const d = new Date(date);
+    const formatted = format(d, 'yyyy/MM/dd'); 
+    return toPersianDigits(formatted);  
+  } catch {
+    return '';
+  }
 };

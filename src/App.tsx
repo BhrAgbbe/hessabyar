@@ -39,6 +39,7 @@ const PrivateRoute = ({ children }: { children: JSX.Element }) => {
   return isAuthenticated ? children : <Navigate to="/login" />;
 };
 
+
 function App() {
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
 

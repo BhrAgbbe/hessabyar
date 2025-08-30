@@ -1,41 +1,23 @@
 import { useState, useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
-  Box,
-  Typography,
-  Paper,
-  Button,
-  TextField,
-  Table,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  IconButton,
-  FormControlLabel,
-  Checkbox,
-  RadioGroup,
-  Radio,
-  Snackbar,
-  Alert,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
+  Box, Typography, Paper, Button, TextField, Table,
+  TableContainer, TableHead, TableRow, TableCell, TableBody,
+  IconButton, FormControlLabel, Checkbox, RadioGroup, Radio,
+  Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions, Grid
 } from "@mui/material";
-import Grid from "@mui/material/Grid";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useForm, Controller, type SubmitHandler } from "react-hook-form";
+import { yupResolver } from '@hookform/resolvers/yup';
 import { type RootState } from "../../store/store";
 import {
   type Product,
-  type ProductFormData,
   addProduct,
   editProduct,
   deleteProduct,
 } from "../../store/slices/productsSlice";
+import { productSchema, type ProductFormData } from "../../schema/productSchema"; 
 
 const ProductsPage = () => {
   const dispatch = useDispatch();
@@ -52,7 +34,22 @@ const ProductsPage = () => {
   const [productToDelete, setProductToDelete] = useState<number | null>(null);
 
   const { products } = useSelector((state: RootState) => state);
-  const { control, handleSubmit, reset } = useForm<ProductFormData>();
+
+  const { control, handleSubmit, reset, formState: { errors } } = useForm<ProductFormData>({
+    resolver: yupResolver(productSchema),
+    defaultValues: {
+      name: "",
+      unitId: 0,
+      groupId: 0,
+      model: "",
+      purchasePrice: 0,
+      wholesalePrice: 0,
+      retailPrice: 0,
+      warehouseId: 0,
+      barcode: "",
+      allowDuplicate: false,
+    }
+  });
 
   const getNextId = () => {
     const maxId =
@@ -82,21 +79,15 @@ const ProductsPage = () => {
   };
 
   const onSubmit: SubmitHandler<ProductFormData> = (data) => {
-    const processedData = {
-      ...data,
-      purchasePrice: Number(data.purchasePrice),
-      wholesalePrice: Number(data.wholesalePrice),
-      retailPrice: Number(data.retailPrice),
-    };
     if (editingProduct) {
-      dispatch(editProduct({ ...processedData, id: editingProduct.id }));
+      dispatch(editProduct({ ...data, id: editingProduct.id }));
       setSnackbar({
         open: true,
         message: "کالا با موفقیت ویرایش شد.",
         severity: "success",
       });
     } else {
-      dispatch(addProduct(processedData));
+      dispatch(addProduct(data));
       setSnackbar({
         open: true,
         message: "کالا با موفقیت ثبت شد.",
@@ -151,9 +142,14 @@ const ProductsPage = () => {
                 <Controller
                   name="name"
                   control={control}
-                  rules={{ required: true }}
                   render={({ field }) => (
-                    <TextField {...field} label="نام کالا" fullWidth />
+                    <TextField 
+                      {...field} 
+                      label="نام کالا" 
+                      fullWidth 
+                      error={!!errors.name}
+                      helperText={errors.name?.message}
+                    />
                   )}
                 />
               </Grid>
@@ -161,9 +157,15 @@ const ProductsPage = () => {
                 <Controller
                   name="unitId"
                   control={control}
-                  rules={{ required: true }}
                   render={({ field }) => (
-                    <TextField {...field} label="واحد کالا" fullWidth />
+                    <TextField 
+                      {...field} 
+                      label="واحد کالا" 
+                      type="number"
+                      fullWidth 
+                      error={!!errors.unitId}
+                      helperText={errors.unitId?.message}
+                    />
                   )}
                 />
               </Grid>
@@ -180,13 +182,14 @@ const ProductsPage = () => {
                 <Controller
                   name="purchasePrice"
                   control={control}
-                  rules={{ required: true }}
                   render={({ field }) => (
                     <TextField
                       {...field}
                       type="number"
                       label="قیمت خرید"
                       fullWidth
+                      error={!!errors.purchasePrice}
+                      helperText={errors.purchasePrice?.message}
                     />
                   )}
                 />
@@ -195,13 +198,14 @@ const ProductsPage = () => {
                 <Controller
                   name="retailPrice"
                   control={control}
-                  rules={{ required: true }}
                   render={({ field }) => (
                     <TextField
                       {...field}
                       type="number"
                       label="قیمت فروش"
                       fullWidth
+                      error={!!errors.retailPrice}
+                      helperText={errors.retailPrice?.message}
                     />
                   )}
                 />
@@ -210,13 +214,14 @@ const ProductsPage = () => {
                 <Controller
                   name="wholesalePrice"
                   control={control}
-                  rules={{ required: true }}
                   render={({ field }) => (
                     <TextField
                       {...field}
                       type="number"
                       label="قیمت فروش عمده"
                       fullWidth
+                      error={!!errors.wholesalePrice}
+                      helperText={errors.wholesalePrice?.message}
                     />
                   )}
                 />
@@ -225,13 +230,14 @@ const ProductsPage = () => {
                 <Controller
                   name="warehouseId"
                   control={control}
-                  rules={{ required: true }}
                   render={({ field }) => (
                     <TextField
                       {...field}
                       type="number"
                       label="کد انبار"
                       fullWidth
+                      error={!!errors.warehouseId}
+                      helperText={errors.warehouseId?.message}
                     />
                   )}
                 />
@@ -267,6 +273,7 @@ const ProductsPage = () => {
                   <Button
                     variant="outlined"
                     color="error"
+                    disabled={!editingProduct}
                     onClick={() =>
                       editingProduct && handleDeleteClick(editingProduct.id)
                     }

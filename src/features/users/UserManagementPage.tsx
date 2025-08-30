@@ -4,6 +4,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { useSelector, useDispatch } from "react-redux";
+import { yupResolver } from "@hookform/resolvers/yup";
 import { type RootState } from "../../store/store";
 import {
   addUser,
@@ -11,16 +12,17 @@ import {
   deleteUser,
   type User,
 } from "../../store/slices/usersSlice";
-
+import {
+  createUserSchema,
+  editUserSchema,
+  type UserFormData,
+} from "../../schema/userSchema"; 
 import FormDialog from "../../components/FormDialog";
 import ConfirmationDialog from "../../components/ConfirmationDialog";
 import EnhancedMuiTable, { type HeadCell, type Action } from '../../components/Table';
 import Form, { type FormField } from "../../components/Form";
 import { useToast } from "../../hooks/useToast";
 
-type UserFormData = Omit<User, "id">;
-
-const userRoles: User['role'][] = ["مدیر سیستم", "فروشنده", "حسابدار", "انباردار"];
 
 const UserManagementPage = () => {
   const users = useSelector((state: RootState) => state.users);
@@ -30,9 +32,14 @@ const UserManagementPage = () => {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
 
+  const activeSchema = editingUser ? editUserSchema : createUserSchema;
+
   const { control, handleSubmit, reset, formState: { errors } } = useForm<UserFormData>({
     defaultValues: { username: "", role: "فروشنده", password: "" },
+    resolver: yupResolver(activeSchema),
   });
+
+  const userRoles: User['role'][] = ["مدیر سیستم", "فروشنده", "حسابدار", "انباردار"];
 
   const userFormConfig = useMemo<FormField<UserFormData>[]>(
     () => [
@@ -40,32 +47,26 @@ const UserManagementPage = () => {
         name: "username",
         label: "نام کاربری",
         type: "text",
-        rules: { required: "نام کاربری اجباری است" },
       },
       {
         name: "password",
-        label: "رمز عبور",
+        label: editingUser ? "رمز عبور جدید (اختیاری)" : "رمز عبور",
         type: "password",
-        rules: {
-          required: "رمز عبور اجباری است",
-          minLength: { value: 4, message: "رمز عبور باید حداقل ۴ حرف باشد" },
-        },
       },
       {
         name: "role",
         label: "نقش کاربر",
         type: "select",
-        rules: { required: "انتخاب نقش کاربر اجباری است" },
         options: userRoles.map((role) => ({ id: role, label: role })),
       },
     ],
-    []
+    [editingUser,userRoles] 
   );
 
   useEffect(() => {
     if (isFormOpen) {
       if (editingUser) {
-        reset(editingUser);
+        reset({ ...editingUser, password: "" });
       } else {
         reset({ username: "", role: "فروشنده", password: "" });
       }
@@ -102,7 +103,7 @@ const UserManagementPage = () => {
       dispatch(editUser({ ...data, id: editingUser.id }));
       showToast("کاربر با موفقیت ویرایش شد", "success");
     } else {
-      dispatch(addUser(data));
+      dispatch(addUser(data as Omit<User, 'id'>));
       showToast("کاربر با موفقیت اضافه شد", "success");
     }
     handleCloseForm();

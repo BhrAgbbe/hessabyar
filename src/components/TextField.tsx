@@ -6,6 +6,16 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 const CustomTextField: React.FC<TextFieldProps> = (props) => {
   const [showPassword, setShowPassword] = useState(false);
 
+  const commonSx = {
+    input: {
+      textAlign: 'right',
+      '&::placeholder': {
+        textAlign: 'right',
+      },
+    },
+    ...props.sx,
+  };
+
   if (props.type === 'password') {
     return (
       <TextField
@@ -13,7 +23,7 @@ const CustomTextField: React.FC<TextFieldProps> = (props) => {
         variant="outlined"
         fullWidth
         type={showPassword ? 'text' : 'password'}
-        sx={{ input: { textAlign: 'right' }, ...props.sx }}
+        sx={commonSx}
         InputProps={{
           endAdornment: (
             <InputAdornment position="end">
@@ -33,7 +43,7 @@ const CustomTextField: React.FC<TextFieldProps> = (props) => {
       {...props}
       variant="outlined"
       fullWidth
-      sx={{ input: { textAlign: 'right' }, ...props.sx }}
+      sx={commonSx}
     />
   );
 };

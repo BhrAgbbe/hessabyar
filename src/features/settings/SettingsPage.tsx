@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Box,
   Typography,
@@ -15,50 +15,52 @@ import {
   Button,
 } from "@mui/material";
 import type { SelectChangeEvent } from "@mui/material";
-
 import type { RootState } from "../../store/store";
-import {
-  setAllSettings,
-  type AppSettings,
-} from "../../store/slices/settingsSlice";
+import { setAllSettings, type AppSettings } from "../../store/slices/settingsSlice";
 import { useToast } from "../../hooks/useToast";
 
-const SettingsPage = () => {
+const SettingsPage: React.FC = () => {
   const dispatch = useDispatch();
   const { showToast } = useToast();
   const savedSettings = useSelector((state: RootState) => state.settings);
 
-  const [localSettings, setLocalSettings] =
-    useState<AppSettings>(savedSettings);
+  const [localSettings, setLocalSettings] = useState<AppSettings>(savedSettings);
 
   useEffect(() => {
     setLocalSettings(savedSettings);
   }, [savedSettings]);
 
+
+  const writeSetting = <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => {
+    setLocalSettings((prev) => {
+      const next = { ...prev, [key]: value } as unknown as AppSettings;
+      return next;
+    });
+  };
+
   const handleSwitchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, checked } = event.target;
-    setLocalSettings((prev) => ({ ...prev, [name]: checked }));
+    const name = event.target.name as keyof AppSettings;
+    const checked = event.target.checked;
+    writeSetting(name, checked as AppSettings[typeof name]);
   };
 
   const handleTextChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
-    const numericValue = value === "" ? 0 : parseInt(value, 10);
-    if (!isNaN(numericValue)) {
-      setLocalSettings((prev) => ({
-        ...prev,
-        [name as keyof AppSettings]: numericValue,
-      }));
+    const name = event.target.name as keyof AppSettings;
+    const raw = event.target.value;
+    if (raw === "") {
+      writeSetting(name, 0 as AppSettings[typeof name]);
+      return;
+    }
+    const numericValue = parseInt(raw, 10);
+    if (!Number.isNaN(numericValue)) {
+      writeSetting(name, numericValue as AppSettings[typeof name]);
     }
   };
 
-  const handleSelectChange = (
-    event: SelectChangeEvent<AppSettings["invoicePrintSize"]>
-  ) => {
-    const { name, value } = event.target;
-    setLocalSettings((prev) => ({
-      ...prev,
-      [name as keyof AppSettings]: value,
-    }));
+  const handleSelectChange = (event: SelectChangeEvent) => {
+    const name = event.target.name as keyof AppSettings;
+    const value = event.target.value as AppSettings[typeof name];
+    writeSetting(name, value);
   };
 
   const handleSaveChanges = () => {
@@ -87,9 +89,11 @@ const SettingsPage = () => {
         }}
         control={
           <Switch
-            checked={!!localSettings[name]}
+            checked={Boolean(localSettings[name])}
             onChange={handleSwitchChange}
-            name={name}
+            name={String(name)}
+            inputProps={{ "aria-label": label }}
+            size="small"
           />
         }
         label={label}
@@ -108,16 +112,13 @@ const SettingsPage = () => {
         تنظیمات عمومی
       </Typography>
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pl: 1 }}>
-        <SettingItem
-          name="checkReminderWarning"
-          label="هشدار اعلام زمان باقی مانده چک"
-        >
+        <SettingItem name="checkReminderWarning" label="هشدار اعلام زمان باقی مانده چک">
           {localSettings.checkReminderWarning && (
             <TextField
               label="تعداد روز قبل از سررسید"
               name="checkReminderDays"
               type="number"
-              value={localSettings.checkReminderDays}
+              value={localSettings.checkReminderDays ?? ""}
               onChange={handleTextChange}
               variant="outlined"
               size="small"
@@ -127,15 +128,9 @@ const SettingsPage = () => {
           )}
         </SettingItem>
         <Divider />
-        <SettingItem
-          name="syncCustomersToContacts"
-          label="ارتباط و افزودن اطلاعات مشتریان به دفترچه تلفن"
-        />
+        <SettingItem name="syncCustomersToContacts" label="ارتباط و افزودن اطلاعات مشتریان به دفترچه تلفن" />
         <Divider />
-        <SettingItem
-          name="autoBackupOnExit"
-          label="انجام خودکار پشتیبان گیری هنگام بستن برنامه"
-        />
+        <SettingItem name="autoBackupOnExit" label="انجام خودکار پشتیبان گیری هنگام بستن برنامه" />
       </Box>
 
       <Divider sx={{ my: 4 }} />
@@ -144,47 +139,24 @@ const SettingsPage = () => {
         تنظیمات فاکتور
       </Typography>
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pl: 1 }}>
-        <SettingItem
-          name="allowUserDiscount"
-          label="فعال کردن تخفیف ویژه برای کاربر عادی"
-        />
+        <SettingItem name="allowUserDiscount" label="فعال کردن تخفیف ویژه برای کاربر عادی" />
         <Divider />
-        <SettingItem
-          name="autoAddQuantity"
-          label="درج خودکار تعداد کالا در فاکتور فروش (پیش‌فرض ۱)"
-        />
+        <SettingItem name="autoAddQuantity" label="درج خودکار تعداد کالا در فاکتور فروش (پیش‌فرض ۱)" />
         <Divider />
-        <SettingItem
-          name="useBarcodeScanner"
-          label="از دستگاه بارکدخوان استفاده می‌شود"
-        />
+        <SettingItem name="useBarcodeScanner" label="از دستگاه بارکدخوان استفاده می‌شود" />
         <Divider />
-        <SettingItem
-          name="checkStockOnHand"
-          label="بررسی موجودی انبار در فروش (جلوگیری از فروش منفی)"
-        />
+        <SettingItem name="checkStockOnHand" label="بررسی موجودی انبار در فروش (جلوگیری از فروش منفی)" />
         <Divider />
-        <SettingItem
-          name="showDebtOnInvoice"
-          label="نمایش بدهی در چاپ فاکتور"
-        />
+        <SettingItem name="showDebtOnInvoice" label="نمایش بدهی در چاپ فاکتور" />
         <Divider />
-        <SettingItem
-          name="showProfitOnInvoice"
-          label="نمایش سود در فاکتور فروش (فقط مدیر)"
-        />
+        <SettingItem name="showProfitOnInvoice" label="نمایش سود در فاکتور فروش (فقط مدیر)" />
         <Divider />
         <SettingItem name="quickPrintInvoice" label="چاپ سریع فاکتور" />
       </Box>
 
       <FormControl sx={{ mt: 3, width: { xs: "100%", sm: 250 } }} size="small">
         <InputLabel>اندازه چاپ فاکتور</InputLabel>
-        <Select
-          value={localSettings.invoicePrintSize}
-          label="اندازه چاپ فاکتور"
-          name="invoicePrintSize"
-          onChange={handleSelectChange}
-        >
+        <Select value={localSettings.invoicePrintSize ?? ""} label="اندازه چاپ فاکتور" name="invoicePrintSize" onChange={handleSelectChange}>
           <MenuItem value="A4">A4</MenuItem>
           <MenuItem value="A5">A5</MenuItem>
           <MenuItem value="Receipt">فیش پرینتر</MenuItem>
@@ -197,11 +169,7 @@ const SettingsPage = () => {
         <Button variant="contained" onClick={handleSaveChanges}>
           ذخیره تغییرات
         </Button>
-        <Button
-          variant="outlined"
-          color="secondary"
-          onClick={handleResetChanges}
-        >
+        <Button variant="outlined" color="secondary" onClick={handleResetChanges}>
           بازنشانی
         </Button>
       </Box>

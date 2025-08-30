@@ -4,6 +4,7 @@ import { Box, Button, Chip, Typography, Tabs, Tab } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useForm, type SubmitHandler } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
 import { isToday, isTomorrow, isPast } from "date-fns";
 
 import { type RootState } from "../../store/store";
@@ -14,7 +15,13 @@ import {
   type Check,
   type CheckStatus,
 } from "../../store/slices/checksSlice";
+
 import { ToastContext } from "../../contexts/toast.context";
+import {
+  checkSchema,
+  editCheckSchema,
+  updateBySerialSchema,
+} from "../../schema/checkSchema";
 
 import EnhancedMuiTable, {
   type HeadCell,
@@ -55,25 +62,34 @@ const CheckManagementPage = () => {
     control: addFormControl,
     handleSubmit: handleAddSubmit,
     reset: resetAddForm,
+    formState: { errors: addFormErrors },
   } = useForm<CheckFormData>({
+    resolver: yupResolver(checkSchema),
     defaultValues: {
       serial: "",
       amount: 0,
       payee: "",
-      dueDate: new Date().toISOString(),
+      dueDate: new Date().toISOString().split("T")[0],
       type: "received",
     },
   });
+
   const {
     control: editFormControl,
     handleSubmit: handleEditSubmit,
     reset: resetEditForm,
-  } = useForm<EditFormData>();
+    formState: { errors: editFormErrors },
+  } = useForm<EditFormData>({
+    resolver: yupResolver(editCheckSchema),
+  });
+
   const {
     control: updateSerialFormControl,
     handleSubmit: handleUpdateBySerialSubmit,
     reset: resetUpdateSerialForm,
+    formState: { errors: updateSerialFormErrors },
   } = useForm<UpdateBySerialData>({
+    resolver: yupResolver(updateBySerialSchema),
     defaultValues: { serial: "", status: "پاس شده" },
   });
 
@@ -82,7 +98,7 @@ const CheckManagementPage = () => {
       resetEditForm({
         status: editingCheck.status,
         amount: editingCheck.amount,
-        dueDate: editingCheck.dueDate,
+        dueDate: editingCheck.dueDate.split("T")[0],
       });
     }
   }, [editingCheck, resetEditForm]);
@@ -144,7 +160,7 @@ const CheckManagementPage = () => {
       serial: "",
       amount: 0,
       payee: "",
-      dueDate: new Date().toISOString(),
+      dueDate: new Date().toISOString().split("T")[0],
       type: "received",
     });
   };
@@ -273,8 +289,10 @@ const CheckManagementPage = () => {
       <Box sx={{ borderBottom: 1, borderColor: "divider", my: 2 }}>
         <Tabs
           value={filter}
-          onChange={(event, newValue) => setFilter(newValue)}
+          onChange={(event, newValue: string) => setFilter(newValue)}
           aria-label="Filter checks"
+          variant="scrollable"
+          scrollButtons="auto"
         >
           <Tab label="همه چک‌ها" value="all" />
           <Tab label="سررسید امروز" value="today" />
@@ -307,28 +325,21 @@ const CheckManagementPage = () => {
               name: "serial",
               label: "سریال چک",
               type: "text",
-              rules: { required: "این فیلد الزامی است" },
             },
             {
               name: "payee",
               label: "نام شخص",
               type: "text",
-              rules: { required: "این فیلد الزامی است" },
             },
             {
               name: "amount",
               label: "مبلغ",
               type: "number",
-              rules: {
-                required: "این فیلد الزامی است",
-                min: { value: 1, message: "مبلغ باید مثبت باشد" },
-              },
             },
             {
               name: "dueDate",
               label: "تاریخ سررسید",
               type: "date",
-              rules: { required: "این فیلد الزامی است" },
             },
             {
               name: "type",
@@ -338,11 +349,10 @@ const CheckManagementPage = () => {
                 { id: "received", label: "دریافتی" },
                 { id: "issued", label: "پرداختی" },
               ],
-              rules: { required: "این فیلد الزامی است" },
             },
           ]}
           control={addFormControl}
-          errors={{}}
+          errors={addFormErrors}
         />
       </FormDialog>
 
@@ -359,16 +369,11 @@ const CheckManagementPage = () => {
               name: "amount",
               label: "مبلغ",
               type: "number",
-              rules: {
-                required: "این فیلد الزامی است",
-                min: { value: 1, message: "مبلغ باید مثبت باشد" },
-              },
             },
             {
               name: "dueDate",
               label: "تاریخ سررسید",
               type: "date",
-              rules: { required: "این فیلد الزامی است" },
             },
             {
               name: "status",
@@ -379,11 +384,10 @@ const CheckManagementPage = () => {
                 { id: "پاس شده", label: "پاس شده" },
                 { id: "برگشتی", label: "برگشتی" },
               ],
-              rules: { required: "این فیلد الزامی است" },
             },
           ]}
           control={editFormControl}
-          errors={{}}
+          errors={editFormErrors}
         />
       </FormDialog>
 
@@ -401,7 +405,6 @@ const CheckManagementPage = () => {
               name: "serial",
               label: "سریال چک",
               type: "text",
-              rules: { required: "این فیلد الزامی است" },
             },
             {
               name: "status",
@@ -412,11 +415,10 @@ const CheckManagementPage = () => {
                 { id: "پاس شده", label: "پاس شده" },
                 { id: "برگشتی", label: "برگشتی" },
               ],
-              rules: { required: "این فیلد الزامی است" },
             },
           ]}
           control={updateSerialFormControl}
-          errors={{}}
+          errors={updateSerialFormErrors}
         />
       </FormDialog>
 

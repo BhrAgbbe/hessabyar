@@ -9,7 +9,7 @@ import {
   StepConnector,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { type StepIconProps } from '@mui/material/StepIcon';
+import type { StepIconProps } from '@mui/material/StepIcon';
 
 interface StepperProps {
   steps: string[];
@@ -20,12 +20,14 @@ interface StepperProps {
 }
 
 const toPersianDigitsString = (num: number | string): string => {
-  const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-  return String(num).replace(/[0-9]/g, (digit) => persianDigits[parseInt(digit)]);
+  const persianDigits = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+  return String(num).replace(/[0-9]/g, (digit) => persianDigits[parseInt(digit, 10)]);
 };
 
 const PersianStepIcon = (props: StepIconProps) => {
   const { active, completed, className, icon } = props;
+  const num = Number(icon);
+  const display = Number.isNaN(num) ? String(icon) : toPersianDigitsString(num);
 
   return (
     <Box
@@ -33,22 +35,22 @@ const PersianStepIcon = (props: StepIconProps) => {
         backgroundColor: active || completed ? 'primary.main' : 'grey.400',
         zIndex: 1,
         color: '#fff',
-        width: 24,
-        height: 24,
+        width: 28,
+        height: 28,
         display: 'flex',
         borderRadius: '50%',
         justifyContent: 'center',
         alignItems: 'center',
         fontSize: '0.875rem',
         fontWeight: 'bold',
+        boxShadow: active ? 2 : 0,
       }}
       className={className}
     >
-      {toPersianDigitsString(icon as number)}
+      {display}
     </Box>
   );
 };
-
 
 const CustomConnector = styled(StepConnector)({
   '& .MuiStepConnector-line': {
@@ -65,16 +67,18 @@ const Stepper: React.FC<StepperProps> = ({ steps, getStepContent, activeStep, on
         connector={<CustomConnector />}
         sx={{ mb: 4 }}
       >
-        {steps.map((label) => (
-          <Step key={label}>
+        {steps.map((label, idx) => (
+          <Step key={`${label}-${idx}`}>
             <StepLabel StepIconComponent={PersianStepIcon}>{label}</StepLabel>
           </Step>
         ))}
       </MuiStepper>
-      <>
+
+      <Box>
         <Typography component="div" sx={{ mb: 1 }}>
           {getStepContent(activeStep)}
         </Typography>
+
         <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
           <Button
             color="inherit"
@@ -84,12 +88,14 @@ const Stepper: React.FC<StepperProps> = ({ steps, getStepContent, activeStep, on
           >
             بازگشت
           </Button>
+
           <Box sx={{ flex: '1 1 auto' }} />
+
           <Button onClick={onNext} variant="contained">
             {activeStep === steps.length - 1 ? 'پایان' : 'بعدی'}
           </Button>
         </Box>
-      </>
+      </Box>
     </Box>
   );
 };

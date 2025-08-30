@@ -8,6 +8,7 @@ import {
   TableHead,
   TableRow,
   Paper,
+  TableFooter,
   TablePagination,
   TableSortLabel,
   Checkbox,
@@ -18,10 +19,16 @@ import {
 } from "@mui/material";
 import { visuallyHidden } from "@mui/utils";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { toPersianDigits } from "../utils/utils";
+import { useTheme } from "@mui/material/styles";
+import FirstPageIcon from "@mui/icons-material/FirstPage";
+import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
+import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
+import LastPageIcon from "@mui/icons-material/LastPage";
 
-interface Data {
-  id: number | string;
+import { toPersianDigits, formatJalaliDate } from "../utils/utils";
+
+export interface Data {
+  id: string | number;
 }
 
 export interface HeadCell<T> {
@@ -42,34 +49,30 @@ export interface Action<T> {
 type Order = "asc" | "desc";
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
-  }
+  const va = a[orderBy];
+  const vb = b[orderBy];
+
+  if (va == null || vb == null) return 0;
+  if (va instanceof Date && vb instanceof Date) return vb.getTime() - va.getTime();
+  if (typeof va === "number" && typeof vb === "number") return vb - va;
+  const sa = String(va);
+  const sb = String(vb);
+  if (sb < sa) return -1;
+  if (sb > sa) return 1;
   return 0;
 }
 
-function getComparator<T>(
-  order: Order,
-  orderBy: keyof T
-): (a: T, b: T) => number {
+function getComparator<T>(order: Order, orderBy: keyof T) {
   return order === "desc"
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
+    ? (a: T, b: T) => descendingComparator(a, b, orderBy)
+    : (a: T, b: T) => -descendingComparator(a, b, orderBy);
 }
 
-function stableSort<T>(
-  array: readonly T[],
-  comparator: (a: T, b: T) => number
-) {
+function stableSort<T>(array: readonly T[], comparator: (a: T, b: T) => number) {
   const stabilizedThis = array.map((el, index) => [el, index] as [T, number]);
   stabilizedThis.sort((a, b) => {
     const order = comparator(a[0], b[0]);
-    if (order !== 0) {
-      return order;
-    }
+    if (order !== 0) return order;
     return a[1] - b[1];
   });
   return stabilizedThis.map((el) => el[0]);
@@ -80,50 +83,36 @@ interface EnhancedTableHeadProps<T> {
   onRequestSort: (event: React.MouseEvent<unknown>, property: keyof T) => void;
   onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
   order: Order;
-  orderBy: string;
+  orderBy: keyof T | null;
   rowCount: number;
   headCells: readonly HeadCell<T>[];
   hasActions?: boolean;
 }
 
-function EnhancedTableHead<T>(props: EnhancedTableHeadProps<T>) {
-  const {
-    onSelectAllClick,
-    order,
-    orderBy,
-    numSelected,
-    rowCount,
-    onRequestSort,
-    headCells,
-    hasActions,
-  } = props;
-  const createSortHandler =
-    (property: keyof T) => (event: React.MouseEvent<unknown>) => {
-      onRequestSort(event, property);
-    };
+function EnhancedTableHead<T extends Data>(props: EnhancedTableHeadProps<T>) {
+  const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort, headCells, hasActions } = props;
+  const createSortHandler = (property: keyof T) => (event: React.MouseEvent<unknown>) => onRequestSort(event, property);
 
   return (
     <TableHead>
       <TableRow>
-        <TableCell padding="none" sx={{ width: "48px", textAlign: "center" }}>
+        <TableCell padding="none" sx={{ width: 48, textAlign: "center" }}>
           <Checkbox
             color="primary"
             indeterminate={numSelected > 0 && numSelected < rowCount}
             checked={rowCount > 0 && numSelected === rowCount}
             onChange={onSelectAllClick}
-            inputProps={{ "aria-label": "select all items" }}
           />
         </TableCell>
         {headCells.map((headCell) => (
           <TableCell
-            key={headCell.id as string}
-            align="center"
-            padding="normal"
+            key={String(headCell.id)}
+            align={headCell.align ?? "center"}
             sortDirection={orderBy === headCell.id ? order : false}
             sx={{
-              whiteSpace: "nowrap", 
-              fontSize: { xs: "0.7rem", md: "0.8rem" },
-              p: { xs: 1, sm: 2 },
+              whiteSpace: "nowrap",
+              fontSize: { xs: "0.7rem", md: "0.875rem" },
+              p: { xs: 0.5, sm: 2 },
               width: headCell.width,
             }}
           >
@@ -131,14 +120,6 @@ function EnhancedTableHead<T>(props: EnhancedTableHeadProps<T>) {
               active={orderBy === headCell.id}
               direction={orderBy === headCell.id ? order : "asc"}
               onClick={createSortHandler(headCell.id)}
-              sx={{
-                "& .MuiTableSortLabel-icon": {
-                  ml: 0.5,
-                },
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center'
-              }}
             >
               {headCell.label}
               {orderBy === headCell.id ? (
@@ -149,19 +130,7 @@ function EnhancedTableHead<T>(props: EnhancedTableHeadProps<T>) {
             </TableSortLabel>
           </TableCell>
         ))}
-        {hasActions && (
-          <TableCell
-            align="center"
-            sx={{
-              whiteSpace: "nowrap",
-              fontSize: { xs: "0.7rem", md: "0.875rem" },
-              p: { xs: 1, sm: 2 },
-              width: "90px",
-            }}
-          >
-            عملیات
-          </TableCell>
-        )}
+        {hasActions && <TableCell align="center" sx={{ width: 90 }}>عملیات</TableCell>}
       </TableRow>
     </TableHead>
   );
@@ -173,18 +142,14 @@ interface EnhancedTableToolbarProps {
   onDelete?: () => void;
 }
 
-function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
-  const { numSelected, title, onDelete } = props;
-
-  if (numSelected === 0 && !title) {
-    return null;
-  }
+function EnhancedTableToolbar({ numSelected, title, onDelete }: EnhancedTableToolbarProps) {
+  if (numSelected === 0 && !title) return null;
 
   return (
     <Toolbar
       sx={{
-        pl: { sm: 2 },
-        pr: { xs: 1, sm: 1 },
+        pl: 2,
+        pr: 1,
         ...(numSelected > 0 && {
           bgcolor: (theme) => theme.palette.secondary.main,
           color: (theme) => theme.palette.secondary.contrastText,
@@ -192,23 +157,11 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
       }}
     >
       {numSelected > 0 ? (
-        <Typography
-          sx={{ flex: "1 1 100%", fontSize: { xs: "0.7rem", md: "0.875rem" } }}
-          color="inherit"
-          variant="subtitle1"
-          component="div"
-        >
+        <Typography sx={{ flex: "1 1 100%", fontSize: { xs: "0.7rem", md: "0.875rem" } }} color="inherit">
           {toPersianDigits(numSelected)} مورد انتخاب شده
         </Typography>
       ) : (
-        <Typography
-          sx={{ flex: "1 1 100%", fontSize: { xs: "0.7rem", md: "0.8rem" } }}
-          variant="h6"
-          id="tableTitle"
-          component="div"
-        >
-          {title}
-        </Typography>
+        <Typography sx={{ flex: "1 1 100%", fontSize: { xs: "0.7rem", md: "0.875rem" } }}>{title}</Typography>
       )}
       {numSelected > 0 && onDelete && (
         <Tooltip title="حذف">
@@ -221,7 +174,40 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
   );
 }
 
-interface EnhancedMuiTableProps<T> {
+interface TablePaginationActionsProps {
+  count: number;
+  page: number;
+  rowsPerPage: number;
+  onPageChange: (event: React.MouseEvent<HTMLButtonElement>, newPage: number) => void;
+}
+
+function TablePaginationActions({ count, page, rowsPerPage, onPageChange }: TablePaginationActionsProps) {
+  const theme = useTheme();
+  const handleFirst = (e: React.MouseEvent<HTMLButtonElement>) => onPageChange(e, 0);
+  const handleBack = (e: React.MouseEvent<HTMLButtonElement>) => onPageChange(e, page - 1);
+  const handleNext = (e: React.MouseEvent<HTMLButtonElement>) => onPageChange(e, page + 1);
+  const handleLast = (e: React.MouseEvent<HTMLButtonElement>) =>
+    onPageChange(e, Math.max(0, Math.ceil(count / rowsPerPage) - 1));
+
+  return (
+    <Box sx={{ flexShrink: 0, ml: 2.5 }}>
+      <IconButton onClick={handleFirst} disabled={page === 0}>
+        {theme.direction === "rtl" ? <LastPageIcon /> : <FirstPageIcon />}
+      </IconButton>
+      <IconButton onClick={handleBack} disabled={page === 0}>
+        {theme.direction === "rtl" ? <KeyboardArrowRight /> : <KeyboardArrowLeft />}
+      </IconButton>
+      <IconButton onClick={handleNext} disabled={page >= Math.ceil(count / rowsPerPage) - 1}>
+        {theme.direction === "rtl" ? <KeyboardArrowLeft /> : <KeyboardArrowRight />}
+      </IconButton>
+      <IconButton onClick={handleLast} disabled={page >= Math.ceil(count / rowsPerPage) - 1}>
+        {theme.direction === "rtl" ? <FirstPageIcon /> : <LastPageIcon />}
+      </IconButton>
+    </Box>
+  );
+}
+
+interface EnhancedMuiTableProps<T extends Data> {
   rows: readonly T[];
   headCells: readonly HeadCell<T>[];
   title: string;
@@ -239,159 +225,112 @@ export default function EnhancedMuiTable<T extends Data>({
   onRowClick,
 }: EnhancedMuiTableProps<T>) {
   const [order, setOrder] = useState<Order>("asc");
-  const [orderBy, setOrderBy] = useState<keyof T>(headCells[0]?.id);
+  const [orderBy, setOrderBy] = useState<keyof T | null>(headCells.length ? headCells[0].id : null);
   const [selected, setSelected] = useState<readonly (string | number)[]>([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  const handleRequestSort = (
-    event: React.MouseEvent<unknown>,
-    property: keyof T
-  ) => {
+  const handleRequestSort = (_event: React.MouseEvent<unknown>, property: keyof T) => {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
   };
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.checked) {
-      const newSelected = rows.map((n) => n.id);
-      setSelected(newSelected);
-      return;
-    }
-    setSelected([]);
+    if (event.target.checked) setSelected(rows.map((r) => r.id));
+    else setSelected([]);
   };
 
-  const handleClick = (
-    event: React.MouseEvent<unknown>,
-    id: string | number
-  ) => {
+  const handleClick = (_event: React.MouseEvent<unknown>, id: string | number) => {
     const selectedIndex = selected.indexOf(id);
     let newSelected: readonly (string | number)[] = [];
-
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, id);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1)
-      );
-    }
+    if (selectedIndex === -1) newSelected = selected.concat(id);
+    else if (selectedIndex === 0) newSelected = selected.slice(1);
+    else if (selectedIndex === selected.length - 1) newSelected = selected.slice(0, -1);
+    else newSelected = selected.slice(0, selectedIndex).concat(selected.slice(selectedIndex + 1));
     setSelected(newSelected);
   };
 
-  const handleChangePage = (event: unknown, newPage: number) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleChangePage = (_event: unknown, newPage: number) => setPage(newPage);
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
-
   const handleDelete = () => {
-    if (onDelete) {
-      onDelete(selected);
-      setSelected([]);
-    }
+    onDelete?.(selected);
+    setSelected([]);
   };
-
   const isSelected = (id: string | number) => selected.indexOf(id) !== -1;
-  const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
-  const visibleRows = useMemo(
-    () =>
-      stableSort(rows, getComparator(order, orderBy)).slice(
-        page * rowsPerPage,
-        page * rowsPerPage + rowsPerPage
-      ),
-    [order, orderBy, page, rowsPerPage, rows]
-  );
+  const visibleRows = useMemo(() => {
+    if (!orderBy)
+      return rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    return stableSort(rows, getComparator(order, orderBy)).slice(
+      page * rowsPerPage,
+      page * rowsPerPage + rowsPerPage
+    );
+  }, [order, orderBy, page, rowsPerPage, rows]);
+
+  function formatCellValue(value: unknown): React.ReactNode {
+    if (value === null || value === undefined) return "";
+    if (value instanceof Date) return formatJalaliDate(value);
+    if (typeof value === "number" || typeof value === "bigint") return toPersianDigits(String(value));
+    if (typeof value === "string") {
+      const trimmed = value.trim();
+      const normalized = trimmed.replace(/[,\s\u200C]/g, "");
+      if (/^-?\d+(\.\d+)?$/.test(normalized)) return toPersianDigits(normalized);
+      return trimmed;
+    }
+    try {
+      if (typeof value === "object") return JSON.stringify(value);
+    } catch {
+      return String(value);
+    }
+    return String(value);
+  }
 
   return (
-    <Box sx={{ width: "100%", minWidth: 0 }}>
+    <Box sx={{ width: "100%" }}>
       <Paper sx={{ width: "100%", mb: 2, boxShadow: "none" }}>
-        <EnhancedTableToolbar
-          numSelected={selected.length}
-          title={title}
-          onDelete={onDelete ? handleDelete : undefined}
-        />
-        <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
-          <Table aria-labelledby="tableTitle" sx={{ tableLayout: "fixed" }}>
-            <EnhancedTableHead
-              numSelected={selected.length}
-              order={order}
-              orderBy={orderBy as string}
-              onSelectAllClick={handleSelectAllClick}
-              onRequestSort={handleRequestSort}
-              rowCount={rows.length}
-              headCells={headCells}
-              hasActions={!!actions?.length}
-            />
+        <EnhancedTableToolbar numSelected={selected.length} title={title} onDelete={onDelete ? handleDelete : undefined} />
+        <TableContainer>
+          <Table sx={{ tableLayout: "fixed" }}>
+            <EnhancedTableHead numSelected={selected.length} order={order} orderBy={orderBy} onSelectAllClick={handleSelectAllClick} onRequestSort={handleRequestSort} rowCount={rows.length} headCells={headCells} hasActions={!!actions?.length} />
             <TableBody>
               {visibleRows.map((row) => {
                 const isItemSelected = isSelected(row.id);
-                const labelId = `enhanced-table-checkbox-${row.id}`;
-
                 return (
                   <TableRow
                     hover
-                    onClick={() => onRowClick && onRowClick(row)}
                     role="checkbox"
-                    aria-checked={isItemSelected}
                     tabIndex={-1}
                     key={row.id}
                     selected={isItemSelected}
                     sx={{ cursor: onRowClick ? "pointer" : "default" }}
+                    onClick={() => onRowClick?.(row)}
                   >
-                    <TableCell
-                      padding="none"
-                      sx={{ width: "48px", textAlign: "center" }}
-                    >
+                    <TableCell padding="none" sx={{ width: 48, textAlign: "center" }}>
                       <Checkbox
-                        color="primary"
                         checked={isItemSelected}
-                        inputProps={{ "aria-labelledby": labelId }}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          handleClick(event, row.id);
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleClick(e, row.id);
                         }}
                       />
                     </TableCell>
-                    {headCells.map((cell) => (
-                      <TableCell
-                        key={cell.id as string}
-                        align="center"
-                        sx={{
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          fontSize: { xs: "0.55rem", md: "0.875rem" },
-                          p: { xs: 0.5, sm: 2 },
-                          width: cell.width,
-                        }}
-                      >
-                        {cell.cell
-                          ? cell.cell(row)
-                          : (row[cell.id] as ReactNode)}
-                      </TableCell>
-                    ))}
+                    {headCells.map((cell) => {
+                      const key = cell.id as keyof T;
+                      const value = row[key];
+                      const content = cell.cell ? cell.cell(row) : formatCellValue(value);
+                      return (
+                        <TableCell key={String(cell.id)} align={cell.align ?? "center"} sx={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontSize: { xs: "0.55rem", md: "0.875rem" }, p: { xs: 0.5, sm: 2 }, width: cell.width }}>
+                          {content}
+                        </TableCell>
+                      );
+                    })}
                     {actions && (
-                      <TableCell
-                        align="center"
-                        sx={{
-                          fontSize: { xs: "0.65rem", md: "0.875rem" },
-                          p: { xs: 1, sm: 2 },
-                          width: "90px",
-                        }}
-                      >
+                      <TableCell align="center" sx={{ width: 90 }}>
                         {actions.map((action, i) => (
                           <Tooltip title={action.tooltip} key={i}>
                             <IconButton
@@ -415,23 +354,26 @@ export default function EnhancedMuiTable<T extends Data>({
                 </TableRow>
               )}
             </TableBody>
+            <TableFooter>
+              <TableRow>
+                <TablePagination
+                  rowsPerPageOptions={[5, 10, 25, { label: "همه", value: -1 }]}
+                  colSpan={headCells.length + 2}
+                  count={rows.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                  ActionsComponent={TablePaginationActions}
+                  labelRowsPerPage="تعداد در صفحه"
+                  labelDisplayedRows={({ from, to, count }) =>
+                    `${toPersianDigits(from)}–${toPersianDigits(to)} از ${toPersianDigits(count)}`
+                  }
+                />
+              </TableRow>
+            </TableFooter>
           </Table>
         </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={rows.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-          labelRowsPerPage="تعداد در صفحه"
-          labelDisplayedRows={({ from, to, count }) =>
-            `${toPersianDigits(from)}–${toPersianDigits(
-              to
-            )} از ${toPersianDigits(count)}`
-          }
-        />
       </Paper>
     </Box>
   );

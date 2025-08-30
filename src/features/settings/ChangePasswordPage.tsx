@@ -1,58 +1,44 @@
 import { Box, Paper, Button } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
+import { yupResolver } from '@hookform/resolvers/yup';
 import type { RootState } from '../../store/store';
 import { editUser } from '../../store/slices/usersSlice';
 import { useToast } from '../../hooks/useToast'; 
 import Form, { type FormField } from '../../components/Form'; 
-
-type ChangePasswordFormData = {
-    currentPassword: string;
-    newPassword: string;
-    confirmPassword: string;
-};
+import { changePasswordSchema, type ChangePasswordFormData, getDefaultValues } from '../../schema/changePasswordSchema';
 
 const ChangePasswordPage = () => {
     const dispatch = useDispatch();
     const { showToast } = useToast();
     const currentUser = useSelector((state: RootState) => state.auth.currentUser);
 
-    const { control, handleSubmit, watch, formState: { errors } } = useForm<ChangePasswordFormData>({
-        defaultValues: { currentPassword: '', newPassword: '', confirmPassword: '' }
+    const { control, handleSubmit, formState: { errors } } = useForm<ChangePasswordFormData>({
+        resolver: yupResolver(changePasswordSchema),
+        defaultValues: getDefaultValues()
     });
     
-    const newPassword = watch('newPassword');
-
     const formConfig: FormField<ChangePasswordFormData>[] = [
         {
             name: 'currentPassword',
             label: 'کلمه عبور فعلی',
-            type: 'password',
-            rules: { required: 'این فیلد الزامی است' }
+            type: 'password'
         },
         {
             name: 'newPassword',
             label: 'کلمه عبور جدید',
-            type: 'password',
-            rules: { 
-                required: 'این فیلد الزامی است',
-                minLength: { value: 4, message: 'کلمه عبور باید حداقل ۴ کاراکتر باشد' }
-            }
+            type: 'password'
         },
         {
             name: 'confirmPassword',
             label: 'تکرار کلمه عبور جدید',
-            type: 'password',
-            rules: {
-                required: 'این فیلد الزامی است',
-                validate: value => value === newPassword || 'کلمه‌های عبور یکسان نیستند'
-            }
+            type: 'password'
         }
     ];
     
     const onSubmit = (data: ChangePasswordFormData) => {
         if (currentUser && data.currentPassword === currentUser.password) {
-            dispatch(editUser({ ...currentUser, password: data.newPassword }));
+            dispatch(editUser({ ...currentUser, password: data.newPassword as string }));
             showToast('رمز عبور با موفقیت تغییر کرد.', 'success');
         } else {
             showToast('رمز عبور فعلی اشتباه است.', 'error');

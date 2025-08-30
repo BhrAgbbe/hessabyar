@@ -2,7 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { type RootState } from '../../store/store';
 import { Box, Paper, TextField } from '@mui/material';
-import { useForm, type SubmitHandler } from 'react-hook-form';
+import { useForm, type SubmitHandler, type Resolver } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
 import { useToast } from '../../hooks/useToast';
 import {
   type Customer,
@@ -17,6 +18,7 @@ import {
   editSupplier,
   deleteSupplier,
 } from '../../store/slices/suppliersSlice';
+import { customerSchema, type CustomerFormData } from '../../schema/customerSchema';
 import SearchAndSortPanel from '../../components/SearchAndSortPanel';
 import PageHeader from '../../components/PageHeader';
 import EnhancedMuiTable, { type HeadCell, type Action } from '../../components/Table';
@@ -27,23 +29,22 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SearchableSelect, { type SelectOption } from '../../components/SearchableSelect';
 import ConfirmationDialog from '../../components/ConfirmationDialog';
 import AddPerson from '../../components/Addperson';
-import { toPersianDigitsString } from '../../utils/utils';
 
 type Person = Customer | Supplier;
-type PersonFormData = Omit<Person, 'id'>;
 
 const moeinCategories: MoeinCategory[] = ["بدهکاران", "طلبکاران", "همکاران", " متفرقه", "ضایعات"];
 const moeinOptions = moeinCategories.map(cat => ({ id: cat, label: cat }));
 const customerSortOptions = [{ value: 'name', label: 'نام' }, { value: 'city', label: 'شهر' }];
 
-const formFields: FormField<PersonFormData>[] = [
-  { name: 'name', label: 'نام کاربر', type: 'text', rules: { required: 'نام اجباری است' } },
+const formFields: FormField<CustomerFormData>[] = [
+  { name: 'name', label: 'نام کاربر', type: 'text' },
   { name: 'phone', label: 'شماره همراه', type: 'text' },
   { name: 'city', label: 'نام شهر', type: 'text' },
   { name: 'address', label: 'آدرس', type: 'textarea', multiline: true, rows: 3 },
 ];
 
-const CustomerManagementPage = () => {
+
+const CustomerManagementPage: React.FC = () => {
   const dispatch = useDispatch();
   const { showToast } = useToast();
   const [personType, setPersonType] = useState<'customer' | 'supplier'>('customer');
@@ -56,17 +57,37 @@ const CustomerManagementPage = () => {
   const [selectedMoeinForEdit, setSelectedMoeinForEdit] = useState<SelectOption | null>(null);
 
   const { customers, suppliers } = useSelector((state: RootState) => state);
-  const { control: editControl, handleSubmit: handleEditSubmit, reset: resetEditForm, formState: { errors: editErrors } } = useForm<PersonFormData>();
+
+  const resolver = yupResolver(customerSchema) as unknown as Resolver<CustomerFormData, unknown>;
+
+  const {
+    control: editControl,
+    handleSubmit: handleEditSubmit,
+    reset: resetEditForm,
+    formState: { errors: editErrors },
+  } = useForm<CustomerFormData>({
+    resolver,
+    defaultValues: {
+      name: '',
+      phone: '',
+      city: '',
+      address: '',
+      debt: 0,
+      moein: undefined,
+    } as Partial<CustomerFormData>,
+  });
 
   const data = useMemo(() => {
     const sourceData = personType === 'customer' ? customers : suppliers;
+    const term = searchTerm.toLowerCase().trim();
     return sourceData
       .filter((p) => {
-        const term = searchTerm.toLowerCase().trim();
         if (!term) return true;
-        return p.name.toLowerCase().includes(term) || (p.city || '').toLowerCase().includes(term);
+        const name = (p as Person & { name?: string }).name ?? '';
+        const city = (p as Person & { city?: string }).city ?? '';
+        return name.toLowerCase().includes(term) || city.toLowerCase().includes(term);
       })
-      .sort((a, b) => (a[sortBy] || '').localeCompare(b[sortBy] || '', 'fa'));
+      .sort((a, b) => ((a[sortBy] ?? '') as string).localeCompare((b[sortBy] ?? '') as string, 'fa'));
   }, [personType, customers, suppliers, searchTerm, sortBy]);
 
   const getNextId = () => {
@@ -75,28 +96,73 @@ const CustomerManagementPage = () => {
     return maxId < 100 ? 100 : maxId + 1;
   };
 
-  const handleSaveNewPerson = (personData: Omit<Person, 'id'>) => {
+  const handleSaveNewPerson = (personData: Partial<Omit<Person, 'id'>>) => {
+    if (!personData.name || personData.name.trim() === '') {
+      showToast('نام شخص الزامی است', 'error');
+      return;
+    }
+
     const allPersons = [...customers, ...suppliers];
     if (personData.phone) {
       const existing = allPersons.find(p => p.phone === personData.phone);
       if (existing) {
-        showToast(`این شماره همراه قبلا برای کاربر با کد ${toPersianDigitsString(existing.id)} ثبت شده است.`, 'error');
+        showToast(`این شماره همراه قبلا برای کاربر با کد ${existing.id} ثبت شده است.`, 'error');
         return;
       }
     }
 
+    const defaultMoein = moeinOptions[0].id as MoeinCategory;
+
     if (personType === 'customer') {
-      dispatch(addCustomer(personData));
+      const custPayload: Omit<Customer, 'id'> = {
+        name: personData.name!,
+        phone: personData.phone,
+        city: personData.city,
+        address: personData.address,
+        moein: (personData.moein ?? defaultMoein) as MoeinCategory,
+      debt: (personData as Partial<Customer>).debt ?? 0, 
+      };
+      dispatch(addCustomer(custPayload));
     } else {
-      dispatch(addSupplier(personData));
+      const supPayload: Omit<Supplier, 'id'> = {
+        name: personData.name!,
+        phone: personData.phone,
+        city: personData.city,
+        address: personData.address,
+        moein: (personData.moein ?? defaultMoein) as MoeinCategory,
+      };
+      dispatch(addSupplier(supPayload));
     }
+
     showToast('شخص جدید با موفقیت اضافه شد', 'success');
   };
 
   const handleOpenEditForm = (person: Person) => {
     setEditingPerson(person);
     setSelectedMoeinForEdit(moeinOptions.find(opt => opt.id === person.moein) || null);
-    resetEditForm(person);
+
+    if (personType === 'customer') {
+      const cust = person as Customer;
+      resetEditForm({
+        name: cust.name ?? '',
+        phone: cust.phone ?? '',
+        city: cust.city ?? '',
+        address: cust.address ?? '',
+        debt: cust.debt ?? 0,
+        moein: cust.moein,
+      } as CustomerFormData);
+    } else {
+      const sup = person as Supplier;
+      resetEditForm({
+        name: sup.name ?? '',
+        phone: sup.phone ?? '',
+        city: sup.city ?? '',
+        address: sup.address ?? '',
+        debt: 0, 
+        moein: sup.moein,
+      } as CustomerFormData);
+    }
+
     setEditFormOpen(true);
   };
 
@@ -105,19 +171,45 @@ const CustomerManagementPage = () => {
     setEditingPerson(null);
   };
 
-  const onEditSubmit: SubmitHandler<PersonFormData> = (formData) => {
+  const onEditSubmit: SubmitHandler<CustomerFormData> = (formData) => {
     if (!editingPerson || !selectedMoeinForEdit) return;
+
+    if (!formData.name || formData.name.trim() === '') {
+      showToast('نام شخص الزامی است', 'error');
+      return;
+    }
 
     if (formData.phone) {
       const existing = [...customers, ...suppliers].find(p => p.phone === formData.phone && p.id !== editingPerson.id);
       if (existing) {
-        showToast(`این شماره همراه قبلا برای کاربر با کد ${toPersianDigitsString(existing.id)} ثبت شده است.`, 'error');
+        showToast(`این شماره همراه قبلا برای کاربر با کد ${existing.id} ثبت شده است.`, 'error');
         return;
       }
     }
 
-    const payload = { ...formData, id: editingPerson.id, moein: selectedMoeinForEdit.id as MoeinCategory };
-    dispatch(personType === 'customer' ? editCustomer(payload) : editSupplier(payload));
+    if (personType === 'customer') {
+      const payload: Customer = {
+        id: editingPerson.id,
+        name: formData.name,
+        phone: formData.phone,
+        city: formData.city,
+        address: formData.address,
+        moein: selectedMoeinForEdit.id as MoeinCategory,
+        debt: formData.debt ?? 0,
+      };
+      dispatch(editCustomer(payload));
+    } else {
+      const payloadSupplier: Supplier = {
+        id: editingPerson.id,
+        name: formData.name,
+        phone: formData.phone,
+        city: formData.city,
+        address: formData.address,
+        moein: selectedMoeinForEdit.id as MoeinCategory,
+      } as Supplier;
+      dispatch(editSupplier(payloadSupplier));
+    }
+
     showToast('ویرایش با موفقیت انجام شد', 'success');
     handleCloseEditForm();
   };
@@ -133,10 +225,10 @@ const CustomerManagementPage = () => {
   };
 
   const headCells: readonly HeadCell<Person>[] = [
-    { id: 'id', numeric: true, label: 'کد', cell: (row) => toPersianDigitsString(row.id) },
+    { id: 'id', numeric: true, label: 'کد' },
     { id: 'name', numeric: false, label: 'نام' },
-    { id: 'phone', numeric: false, label: 'تلفن', cell: (row) => toPersianDigitsString(row.phone || '-') },
-    { id: 'city', numeric: false, label: 'شهر', cell: (row) => row.city || '-' },
+    { id: 'phone', numeric: false, label: 'تلفن', cell: (row) => (row.phone ?? '-') },
+    { id: 'city', numeric: false, label: 'شهر', cell: (row) => (row.city ?? '-') },
   ];
 
   const actions: readonly Action<Person>[] = [
@@ -183,10 +275,9 @@ const CustomerManagementPage = () => {
           onSave={handleEditSubmit(onEditSubmit)}
           title="ویرایش شخص"
         >
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1, width: '100%', maxWidth: '400px', mx: 'auto' }}>
+          <Box component="form" onSubmit={handleEditSubmit(onEditSubmit)} sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1, width: '100%', maxWidth: '400px', mx: 'auto' }}>
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-              {/* اعداد فارسی در فیلد کد فرم ویرایش */}
-              <TextField label="کد" value={toPersianDigitsString(editingPerson.id)} disabled size="small" sx={{ flex: 1 }}/>
+              <TextField label="کد" value={editingPerson.id} disabled size="small" sx={{ flex: 1 }}/>
               <SearchableSelect
                 options={moeinOptions}
                 value={selectedMoeinForEdit}

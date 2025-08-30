@@ -1,5 +1,4 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-
 export type CheckStatus = 'در جریان' | 'پاس شده' | 'برگشتی';
 
 export interface Check {

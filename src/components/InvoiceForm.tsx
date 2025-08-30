@@ -342,7 +342,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
       )}
 
       <Grid container spacing={2} sx={{ mb: 3, alignItems: 'center' }}>
-        <Grid>
+        <Grid size={{ xs: 12, md: 4}}>
             <SearchableSelect
                 label={`نام ${personLabel}`}
                 options={personOptions}
@@ -354,7 +354,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
                 sx={{ minWidth: 200 }} 
             />
         </Grid>
-        <Grid>
+        <Grid size={{ xs: 12, md: 4}}>
           <ShamsiDatePicker
             label="تاریخ صدور"
             value={state.issueDate ? new Date(state.issueDate) : null}
@@ -363,7 +363,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
             }
           />
         </Grid>
-        <Grid>
+        <Grid size={{ xs: 12, md: 4}}>
           <CustomTextField
             label="شماره فاکتور"
             defaultValue={toPersianDigits(displayInvoiceNumber || 1)}

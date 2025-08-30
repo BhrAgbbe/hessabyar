@@ -1,10 +1,11 @@
 import { useMemo, useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useForm } from "react-hook-form";
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 import { type RootState } from "../../store/store";
 import {
   updateCompanyInfo,
-  type CompanyInfo,
 } from "../../store/slices/companySlice";
 import { Box, Paper, Button, Avatar } from "@mui/material";
 import Stepper from "../../components/Stepper";
@@ -19,6 +20,30 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
 ) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
+
+const companySchema = yup.object({
+  name: yup.string().required('نام شرکت الزامی است').default(''),
+  managerName: yup.string().required('نام مدیر الزامی است').default(''),
+  economicCode: yup.string().required('کد اقتصادی الزامی است').default(''),
+  phone: yup.string().required('شماره تلفن الزامی است').default(''),
+  mobile: yup.string().required('شماره همراه الزامی است').default(''),
+  fax: yup.string().default(''),
+  address: yup.string().required('آدرس الزامی است').default(''),
+  promoMessage: yup.string().default(''),
+  logo: yup.mixed<string | null>().default(null),
+});
+
+type CompanyFormData = {
+  name: string;
+  managerName: string;
+  economicCode: string;
+  phone: string;
+  mobile: string;
+  fax: string;
+  address: string;
+  promoMessage: string;
+  logo: string | null;
+};
 
 const CompanyInfoPage = () => {
   const dispatch = useDispatch();
@@ -39,15 +64,39 @@ const CompanyInfoPage = () => {
     getValues,
     handleSubmit,
     reset,
-  } = useForm<CompanyInfo>({
+  } = useForm<CompanyFormData>({
     mode: "onTouched",
+    resolver: yupResolver(companySchema),
+    defaultValues: {
+      name: '',
+      managerName: '',
+      economicCode: '',
+      phone: '',
+      mobile: '',
+      fax: '',
+      address: '',
+      promoMessage: '',
+      logo: null,
+      ...companyInfo
+    }
   });
 
   useEffect(() => {
-    reset(companyInfo);
+    reset({
+      name: '',
+      managerName: '',
+      economicCode: '',
+      phone: '',
+      mobile: '',
+      fax: '',
+      address: '',
+      promoMessage: '',
+      logo: null,
+      ...companyInfo
+    });
   }, [companyInfo, reset]);
 
-  const handleSave = (data: CompanyInfo) => {
+  const handleSave = (data: CompanyFormData) => {
     dispatch(updateCompanyInfo(data));
     setSnackbarMessage("اطلاعات شرکت با موفقیت ذخیره شد.");
     setSnackbarSeverity("success");
@@ -64,7 +113,7 @@ const CompanyInfoPage = () => {
     setOpen(false);
   };
 
-  const stepFields: (keyof CompanyInfo)[][] = [
+  const stepFields: (keyof CompanyFormData)[][] = [
     ["name", "managerName", "economicCode"],
     ["phone", "mobile", "address"],
     ["promoMessage"],
@@ -75,7 +124,8 @@ const CompanyInfoPage = () => {
     const isValid = await trigger(fieldsToValidate);
 
     if (isValid) {
-      dispatch(updateCompanyInfo(getValues()));
+      const values = getValues();
+      dispatch(updateCompanyInfo(values));
       if (activeStep === steps.length - 1) {
         handleSubmit(handleSave)();
       } else {
@@ -85,47 +135,43 @@ const CompanyInfoPage = () => {
   };
 
   const handleBack = () => {
-    dispatch(updateCompanyInfo(getValues()));
+    const values = getValues();
+    dispatch(updateCompanyInfo(values));
     setActiveStep((prev) => prev - 1);
   };
 
-  const primaryInfoConfig = useMemo<FormField<CompanyInfo>[]>(
+  const primaryInfoConfig = useMemo<FormField<CompanyFormData>[]>(
     () => [
       {
         name: "name",
         label: "نام شرکت",
         type: "text",
-        rules: { required: "نام شرکت الزامی است" },
       },
       {
         name: "managerName",
         label: "نام مدیر",
         type: "text",
-        rules: { required: "نام مدیر الزامی است" },
       },
       {
         name: "economicCode",
         label: "کد اقتصادی",
         type: "text",
-        rules: { required: "کد اقتصادی الزامی است" },
       },
     ],
     []
   );
 
-  const contactInfoConfig = useMemo<FormField<CompanyInfo>[]>(
+  const contactInfoConfig = useMemo<FormField<CompanyFormData>[]>(
     () => [
       {
         name: "phone",
         label: "شماره تلفن",
         type: "text",
-        rules: { required: "شماره تلفن الزامی است" },
       },
       {
         name: "mobile",
         label: "شماره همراه",
         type: "text",
-        rules: { required: "شماره همراه الزامی است" },
       },
       { name: "fax", label: "فکس", type: "text" },
       {
@@ -133,13 +179,12 @@ const CompanyInfoPage = () => {
         label: "آدرس",
         type: "textarea",
         rows: 3,
-        rules: { required: "آدرس الزامی است" },
       },
     ],
     []
   );
 
-  const brandingConfig = useMemo<FormField<CompanyInfo>[]>(
+  const brandingConfig = useMemo<FormField<CompanyFormData>[]>(
     () => [
       {
         name: "promoMessage",
@@ -186,9 +231,10 @@ const CompanyInfoPage = () => {
                     if (e.target.files && e.target.files[0]) {
                       const reader = new FileReader();
                       reader.onload = (event) => {
+                        const values = getValues();
                         dispatch(
                           updateCompanyInfo({
-                            ...getValues(),
+                            ...values,
                             logo: event.target?.result as string,
                           })
                         );
