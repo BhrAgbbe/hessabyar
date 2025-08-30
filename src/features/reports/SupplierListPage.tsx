@@ -10,7 +10,7 @@ import { type SelectOption } from "../../components/SearchableSelect";
 
 import { type RootState } from "../../store/store";
 import { addSupplier, type Supplier, type MoeinCategory } from "../../store/slices/suppliersSlice";
-import { addCustomer } from "../../store/slices/customersSlice";
+import { addCustomer, type Customer } from "../../store/slices/customersSlice";
 import { useToast } from "../../hooks/useToast";
 
 const moeinCategories: MoeinCategory[] = ["بدهکاران", "طلبکاران", "همکاران", " متفرقه", "ضایعات"];
@@ -19,8 +19,8 @@ const moeinOptions: SelectOption[] = moeinCategories.map(cat => ({ id: cat, labe
 const SupplierListPage = () => {
     const dispatch = useDispatch();
     const { showToast } = useToast();
-    const suppliers = useSelector((state: RootState) => state.suppliers);
-    const customers = useSelector((state: RootState) => state.customers); 
+    const { customers, suppliers } = useSelector((state: RootState) => state);
+    const allPersons = useMemo(() => [...customers, ...suppliers], [customers, suppliers]);
 
     const [searchTerm, setSearchTerm] = useState("");
     const [searchField, setSearchField] = useState<keyof Supplier>("name");
@@ -40,12 +40,12 @@ const SupplierListPage = () => {
     ];
 
     const getNextId = () => {
-        const allPersons = personType === 'customer' ? customers : suppliers;
-        const maxId = allPersons.length > 0 ? Math.max(...allPersons.map((p) => Number(p.id))) : 99;
+        const sourceData = personType === 'customer' ? customers : suppliers;
+        const maxId = sourceData.length > 0 ? Math.max(...sourceData.map((p) => Number(p.id))) : 99;
         return maxId < 100 ? 100 : maxId + 1;
     };
 
-    const handleSaveNewPerson = (personData: Omit<Supplier, 'id'>) => {
+    const handleSaveNewPerson = (personData: Omit<Supplier & Customer, 'id'>) => {
         if (personType === 'supplier') {
             dispatch(addSupplier(personData));
             showToast('فروشنده جدید با موفقیت اضافه شد', 'success');
@@ -74,6 +74,7 @@ const SupplierListPage = () => {
                     onSave={handleSaveNewPerson}
                     getNextId={getNextId}
                     moeinOptions={moeinOptions}
+                    existingPersons={allPersons} 
                 />
             }
         >

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useForm, type SubmitHandler, type Resolver } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
@@ -12,7 +12,9 @@ import {
 } from '@mui/material';
 import { type Customer, type MoeinCategory } from '../store/slices/customersSlice';
 import { type Supplier } from '../store/slices/suppliersSlice';
-import { customerSchema, type CustomerFormData } from '../schema/customerSchema';
+
+import { createPersonSchema, type PersonFormData } from '../schema/personSchema';
+
 import FormDialog from './FormDialog';
 import Form, { type FormField } from './Form';
 import SearchableSelect, { type SelectOption } from './SearchableSelect';
@@ -25,9 +27,10 @@ interface AddPersonProps {
   onSave: (data: Omit<Person, 'id'>) => void;
   getNextId: () => number;
   moeinOptions: SelectOption[];
+  existingPersons: Person[]; 
 }
 
-const formFields: FormField<CustomerFormData>[] = [
+const formFields: FormField<PersonFormData>[] = [
   { name: 'name', label: 'نام کاربر', type: 'text' },
   { name: 'phone', label: 'شماره همراه', type: 'text' },
   { name: 'city', label: 'نام شهر', type: 'text' },
@@ -40,17 +43,23 @@ const AddPerson: React.FC<AddPersonProps> = ({
   onSave,
   getNextId,
   moeinOptions,
+  existingPersons, 
 }) => {
   const [open, setOpen] = useState(false);
 
-  const resolver = yupResolver(customerSchema) as unknown as Resolver<CustomerFormData, unknown>;
+  const activeSchema = useMemo(() => {
+    const nameMessage = personType === 'customer' ? 'نام شخص الزامی است' : 'نام تامین‌کننده الزامی است';
+    return createPersonSchema(nameMessage, existingPersons);
+  }, [personType, existingPersons]);
+
+  const resolver = yupResolver(activeSchema) as unknown as Resolver<PersonFormData, unknown>;
 
   const {
     control,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<CustomerFormData>({
+  } = useForm<PersonFormData>({
     resolver,
     defaultValues: {
       name: '',
@@ -73,14 +82,7 @@ const AddPerson: React.FC<AddPersonProps> = ({
     setOpen(false);
   };
 
-  const onSubmit: SubmitHandler<CustomerFormData> = (formData) => {
-   
-    if (!formData.name || formData.name.trim() === '') {
-    
-      console.error('نام شخص الزامی است');
-      return;
-    }
-
+  const onSubmit: SubmitHandler<PersonFormData> = (formData) => {
     if (!selectedMoein) {
       console.error('معین انتخاب نشده است');
       return;

@@ -18,7 +18,7 @@ import {
   editSupplier,
   deleteSupplier,
 } from '../../store/slices/suppliersSlice';
-import { customerSchema, type CustomerFormData } from '../../schema/customerSchema';
+import { createPersonSchema, type PersonFormData } from '../../schema/personSchema'; 
 import SearchAndSortPanel from '../../components/SearchAndSortPanel';
 import PageHeader from '../../components/PageHeader';
 import EnhancedMuiTable, { type HeadCell, type Action } from '../../components/Table';
@@ -36,13 +36,12 @@ const moeinCategories: MoeinCategory[] = ["بدهکاران", "طلبکاران"
 const moeinOptions = moeinCategories.map(cat => ({ id: cat, label: cat }));
 const customerSortOptions = [{ value: 'name', label: 'نام' }, { value: 'city', label: 'شهر' }];
 
-const formFields: FormField<CustomerFormData>[] = [
+const formFields: FormField<PersonFormData>[] = [
   { name: 'name', label: 'نام کاربر', type: 'text' },
   { name: 'phone', label: 'شماره همراه', type: 'text' },
   { name: 'city', label: 'نام شهر', type: 'text' },
   { name: 'address', label: 'آدرس', type: 'textarea', multiline: true, rows: 3 },
 ];
-
 
 const CustomerManagementPage: React.FC = () => {
   const dispatch = useDispatch();
@@ -57,15 +56,21 @@ const CustomerManagementPage: React.FC = () => {
   const [selectedMoeinForEdit, setSelectedMoeinForEdit] = useState<SelectOption | null>(null);
 
   const { customers, suppliers } = useSelector((state: RootState) => state);
+  const allPersons = useMemo(() => [...customers, ...suppliers], [customers, suppliers]);
+  const editSchema = useMemo(() => {
+    const nameMessage = personType === 'customer' ? 'نام شخص الزامی است' : 'نام تامین‌کننده الزامی است';
+    const editingPersonId = editingPerson ? editingPerson.id : null;
+    return createPersonSchema(nameMessage, allPersons, editingPersonId);
+  }, [personType, allPersons, editingPerson]);
 
-  const resolver = yupResolver(customerSchema) as unknown as Resolver<CustomerFormData, unknown>;
+  const resolver = yupResolver(editSchema) as unknown as Resolver<PersonFormData, unknown>;
 
   const {
     control: editControl,
     handleSubmit: handleEditSubmit,
     reset: resetEditForm,
     formState: { errors: editErrors },
-  } = useForm<CustomerFormData>({
+  } = useForm<PersonFormData>({
     resolver,
     defaultValues: {
       name: '',
@@ -74,7 +79,7 @@ const CustomerManagementPage: React.FC = () => {
       address: '',
       debt: 0,
       moein: undefined,
-    } as Partial<CustomerFormData>,
+    } as Partial<PersonFormData>,
   });
 
   const data = useMemo(() => {
@@ -97,20 +102,6 @@ const CustomerManagementPage: React.FC = () => {
   };
 
   const handleSaveNewPerson = (personData: Partial<Omit<Person, 'id'>>) => {
-    if (!personData.name || personData.name.trim() === '') {
-      showToast('نام شخص الزامی است', 'error');
-      return;
-    }
-
-    const allPersons = [...customers, ...suppliers];
-    if (personData.phone) {
-      const existing = allPersons.find(p => p.phone === personData.phone);
-      if (existing) {
-        showToast(`این شماره همراه قبلا برای کاربر با کد ${existing.id} ثبت شده است.`, 'error');
-        return;
-      }
-    }
-
     const defaultMoein = moeinOptions[0].id as MoeinCategory;
 
     if (personType === 'customer') {
@@ -120,7 +111,7 @@ const CustomerManagementPage: React.FC = () => {
         city: personData.city,
         address: personData.address,
         moein: (personData.moein ?? defaultMoein) as MoeinCategory,
-      debt: (personData as Partial<Customer>).debt ?? 0, 
+        debt: (personData as Partial<Customer>).debt ?? 0,
       };
       dispatch(addCustomer(custPayload));
     } else {
@@ -133,59 +124,23 @@ const CustomerManagementPage: React.FC = () => {
       };
       dispatch(addSupplier(supPayload));
     }
-
     showToast('شخص جدید با موفقیت اضافه شد', 'success');
   };
 
   const handleOpenEditForm = (person: Person) => {
     setEditingPerson(person);
     setSelectedMoeinForEdit(moeinOptions.find(opt => opt.id === person.moein) || null);
-
-    if (personType === 'customer') {
-      const cust = person as Customer;
-      resetEditForm({
-        name: cust.name ?? '',
-        phone: cust.phone ?? '',
-        city: cust.city ?? '',
-        address: cust.address ?? '',
-        debt: cust.debt ?? 0,
-        moein: cust.moein,
-      } as CustomerFormData);
-    } else {
-      const sup = person as Supplier;
-      resetEditForm({
-        name: sup.name ?? '',
-        phone: sup.phone ?? '',
-        city: sup.city ?? '',
-        address: sup.address ?? '',
-        debt: 0, 
-        moein: sup.moein,
-      } as CustomerFormData);
-    }
-
+    resetEditForm(person as PersonFormData);
     setEditFormOpen(true);
   };
-
+  
   const handleCloseEditForm = () => {
     setEditFormOpen(false);
     setEditingPerson(null);
   };
-
-  const onEditSubmit: SubmitHandler<CustomerFormData> = (formData) => {
+  
+  const onEditSubmit: SubmitHandler<PersonFormData> = (formData) => {
     if (!editingPerson || !selectedMoeinForEdit) return;
-
-    if (!formData.name || formData.name.trim() === '') {
-      showToast('نام شخص الزامی است', 'error');
-      return;
-    }
-
-    if (formData.phone) {
-      const existing = [...customers, ...suppliers].find(p => p.phone === formData.phone && p.id !== editingPerson.id);
-      if (existing) {
-        showToast(`این شماره همراه قبلا برای کاربر با کد ${existing.id} ثبت شده است.`, 'error');
-        return;
-      }
-    }
 
     if (personType === 'customer') {
       const payload: Customer = {
@@ -216,7 +171,7 @@ const CustomerManagementPage: React.FC = () => {
 
   const handleOpenDeleteModal = (id: number) => setDeleteModal({ open: true, id });
   const handleCloseDeleteModal = () => setDeleteModal({ open: false, id: null });
-
+  
   const handleConfirmDelete = () => {
     if (deleteModal.id === null) return;
     dispatch(personType === 'customer' ? deleteCustomer(deleteModal.id) : deleteSupplier(deleteModal.id));
@@ -249,6 +204,7 @@ const CustomerManagementPage: React.FC = () => {
               onSave={handleSaveNewPerson}
               getNextId={getNextId}
               moeinOptions={moeinOptions}
+              existingPersons={allPersons} 
             />
           }
         />

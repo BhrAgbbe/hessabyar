@@ -26,8 +26,10 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useForm, Controller, type SubmitHandler } from "react-hook-form";
+import { yupResolver } from '@hookform/resolvers/yup'; 
+import { productSchema } from "../../schema/productSchema"; 
 import { type RootState } from "../../store/store";
-import { useToast } from "../../hooks/useToast"; 
+import { useToast } from "../../hooks/useToast";
 import {
     type Product,
     type ProductFormData,
@@ -50,7 +52,10 @@ import { PrintableReportLayout } from "../../components/layout/PrintableReportLa
 import Stepper from "../../components/Stepper";
 import GenericCrudPanel from "../../components/GenericCrudPanel";
 import SearchAndSortPanel from "../../components/SearchAndSortPanel";
-import ConfirmationDialog from "../../components/ConfirmationDialog"; 
+import ConfirmationDialog from "../../components/ConfirmationDialog";
+import { groupSchema } from "../../schema/groupSchema";
+import { unitSchema } from "../../schema/unitSchema";
+import { warehouseSchema } from "../../schema/warehouseSchema"; 
 
 function TabPanel(props: {
     children?: React.ReactNode;
@@ -77,7 +82,7 @@ function TabPanel(props: {
 
 const BasicDataPage = () => {
     const dispatch = useDispatch();
-    const { showToast } = useToast(); 
+    const { showToast } = useToast();
     const [tab, setTab] = useState(0);
     const [productView, setProductView] = useState<"form" | "report">("report");
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -92,7 +97,8 @@ const BasicDataPage = () => {
         (state: RootState) => state
     );
 
-    const { control, handleSubmit, reset, trigger } = useForm<ProductFormData>({
+    const { control, handleSubmit, reset, trigger, formState: { errors } } = useForm<ProductFormData>({
+        resolver: yupResolver(productSchema),
         defaultValues: {
             name: "",
             unitId: 0,
@@ -116,7 +122,11 @@ const BasicDataPage = () => {
     const handleSetFormView = (product: Product | null = null) => {
         setActiveStep(0);
         setEditingProduct(product);
-        reset(product || undefined); 
+        reset(product || {
+            name: "", unitId: 0, groupId: 0, model: "",
+            purchasePrice: 0, wholesalePrice: 0, retailPrice: 0,
+            warehouseId: 0, barcode: "", allowDuplicate: false,
+        });
         setProductView("form");
     };
 
@@ -161,7 +171,12 @@ const BasicDataPage = () => {
     }, [products, searchTerm, sortBy]);
 
     const handleNext = async () => {
-        const isValid = await trigger();
+        let fieldsToValidate: (keyof ProductFormData)[] = [];
+        if (activeStep === 0) fieldsToValidate = ['name', 'groupId', 'unitId'];
+        if (activeStep === 1) fieldsToValidate = ['purchasePrice', 'retailPrice', 'wholesalePrice'];
+        if (activeStep === 2) fieldsToValidate = ['warehouseId'];
+        
+        const isValid = await trigger(fieldsToValidate);
         if (isValid) {
             if (activeStep === steps.length - 1) {
                 handleSubmit(onProductSubmit)(); 
@@ -184,9 +199,8 @@ const BasicDataPage = () => {
                             <Controller
                                 name="name"
                                 control={control}
-                                rules={{ required: "نام کالا الزامی است" }}
-                                render={({ field, fieldState }) => (
-                                 <TextField {...field} label="نام کالا" fullWidth autoFocus error={!!fieldState.error} helperText={fieldState.error?.message}/>
+                                render={({ field }) => (
+                                 <TextField {...field} label="نام کالا" fullWidth autoFocus error={!!errors.name} helperText={errors.name?.message}/>
                                 )}
                             />
                         </Grid>
@@ -203,9 +217,8 @@ const BasicDataPage = () => {
                             <Controller
                                 name="groupId"
                                 control={control}
-                                rules={{ required: "گروه کالا الزامی است", validate: value => value > 0 || "گروه کالا الزامی است" }}
-                                render={({ field, fieldState }) => (
-                                    <FormControl fullWidth error={!!fieldState.error}>
+                                render={({ field }) => (
+                                    <FormControl fullWidth error={!!errors.groupId}>
                                         <InputLabel>گروه کالا</InputLabel>
                                         <Select {...field} label="گروه کالا">
                                             {groups.map((g) => (
@@ -214,7 +227,7 @@ const BasicDataPage = () => {
                                                 </MenuItem>
                                             ))}
                                         </Select>
-                                        {fieldState.error && <Typography color="error" variant="caption" sx={{p:1}}>{fieldState.error.message}</Typography>}
+                                        {errors.groupId && <Typography color="error" variant="caption" sx={{p:1}}>{errors.groupId.message}</Typography>}
                                     </FormControl>
                                 )}
                             />
@@ -223,9 +236,8 @@ const BasicDataPage = () => {
                             <Controller
                                 name="unitId"
                                 control={control}
-                                rules={{ required: "واحد کالا الزامی است", validate: value => value > 0 || "واحد کالا الزامی است" }}
-                                render={({ field, fieldState }) => (
-                                    <FormControl fullWidth error={!!fieldState.error}>
+                                render={({ field }) => (
+                                    <FormControl fullWidth error={!!errors.unitId}>
                                         <InputLabel>واحد کالا</InputLabel>
                                         <Select {...field} label="واحد کالا">
                                             {units.map((u) => (
@@ -234,7 +246,7 @@ const BasicDataPage = () => {
                                                 </MenuItem>
                                             ))}
                                         </Select>
-                                         {fieldState.error && <Typography color="error" variant="caption" sx={{p:1}}>{fieldState.error.message}</Typography>}
+                                         {errors.unitId && <Typography color="error" variant="caption" sx={{p:1}}>{errors.unitId.message}</Typography>}
                                     </FormControl>
                                 )}
                             />
@@ -257,9 +269,8 @@ const BasicDataPage = () => {
                             <Controller
                                 name="purchasePrice"
                                 control={control}
-                                rules={{ required: "قیمت خرید الزامی است", validate: value => value > 0 || "قیمت باید بزرگتر از صفر باشد" }}
-                                render={({ field, fieldState }) => (
-                                    <TextField {...field} type="number" label="قیمت خرید" fullWidth autoFocus error={!!fieldState.error} helperText={fieldState.error?.message} />
+                                render={({ field }) => (
+                                    <TextField {...field} type="number" label="قیمت خرید" fullWidth autoFocus error={!!errors.purchasePrice} helperText={errors.purchasePrice?.message} />
                                 )}
                             />
                         </Grid>
@@ -267,9 +278,8 @@ const BasicDataPage = () => {
                             <Controller
                                 name="retailPrice"
                                 control={control}
-                                rules={{ required: "قیمت فروش الزامی است", validate: value => value > 0 || "قیمت باید بزرگتر از صفر باشد" }}
-                                render={({ field, fieldState }) => (
-                                    <TextField {...field} type="number" label="قیمت فروش" fullWidth error={!!fieldState.error} helperText={fieldState.error?.message} />
+                                render={({ field }) => (
+                                    <TextField {...field} type="number" label="قیمت فروش" fullWidth error={!!errors.retailPrice} helperText={errors.retailPrice?.message} />
                                 )}
                             />
                         </Grid>
@@ -278,7 +288,7 @@ const BasicDataPage = () => {
                                 name="wholesalePrice"
                                 control={control}
                                 render={({ field }) => (
-                                    <TextField {...field} type="number" label="قیمت فروش عمده" fullWidth />
+                                    <TextField {...field} type="number" label="قیمت فروش عمده" fullWidth error={!!errors.wholesalePrice} helperText={errors.wholesalePrice?.message}/>
                                 )}
                             />
                         </Grid>
@@ -291,9 +301,8 @@ const BasicDataPage = () => {
                             <Controller
                                 name="warehouseId"
                                 control={control}
-                                rules={{ required: "انبار الزامی است", validate: value => value > 0 || "انبار الزامی است" }}
-                                render={({ field, fieldState }) => (
-                                    <FormControl fullWidth error={!!fieldState.error}>
+                                render={({ field }) => (
+                                    <FormControl fullWidth error={!!errors.warehouseId}>
                                         <InputLabel>انبار</InputLabel>
                                         <Select {...field} label="انبار">
                                             {warehouses.map((w) => (
@@ -302,7 +311,7 @@ const BasicDataPage = () => {
                                                 </MenuItem>
                                             ))}
                                         </Select>
-                                        {fieldState.error && <Typography color="error" variant="caption" sx={{p:1}}>{fieldState.error.message}</Typography>}
+                                        {errors.warehouseId && <Typography color="error" variant="caption" sx={{p:1}}>{errors.warehouseId.message}</Typography>}
                                     </FormControl>
                                 )}
                             />
@@ -420,6 +429,7 @@ const BasicDataPage = () => {
                         edit_action={editGroup} 
                         delete_action={deleteGroup} 
                         showToast={showToast}
+                        schema={groupSchema} 
                     />
                 </TabPanel>
                 <TabPanel value={tab} index={2}>
@@ -430,6 +440,7 @@ const BasicDataPage = () => {
                         edit_action={editUnit} 
                         delete_action={deleteUnit}
                         showToast={showToast}
+                        schema={unitSchema} 
                     />
                 </TabPanel>
                 <TabPanel value={tab} index={3}>
@@ -440,6 +451,7 @@ const BasicDataPage = () => {
                         edit_action={editWarehouse} 
                         delete_action={deleteWarehouse}
                         showToast={showToast}
+                        schema={warehouseSchema} 
                     />
                 </TabPanel>
             </Paper>

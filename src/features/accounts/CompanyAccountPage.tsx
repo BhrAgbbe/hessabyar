@@ -4,6 +4,9 @@ import { Box, Button, useTheme, useMediaQuery } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useForm, type SubmitHandler } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { bankAccountSchema, type BankAccountFormData } from '../../schema/bankAccountSchema';
+import * as yup from 'yup'; 
 
 import EnhancedMuiTable, { type HeadCell, type Action } from '../../components/Table';
 import FormDialog from '../../components/FormDialog';
@@ -17,14 +20,6 @@ import { addTransaction, editTransaction, deleteTransaction, type Transaction } 
 import { initialIranianBanks, toPersianDigits } from '../../utils/utils';
 import { useToast } from '../../hooks/useToast';
 
-type AccountFormData = {
-  bankName: string;
-  branchName: string;
-  branchCode: string;
-  accountNumber: string;
-  balance: number;
-};
-
 type TransactionFormData = {
   accountId: string;
   date: string;
@@ -35,7 +30,7 @@ type TransactionFormData = {
 
 const CompanyAccountPage = () => {
     const dispatch = useDispatch();
-    const { showToast } = useToast(); 
+    const { showToast } = useToast();
     const accounts = useSelector((state: RootState) => state.accounts);
     const transactions = useSelector((state: RootState) => state.transactions);
     const theme = useTheme();
@@ -43,39 +38,59 @@ const CompanyAccountPage = () => {
 
     const [accountFormOpen, setAccountFormOpen] = useState(false);
     const [editingAccount, setEditingAccount] = useState<BankAccount | null>(null);
-    const [accountDeleteConfirm, setAccountDeleteConfirm] = useState<{ open: boolean, ids: (string|number)[] }>({ open: false, ids: [] });
+    const [accountDeleteConfirm, setAccountDeleteConfirm] = useState<{ open: boolean, ids: (string | number)[] }>({ open: false, ids: [] });
     const [banks, setBanks] = useState<string[]>(initialIranianBanks);
     const [newBankDialogOpen, setNewBankDialogOpen] = useState(false);
-    
+
     const [transactionFormOpen, setTransactionFormOpen] = useState(false);
     const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
     const [transactionDeleteConfirm, setTransactionDeleteConfirm] = useState<{ open: boolean, ids: string[] }>({ open: false, ids: [] });
     const [transactionModalView, setTransactionModalView] = useState<'form' | 'report'>('form');
-    const { 
-        control: accountControl, 
-        handleSubmit: handleAccountSubmit, 
-        reset: resetAccountForm, 
+
+    const {
+        control: accountControl,
+        handleSubmit: handleAccountSubmit,
+        reset: resetAccountForm,
         setValue: setAccountValue,
-        formState: { errors: accountErrors } 
-    } = useForm<AccountFormData>({
-        defaultValues: { bankName: '', branchName: '', branchCode: '', accountNumber: '', balance: 0 }
+        formState: { errors: accountErrors }
+    } = useForm<BankAccountFormData>({
+        resolver: yupResolver(bankAccountSchema as yup.ObjectSchema<BankAccountFormData>),
+        defaultValues: {
+            bankName: '',
+            branchName: '',
+            branchCode: '',
+            accountNumber: '',
+            cardNumber: null,
+            balance: 0,
+        }
     });
 
-    const { 
-        control: transControl, 
-        handleSubmit: handleTransSubmit, 
+    const {
+        control: transControl,
+        handleSubmit: handleTransSubmit,
         reset: resetTransForm,
         formState: { errors: transErrors }
     } = useForm<TransactionFormData>({
         defaultValues: { date: new Date().toISOString(), type: 'receipt', amount: 0, description: '', accountId: '' }
     });
-    
-    const bankOptions = useMemo<SelectOption[]>(() => 
+
+    const bankOptions = useMemo<SelectOption[]>(() =>
         banks.map(bank => ({ id: bank, label: bank })),
-    [banks]);
+        [banks]);
 
     useEffect(() => {
-        resetAccountForm(editingAccount || undefined);
+        if (editingAccount) {
+            resetAccountForm(editingAccount);
+        } else {
+            resetAccountForm({
+                bankName: '',
+                branchName: '',
+                branchCode: '',
+                accountNumber: '',
+                cardNumber: null,
+                balance: 0
+            });
+        }
     }, [editingAccount, resetAccountForm]);
 
     useEffect(() => {
@@ -88,7 +103,6 @@ const CompanyAccountPage = () => {
         }
     }, [editingTransaction, resetTransForm]);
 
-
     const handleOpenAccountForm = useCallback((account: BankAccount | null = null) => {
         setEditingAccount(account);
         setAccountFormOpen(true);
@@ -99,13 +113,21 @@ const CompanyAccountPage = () => {
         setEditingAccount(null);
     };
 
-    const onAccountSubmit: SubmitHandler<AccountFormData> = (data) => {
-        const processedData = { ...data, balance: Number(data.balance) };
+    const onAccountSubmit: SubmitHandler<BankAccountFormData> = (data) => {
+        const payload = {
+            bankName: data.bankName,
+            branchName: data.branchName,
+            branchCode: data.branchCode,
+            accountNumber: data.accountNumber,
+            balance: data.balance,
+            cardNumber: data.cardNumber || null,
+        };
+
         if (editingAccount) {
-            dispatch(editAccount({ ...processedData, id: editingAccount.id }));
+            dispatch(editAccount({ ...payload, id: editingAccount.id }));
             showToast('حساب با موفقیت ویرایش شد.', 'success');
         } else {
-            dispatch(addAccount(processedData));
+            dispatch(addAccount(payload));
             showToast('حساب با موفقیت اضافه شد.', 'success');
         }
         handleCloseAccountForm();
@@ -125,7 +147,7 @@ const CompanyAccountPage = () => {
         if (newBankName && !banks.includes(newBankName)) {
             const updatedBanks = [...banks, newBankName].sort();
             setBanks(updatedBanks);
-            setAccountValue('bankName', newBankName); 
+            setAccountValue('bankName', newBankName);
             setNewBankDialogOpen(false);
         } else {
             showToast('نام بانک نمی‌تواند خالی یا تکراری باشد.', 'error');
@@ -201,7 +223,7 @@ const CompanyAccountPage = () => {
 
     const accountActions = useMemo<readonly Action<BankAccount>[]>(() => [
         { icon: <EditIcon fontSize="small" />, tooltip: 'ویرایش', onClick: (row) => handleOpenAccountForm(row) },
-        { icon: <DeleteIcon color="error" fontSize="small"/>, tooltip: 'حذف', onClick: (row) => handleAccountDeleteRequest([row.id]) }
+        { icon: <DeleteIcon color="error" fontSize="small" />, tooltip: 'حذف', onClick: (row) => handleAccountDeleteRequest([row.id]) }
     ], [handleOpenAccountForm, handleAccountDeleteRequest]);
 
     const transactionHeadCells = useMemo<readonly HeadCell<Transaction>[]>(() => {
@@ -217,16 +239,16 @@ const CompanyAccountPage = () => {
 
     const transactionActions = useMemo<readonly Action<Transaction>[]>(() => [
         { icon: <EditIcon fontSize="small" />, tooltip: 'ویرایش', onClick: (row) => setEditingTransaction(row) },
-        { icon: <DeleteIcon color="error" fontSize="small"/>, tooltip: 'حذف', onClick: (row) => handleTransactionDeleteRequest([row.id]) }
+        { icon: <DeleteIcon color="error" fontSize="small" />, tooltip: 'حذف', onClick: (row) => handleTransactionDeleteRequest([row.id]) }
     ], [handleTransactionDeleteRequest]);
 
-
-    const accountFormConfig: FormField<AccountFormData>[] = [
-        { name: 'bankName', label: 'نام بانک', type: 'select', options: bankOptions, rules: { required: 'انتخاب نام بانک الزامی است' } },
-        { name: 'branchName', label: 'نام شعبه', type: 'text', rules: { required: 'نام شعبه الزامی است' } },
-        { name: 'branchCode', label: 'کد شعبه', type: 'text', rules: { required: 'کد شعبه الزامی است' } },
-        { name: 'accountNumber', label: 'شماره حساب', type: 'text', rules: { required: 'شماره حساب الزامی است' } },
-        { name: 'balance', label: 'موجودی اولیه (تومان)', type: 'number', rules: { required: 'موجودی اولیه الزامی است', valueAsNumber: true, min: { value: 0, message: 'موجودی نمی‌تواند منفی باشد' } } }
+    const accountFormConfig: FormField<BankAccountFormData>[] = [
+        { name: 'bankName', label: 'نام بانک', type: 'select', options: bankOptions },
+        { name: 'branchName', label: 'نام شعبه', type: 'text' },
+        { name: 'branchCode', label: 'کد شعبه', type: 'text' },
+        { name: 'accountNumber', label: 'شماره حساب', type: 'text' },
+        { name: 'cardNumber', label: 'شماره کارت (اختیاری)', type: 'text' },
+        { name: 'balance', label: 'موجودی اولیه (تومان)', type: 'number' }
     ];
 
     const transactionFormConfig: FormField<TransactionFormData>[] = useMemo(() => {
@@ -246,7 +268,7 @@ const CompanyAccountPage = () => {
             { name: 'description', label: 'توضیحات', type: 'textarea', rows: 3, rules: { required: 'ارائه توضیحات الزامی است' } },
         ];
     }, [accounts]);
-
+    
     const renderModalContent = () => {
         if (transactionModalView === 'report') {
             return (

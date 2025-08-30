@@ -2,23 +2,18 @@ import { useState, useMemo, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   Box, Typography, Button, Paper, TextField,
-  FormControl, InputLabel, Select, MenuItem
+  FormControl, InputLabel, Select, MenuItem, FormHelperText
 } from '@mui/material';
-import { useForm, type SubmitHandler, useWatch } from 'react-hook-form';
+import { useForm, type SubmitHandler, useWatch, Controller, type Resolver } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { wastageSchema, type WastageFormData } from '../../schema/wastageSchema'; 
 
 import { type RootState } from '../../store/store';
 import { addWastage } from '../../store/slices/wastageSlice';
 import { type Product, updateStock } from '../../store/slices/productsSlice';
 import { useToast } from '../../hooks/useToast';
 
-import Form, { type FormField } from '../../components/Form'; 
 import EnhancedMuiTable, { type HeadCell } from '../../components/Table'; 
-
-type WastageFormData = {
-  productId: number;
-  quantity: number;
-  reason: string;
-};
 
 const WastagePage = () => {
   const dispatch = useDispatch();
@@ -29,9 +24,10 @@ const WastagePage = () => {
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<number>(0);
   const [viewMode, setViewMode] = useState<'form' | 'report'>('form');
 
-  const { control, handleSubmit, formState: { errors }, setValue, reset } = useForm<WastageFormData>({
+const { control, handleSubmit, formState: { errors }, setValue, reset, trigger } = useForm<WastageFormData>({
+    resolver: yupResolver(wastageSchema) as Resolver<WastageFormData>, 
     defaultValues: { productId: 0, quantity: 1, reason: '' }
-  });
+});
 
   const watchedProductId = useWatch({ control, name: 'productId' });
 
@@ -39,10 +35,11 @@ const WastagePage = () => {
     if (watchedProductId) {
       const product = products.find(p => p.id === watchedProductId);
       setSelectedProduct(product || null);
+      trigger('quantity');
     } else {
       setSelectedProduct(null);
     }
-  }, [watchedProductId, products]);
+  }, [watchedProductId, products, trigger]);
 
   const filteredProducts = useMemo(() => {
     if (!selectedWarehouseId) return [];
@@ -54,6 +51,10 @@ const WastagePage = () => {
     if (!selectedProduct || !selectedWarehouseId || wastageQuantity <= 0) return;
 
     const currentStock = selectedProduct.stock?.[selectedWarehouseId] || 0;
+    if (wastageQuantity > currentStock) {
+        showToast('تعداد ضایعات از موجودی بیشتر است.', 'error');
+        return;
+    }
     const newStock = currentStock - wastageQuantity;
 
     dispatch(updateStock({
@@ -80,33 +81,6 @@ const WastagePage = () => {
     month: '2-digit',
     day: '2-digit'
   });
-
-  const formConfig: FormField<WastageFormData>[] = [
-    {
-      name: 'productId',
-      label: 'نام کالا',
-      type: 'select',
-      rules: { required: true, min: 1 },
-      options: filteredProducts.map(p => ({ id: p.id, label: p.name }))
-    },
-    {
-      name: 'quantity',
-      label: 'تعداد',
-      type: 'number',
-      rules: {
-        required: 'تعداد اجباری است',
-        min: { value: 1, message: 'تعداد باید مثبت باشد' },
-        validate: value => (selectedProduct && (selectedProduct.stock?.[selectedWarehouseId] || 0) >= value) || 'تعداد ضایعات از موجودی بیشتر است'
-      }
-    },
-    {
-      name: 'reason',
-      label: 'علت کسری',
-      type: 'textarea',
-      rules: { required: 'علت کسری اجباری است' },
-      rows: 4
-    }
-  ];
 
   const reportHeadCells: HeadCell<typeof wastage[0]>[] = [
     {
@@ -169,19 +143,60 @@ const WastagePage = () => {
                 {warehouses.map(w => <MenuItem key={w.id} value={w.id}>{w.name}</MenuItem>)}
               </Select>
           </FormControl>
-
-           <TextField
-             label="موجودی انبار"
-             value={selectedProduct?.stock?.[selectedWarehouseId] || 0}
-             fullWidth
-             disabled
-             size="small"
-             InputLabelProps={{ shrink: true }}
-             sx={{ mb: 2 }}
-           />
           
-          <Box sx={{ flexGrow: 1 }}>
-            <Form config={formConfig} control={control} errors={errors} />
+          <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Controller
+                name="productId"
+                control={control}
+                render={({ field }) => (
+                    <FormControl fullWidth error={!!errors.productId}>
+                        <InputLabel>نام کالا</InputLabel>
+                        <Select {...field} label="نام کالا" disabled={!selectedWarehouseId}>
+                            <MenuItem value={0} disabled><em>یک کالا انتخاب کنید</em></MenuItem>
+                            {filteredProducts.map(p => <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}
+                        </Select>
+                        {errors.productId && <FormHelperText>{errors.productId.message}</FormHelperText>}
+                    </FormControl>
+                )}
+            />
+
+            <TextField
+                label="موجودی انبار"
+                value={selectedProduct?.stock?.[selectedWarehouseId] || 0}
+                fullWidth
+                disabled
+                size="small"
+                InputLabelProps={{ shrink: true }}
+            />
+
+            <Controller
+                name="quantity"
+                control={control}
+                render={({ field }) => (
+                    <TextField
+                        {...field}
+                        type="number"
+                        label="تعداد"
+                        error={!!errors.quantity}
+                        helperText={errors.quantity?.message}
+                    />
+                )}
+            />
+            
+            <Controller
+                name="reason"
+                control={control}
+                render={({ field }) => (
+                    <TextField
+                        {...field}
+                        label="علت کسری"
+                        multiline
+                        rows={4}
+                        error={!!errors.reason}
+                        helperText={errors.reason?.message}
+                    />
+                )}
+            />
           </Box>
 
           <Box
@@ -193,7 +208,6 @@ const WastagePage = () => {
             }}
           >
             <Button type="submit" variant="contained">ثبت</Button>
-            <Button variant="outlined" color="error">حذف</Button>
             <Button variant="outlined" color="secondary" onClick={() => setViewMode('report')}>گزارش</Button>
           </Box>
         </form>

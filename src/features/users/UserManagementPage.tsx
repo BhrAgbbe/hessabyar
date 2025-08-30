@@ -110,8 +110,8 @@ const UserManagementPage = () => {
   };
 
   const headCells: readonly HeadCell<User>[] = [
-    { id: 'username', numeric: false, label: 'نام کاربری' },
-    { id: 'role', numeric: false, label: 'سطح دسترسی' },
+  { id: 'username', numeric: false, label: 'نام کاربری', align: 'center' },
+    { id: 'role', numeric: false, label: 'سطح دسترسی', align: 'center' },
   ];
 
   const actions: readonly Action<User>[] = [
