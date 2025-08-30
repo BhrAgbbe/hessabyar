@@ -12,7 +12,7 @@ import {
 import InvoiceForm from '../../components/InvoiceForm';
 import { PrintableReportLayout } from '../../components/layout/PrintableReportLayout';
 import { InvoicePrintView } from '../../components/InvoicePrintView';
-import { type Invoice } from '../../store/slices/invoicesSlice';
+import {type Invoice } from '../../types/invoice';
 import { type RootState } from '../../store/store';
 import { toPersianDigits } from '../../utils/utils'; 
 

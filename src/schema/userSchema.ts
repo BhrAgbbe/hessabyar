@@ -1,5 +1,5 @@
 import * as yup from 'yup';
-import type { User } from '../store/slices/usersSlice';
+import type { User } from '../types/user';
 
 
 export type UserFormData = {

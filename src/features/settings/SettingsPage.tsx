@@ -16,7 +16,9 @@ import {
 } from "@mui/material";
 import type { SelectChangeEvent } from "@mui/material";
 import type { RootState } from "../../store/store";
-import { setAllSettings, type AppSettings } from "../../store/slices/settingsSlice";
+import { setAllSettings } from "../../store/slices/settingsSlice";
+import {type AppSettings } from '../../types/settings';
+
 import { useToast } from "../../hooks/useToast";
 
 const SettingsPage: React.FC = () => {

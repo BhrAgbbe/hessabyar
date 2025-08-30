@@ -6,18 +6,17 @@ import { useForm, type SubmitHandler, type Resolver } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useToast } from '../../hooks/useToast';
 import {
-  type Customer,
   addCustomer,
   editCustomer,
   deleteCustomer,
-  type MoeinCategory,
 } from '../../store/slices/customersSlice';
 import {
-  type Supplier,
   addSupplier,
   editSupplier,
   deleteSupplier,
 } from '../../store/slices/suppliersSlice';
+import type {  Customer, MoeinCategory , Supplier  } from '../../types/person';
+
 import { createPersonSchema, type PersonFormData } from '../../schema/personSchema'; 
 import SearchAndSortPanel from '../../components/SearchAndSortPanel';
 import PageHeader from '../../components/PageHeader';

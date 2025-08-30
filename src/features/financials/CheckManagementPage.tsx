@@ -12,9 +12,9 @@ import {
   addCheck,
   editCheck,
   deleteCheck,
-  type Check,
   type CheckStatus,
 } from "../../store/slices/checksSlice";
+import {type Check } from '../../types/check';
 
 import { ToastContext } from "../../contexts/toast.context";
 import {

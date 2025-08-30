@@ -23,12 +23,12 @@ import ShamsiDatePicker from "../../components/DatePicker";
 import { PrintableReportLayout } from "../../components/layout/PrintableReportLayout";
 import { type RootState } from "../../store/store";
 import {
-  type Check,
   type CheckStatus,
   addCheck,
   editCheck,
   deleteCheck,
 } from "../../store/slices/checksSlice";
+import { type Check } from "../../types/check";
 import { toPersianDigits } from "../../utils/utils";
 import { useToast } from "../../hooks/useToast";
 

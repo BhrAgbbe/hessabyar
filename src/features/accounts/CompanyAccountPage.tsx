@@ -15,8 +15,12 @@ import Form, { type FormField } from '../../components/Form';
 import NewBankDialog from '../../components/NewBankDialog';
 import { type SelectOption } from '../../components/SearchableSelect';
 import { type RootState } from '../../store/store';
-import { addAccount, editAccount, deleteAccount, updateBalance, type BankAccount } from '../../store/slices/accountsSlice';
-import { addTransaction, editTransaction, deleteTransaction, type Transaction } from '../../store/slices/transactionsSlice';
+import { addAccount, editAccount, deleteAccount, updateBalance } from '../../store/slices/accountsSlice';
+import { addTransaction, editTransaction, deleteTransaction } from '../../store/slices/transactionsSlice';
+import {type Transaction } from '../../types/transaction';
+import {type BankAccount } from '../../types/account';
+
+
 import { initialIranianBanks, toPersianDigits } from '../../utils/utils';
 import { useToast } from '../../hooks/useToast';
 

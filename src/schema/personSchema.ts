@@ -1,5 +1,5 @@
 import * as yup from 'yup';
-import type { MoeinCategory } from '../store/slices/customersSlice';
+import type { MoeinCategory } from '../types/person';
 
 const moeinCategories: MoeinCategory[] = ['بدهکاران', 'طلبکاران', 'همکاران', ' متفرقه', 'ضایعات'];
 const phoneRegex = /^09\d{9}$/;

@@ -12,11 +12,12 @@ import { useForm, Controller, type SubmitHandler } from "react-hook-form";
 import { yupResolver } from '@hookform/resolvers/yup';
 import { type RootState } from "../../store/store";
 import {
-  type Product,
   addProduct,
   editProduct,
   deleteProduct,
 } from "../../store/slices/productsSlice";
+import {type Product } from '../../types/product';
+
 import { productSchema, type ProductFormData } from "../../schema/productSchema"; 
 
 const ProductsPage = () => {

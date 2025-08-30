@@ -10,8 +10,9 @@ import {
   addUser,
   editUser,
   deleteUser,
-  type User,
 } from "../../store/slices/usersSlice";
+import {type User } from '../../types/user';
+
 import {
   createUserSchema,
   editUserSchema,

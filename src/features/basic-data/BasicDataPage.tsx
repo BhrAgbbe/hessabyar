@@ -31,12 +31,13 @@ import { productSchema } from "../../schema/productSchema";
 import { type RootState } from "../../store/store";
 import { useToast } from "../../hooks/useToast";
 import {
-    type Product,
     type ProductFormData,
     addProduct,
     editProduct,
     deleteProduct,
 } from "../../store/slices/productsSlice";
+import {type Product } from '../../types/product';
+
 import {
     addGroup,
     editGroup,

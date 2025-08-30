@@ -18,8 +18,9 @@ import {
   deletePurchase,
   deleteSalesReturn,
   deletePurchaseReturn,
-  type Invoice
+
 } from '../../store/slices/invoicesSlice';
+import {type Invoice } from '../../types/invoice';
 
 interface CustomerAccountPageProps {
   accountType: 'sales' | 'purchases';

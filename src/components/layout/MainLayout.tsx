@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-// Link component is no longer needed here for the sidebar items
 import { useRouter } from "next/router";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -23,15 +22,19 @@ import {
   ListItem,
   useTheme,
   useMediaQuery,
+  Menu,
+  MenuItem,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
-import Link from 'next/link'; // Keep for top-level non-draggable items
+import AccountCircle from "@mui/icons-material/AccountCircle";
+import Link from 'next/link';
 import type { RootState } from "../../store/store";
 import { addShortcut, setShortcuts } from "../../store/slices/dashboardSlice";
-import type { Shortcut } from "../../store/slices/dashboardSlice";
+import { logout } from "../../store/slices/authSlice"; 
+import type { Shortcut } from "../../types/dashboard";
 import { navItems, type NavChild, allDraggableItems } from "./menuItems";
 
 const drawerWidth = 240;
@@ -44,14 +47,31 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
   const dashboardShortcuts = useSelector(
     (state: RootState) => state.dashboard
   );
+  const { isAuthenticated, currentUser } = useSelector((state: RootState) => state.auth);
   const { backgroundImage } = useSelector((state: RootState) => state.settings);
   const [nestedListOpen, setNestedListOpen] = useState<{
     [key: string]: boolean;
   }>({ مدیریت: true, عملیات: true, گزارشات: true, امکانات: true });
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
+  const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    dispatch(logout());
+    router.push('/login'); 
+    handleClose();
+  };
+
 
   const handleAddShortcut = (item: NavChild) => {
     const isDuplicate = dashboardShortcuts.some((s) => s.id === item.id);
@@ -140,18 +160,17 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
                               <ListItem
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
-                                {...provided.dragHandleProps} // IMPORTANT: dragHandleProps moved to ListItem
+                                {...provided.dragHandleProps}
                                 disablePadding
                                 sx={{
-                                  paddingRight: 2, // Indent the item slightly
+                                  paddingRight: 2,
                                   backgroundColor: snapshot.isDragging
                                     ? theme.palette.action.hover
                                     : "transparent",
                                 }}
                               >
-                                {/* REMOVED Link wrapper, using onClick for navigation */}
                                 <ListItemButton
-                                  component="div" // Changed to div to avoid conflicts
+                                  component="div"
                                   sx={{
                                     pr: 2,
                                     display: "flex",
@@ -161,7 +180,6 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
                                   }}
                                   selected={router.pathname === child.path}
                                   onClick={() => {
-                                    // Handle navigation programmatically
                                     router.push(child.path);
                                     if (isMobile) {
                                       handleDrawerToggle();
@@ -177,7 +195,7 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
                                       edge="end"
                                       onClick={(e) => {
                                         e.preventDefault();
-                                        e.stopPropagation(); // Stop propagation to prevent navigation
+                                        e.stopPropagation();
                                         handleAddShortcut(child);
                                       }}
                                     >
@@ -197,7 +215,6 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
               </React.Fragment>
             );
           }
-          // Non-draggable, top-level items like Dashboard still use Link
           return (
             <Link
               href={item.path as string}
@@ -244,6 +261,41 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
             >
               <MenuIcon />
             </IconButton>
+         
+            {isAuthenticated && (
+              <div>
+                <IconButton
+                  size="large"
+                  aria-label="account of current user"
+                  aria-controls="menu-appbar"
+                  aria-haspopup="true"
+                  onClick={handleMenu}
+                  color="inherit"
+                >
+                  <AccountCircle />
+                </IconButton>
+                <Menu
+                  id="menu-appbar"
+                  anchorEl={anchorEl}
+                  anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                  keepMounted
+                  transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                  open={Boolean(anchorEl)}
+                  onClose={handleClose}
+                >
+                  <MenuItem disabled>
+                    {currentUser?.username}
+                  </MenuItem>
+                  <MenuItem onClick={handleLogout}>خروج از حساب</MenuItem>
+                </Menu>
+              </div>
+            )}
           </Toolbar>
         </AppBar>
         <Box

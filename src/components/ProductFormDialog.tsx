@@ -3,7 +3,9 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Grid, FormControl, InputLabel, Select, MenuItem, FormControlLabel, Checkbox } from '@mui/material';
 import { useForm, Controller, type SubmitHandler } from 'react-hook-form';
 import { type RootState } from '../store/store';
-import { type Product, type ProductFormData, addProduct, editProduct } from '../store/slices/productsSlice';
+import { type ProductFormData, addProduct, editProduct } from '../store/slices/productsSlice';
+import {type Product } from '../types/product';
+
 import CustomTextField from './TextField';
 import FormDialog from './FormDialog';
 import { useToast } from '../hooks/useToast';

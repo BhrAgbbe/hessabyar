@@ -29,11 +29,12 @@ import {
   addTransaction,
   editTransaction,
   deleteTransaction,
-  type Transaction,
 } from "../../store/slices/transactionsSlice";
+import type { Transaction } from "../../types/transaction";
+
 import { toPersianDigits } from "../../utils/utils";
 import { useToast } from "../../hooks/useToast";
-import { type BankAccount } from "../../store/slices/accountsSlice";
+import type { BankAccount } from "../../types/account";
 
 const CashFlowPage = () => {
   const dispatch = useDispatch();

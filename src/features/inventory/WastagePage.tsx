@@ -10,7 +10,8 @@ import { wastageSchema, type WastageFormData } from '../../schema/wastageSchema'
 
 import { type RootState } from '../../store/store';
 import { addWastage } from '../../store/slices/wastageSlice';
-import { type Product, updateStock } from '../../store/slices/productsSlice';
+import { updateStock } from '../../store/slices/productsSlice';
+import {type Product } from '../../types/product';
 import { useToast } from '../../hooks/useToast';
 
 import EnhancedMuiTable, { type HeadCell } from '../../components/Table'; 

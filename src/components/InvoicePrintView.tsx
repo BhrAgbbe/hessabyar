@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { Box, Paper, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Grid, Divider } from '@mui/material';
-import { type Invoice } from '../store/slices/invoicesSlice';
+import {type Invoice } from '../types/invoice';
 import { type RootState } from '../store/store';
 import { toPersianDigits, toPersianDigitsString } from '../utils/utils'; 
 

@@ -26,10 +26,11 @@ import {
   addPurchase,
   addSalesReturn,
   addPurchaseReturn,
-  type Invoice,
-  type InvoiceItem,
 } from "../store/slices/invoicesSlice";
-import { type Product } from "../store/slices/productsSlice";
+
+import type{ Invoice ,InvoiceItem} from '../types/invoice';
+
+import { type Product } from "../types/product";
 import { useToast } from "../hooks/useToast";
 
 import SearchableSelect, { type SelectOption } from "./SearchableSelect";

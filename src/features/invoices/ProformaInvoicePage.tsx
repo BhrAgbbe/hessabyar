@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Box, Button } from '@mui/material';
 import InvoiceForm from '../../components/InvoiceForm';
 import { PrintableReportLayout } from '../../components/layout/PrintableReportLayout';
-import { type Invoice } from '../../store/slices/invoicesSlice';
+import {type Invoice } from '../../types/invoice';
 import { InvoicePrintView } from '../../components/InvoicePrintView'; 
 import { toPersianDigits } from '../../utils/utils';
 

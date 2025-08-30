@@ -15,8 +15,10 @@ import Form, { type FormField } from "../../components/Form";
 import ConfirmationDialog from "../../components/ConfirmationDialog";
 
 import { type RootState } from "../../store/store";
-import { addTransaction, deleteTransaction, type Transaction } from "../../store/slices/transactionsSlice";
-import { deleteInvoice, type Invoice } from "../../store/slices/invoicesSlice";
+import { addTransaction, deleteTransaction } from "../../store/slices/transactionsSlice";
+import type {Transaction} from "../../types/transaction";
+import type {Invoice} from "../../types/invoice";
+import { deleteInvoice } from "../../store/slices/invoicesSlice";
 import { toPersianDigits } from "../../utils/utils";
 
 type TransactionFormData = {

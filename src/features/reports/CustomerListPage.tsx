@@ -9,22 +9,38 @@ import AddPerson from "../../components/Addperson";
 import { type SelectOption } from "../../components/SearchableSelect";
 
 import { type RootState } from "../../store/store";
-import { addCustomer, type Customer, type MoeinCategory } from "../../store/slices/customersSlice";
-import { addSupplier, type Supplier } from "../../store/slices/suppliersSlice";
+import { addCustomer } from "../../store/slices/customersSlice";
+import { addSupplier } from "../../store/slices/suppliersSlice";
+import type { Customer, MoeinCategory, Supplier } from "../../types/person";
+
 import { useToast } from "../../hooks/useToast";
 
-const moeinCategories: MoeinCategory[] = ["بدهکاران", "طلبکاران", "همکاران", " متفرقه", "ضایعات"];
-const moeinOptions: SelectOption[] = moeinCategories.map(cat => ({ id: cat, label: cat }));
+const moeinCategories: MoeinCategory[] = [
+  "بدهکاران",
+  "طلبکاران",
+  "همکاران",
+  " متفرقه",
+  "ضایعات",
+];
+const moeinOptions: SelectOption[] = moeinCategories.map((cat) => ({
+  id: cat,
+  label: cat,
+}));
 
 const CustomerListPage = () => {
   const dispatch = useDispatch();
   const { showToast } = useToast();
   const { customers, suppliers } = useSelector((state: RootState) => state);
-  const allPersons = useMemo(() => [...customers, ...suppliers], [customers, suppliers]);
+  const allPersons = useMemo(
+    () => [...customers, ...suppliers],
+    [customers, suppliers]
+  );
 
   const [searchTerm, setSearchTerm] = useState("");
   const [searchField, setSearchField] = useState<keyof Customer>("name");
-  const [personType, setPersonType] = useState<'customer' | 'supplier'>('customer');
+  const [personType, setPersonType] = useState<"customer" | "supplier">(
+    "customer"
+  );
 
   const searchOptions = [
     { value: "name", label: "نام مشتری" },
@@ -33,25 +49,48 @@ const CustomerListPage = () => {
   ];
 
   const headCells: readonly HeadCell<Customer>[] = [
-    { id: "id", numeric: true, label: "شناسه", width: '25%', align: 'center' },
-    { id: "name", numeric: false, label: "نام مشتری", width: '25%', align: 'center' },
-    { id: "phone", numeric: false, label: "تلفن", cell: (row) => row.phone || "-", width: '25%', align: 'center' },
-    { id: "address", numeric: false, label: "آدرس", cell: (row) => row.address || "-", width: '25%', align: 'center' },
+    { id: "id", numeric: true, label: "شناسه", width: "25%", align: "center" },
+    {
+      id: "name",
+      numeric: false,
+      label: "نام مشتری",
+      width: "25%",
+      align: "center",
+    },
+    {
+      id: "phone",
+      numeric: false,
+      label: "تلفن",
+      cell: (row) => row.phone || "-",
+      width: "25%",
+      align: "center",
+    },
+    {
+      id: "address",
+      numeric: false,
+      label: "آدرس",
+      cell: (row) => row.address || "-",
+      width: "25%",
+      align: "center",
+    },
   ];
 
   const getNextId = () => {
-    const sourceData = personType === 'customer' ? customers : suppliers;
-    const maxId = sourceData.length > 0 ? Math.max(...sourceData.map((p) => Number(p.id))) : 99;
+    const sourceData = personType === "customer" ? customers : suppliers;
+    const maxId =
+      sourceData.length > 0
+        ? Math.max(...sourceData.map((p) => Number(p.id)))
+        : 99;
     return maxId < 100 ? 100 : maxId + 1;
   };
 
-  const handleSaveNewPerson = (personData: Omit<Customer & Supplier, 'id'>) => {
-    if (personType === 'customer') {
-        dispatch(addCustomer(personData));
-        showToast('مشتری جدید با موفقیت اضافه شد', 'success');
+  const handleSaveNewPerson = (personData: Omit<Customer & Supplier, "id">) => {
+    if (personType === "customer") {
+      dispatch(addCustomer(personData));
+      showToast("مشتری جدید با موفقیت اضافه شد", "success");
     } else {
-        dispatch(addSupplier(personData));
-        showToast('فروشنده جدید با موفقیت اضافه شد', 'success');
+      dispatch(addSupplier(personData));
+      showToast("فروشنده جدید با موفقیت اضافه شد", "success");
     }
   };
 
@@ -61,7 +100,10 @@ const CustomerListPage = () => {
     }
     return customers.filter((customer) => {
       const fieldValue = customer[searchField];
-      return fieldValue?.toString().toLowerCase().includes(searchTerm.toLowerCase());
+      return fieldValue
+        ?.toString()
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
     });
   }, [customers, searchTerm, searchField]);
 
@@ -74,7 +116,7 @@ const CustomerListPage = () => {
           onSave={handleSaveNewPerson}
           getNextId={getNextId}
           moeinOptions={moeinOptions}
-          existingPersons={allPersons} 
+          existingPersons={allPersons}
         />
       }
     >

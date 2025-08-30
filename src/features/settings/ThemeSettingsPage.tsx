@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Box, Typography, Paper, TextField, InputAdornment, Button } from '@mui/material';
 import type { RootState } from '../../store/store';
 import { updateSetting } from '../../store/slices/settingsSlice';
-import type { AppSettings } from '../../store/slices/settingsSlice';
+import {type AppSettings } from '../../types/settings';
 
 const ThemeSettingsPage = () => {
     const dispatch = useDispatch();

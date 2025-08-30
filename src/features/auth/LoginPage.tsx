@@ -10,7 +10,7 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import type { RootState } from '../../store/store';
 import { loginSuccess } from '../../store/slices/authSlice';
-import { type Check } from '../../store/slices/checksSlice';
+import {type Check } from '../../types/check';
 import { loginSchema, type LoginFormData } from '../../schema/loginSchema';
 
 const LoginPage = () => {

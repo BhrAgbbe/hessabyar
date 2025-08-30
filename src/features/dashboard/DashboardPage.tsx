@@ -100,10 +100,10 @@ const DashboardPage = () => {
             sx={{ 
               backgroundColor: snapshot.isDraggingOver ? 'action.hover' : 'transparent',
               borderRadius: 1,
-              p: 2, // Add some padding
-              minHeight: 400, // Increase min height
+              p: 2, 
+              minHeight: 400,
               transition: 'background-color 0.2s ease',
-              alignContent: 'flex-start' // Align items to the top
+              alignContent: 'flex-start' 
             }}
           >
             {shortcuts.map((shortcut, index) => (

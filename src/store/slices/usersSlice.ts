@@ -1,8 +1,9 @@
-import { createSlice,type PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { User } from '../../types/user'; 
 
-
-const initialState: User[] = [];
+const initialState: User[] = [
+  { id: 1, username: 'Admin', role: 'مدیر سیستم', password: '111111' }
+];
 
 const usersSlice = createSlice({
   name: 'users',
@@ -19,10 +20,19 @@ const usersSlice = createSlice({
       }
     },
     deleteUser: (state, action: PayloadAction<number>) => {
+      if (action.payload === 1) {
+        return state;
+      }
       return state.filter(user => user.id !== action.payload);
     },
-    setAllUsers: (_state, action: PayloadAction<User[]>) => {
-      return action.payload; 
+    setAllUsers: (state, action: PayloadAction<User[]>) => {
+      const adminUser = state.find(u => u.id === 1);
+      const otherUsers = action.payload.filter(u => u.id !== 1);
+      
+      if(adminUser){
+        return [adminUser, ...otherUsers];
+      }
+      return action.payload;
     },
   },
 });
