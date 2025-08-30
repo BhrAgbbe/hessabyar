@@ -1,9 +1,5 @@
 import { createSlice,type PayloadAction } from '@reduxjs/toolkit';
-
-export interface BaseEntity {
-  id: number;
-  name: string;
-}
+import type { BaseEntity } from '../../types/base'; 
 
 const initialState: BaseEntity[] = [
   { id: 1, name: 'عدد' },

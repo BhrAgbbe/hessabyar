@@ -1,10 +1,6 @@
 import { createSlice,type PayloadAction } from '@reduxjs/toolkit';
-export interface User {
-  id: number;
-  username: string;
-  role: 'مدیر سیستم' | 'فروشنده' | 'حسابدار' | 'انباردار';
-  password?: string;
-}
+import type { User } from '../../types/user'; 
+
 
 const initialState: User[] = [];
 

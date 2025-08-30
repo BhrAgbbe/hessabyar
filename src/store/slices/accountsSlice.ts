@@ -1,13 +1,7 @@
 import { createSlice,type PayloadAction } from '@reduxjs/toolkit';
 
-export interface BankAccount {
-    id: string;
-    bankName: string;
-    branchName: string;
-    branchCode: string;
-    accountNumber: string;
-    balance: number;
-}
+import type { BankAccount } from '../../types/account'; 
+
 
 const initialState: BankAccount[] = [];
 

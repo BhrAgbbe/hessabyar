@@ -1,17 +1,6 @@
 import { createSlice,type PayloadAction } from '@reduxjs/toolkit';
+import type { Customer } from '../../types/person'; 
 
-export type MoeinCategory = 'بدهکاران' |'طلبکاران'|'همکاران'|' متفرقه' | 'ضایعات';
-
-export interface Customer {
-  id: number;
-  name: string;
-  phone?: string;
-  city?: string;
-  address?: string;
-  moein?: MoeinCategory;
-    debt?: number;
-
-}
 
 const initialState: Customer[] = [];
 

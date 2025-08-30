@@ -1,15 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import type { Transaction } from '../../types/transaction'; 
 
-export interface Transaction {
-  id: string;
-  accountId: string; 
-  date: string; 
-  description: string;
-  amount: number;
-  type: 'receipt' | 'payment';
-  customerId?: number; 
-  supplierId?: number; 
-}
 
 const initialState: Transaction[] = [];
 

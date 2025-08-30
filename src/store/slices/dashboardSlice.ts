@@ -1,12 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
-
-export interface Shortcut {
-  id: string; 
-  title: string;
-  path: string;
-  iconName: string; 
-}
+import type { Shortcut } from '../../types/dashboard'; 
 
 const initialState: Shortcut[] = [];
 

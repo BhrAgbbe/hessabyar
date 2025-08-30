@@ -1,13 +1,5 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-
-export interface WastageEntry {
-  id: string;
-  productId: number;
-  warehouseId: number; 
-  quantity: number;
-  date: string; 
-  reason: string;
-}
+import type { WastageEntry } from '../../types/wastage'; 
 
 const initialState: WastageEntry[] = [];
 

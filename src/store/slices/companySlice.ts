@@ -1,16 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import type { CompanyInfo } from '../../types/company'; 
 
-export interface CompanyInfo {
-  name: string;
-  managerName: string;
-  economicCode: string;
-  phone: string;
-  mobile: string;
-  fax: string;
-  address: string;
-  promoMessage: string;
-  logo: string | null; 
-}
 
 const initialState: CompanyInfo = {
   name: '',

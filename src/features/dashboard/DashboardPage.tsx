@@ -5,7 +5,7 @@ import { Droppable, Draggable } from '@hello-pangea/dnd';
 import { Grid, Typography, Paper, Button, Box, IconButton, useTheme, useMediaQuery } from '@mui/material';
 import type { RootState } from '../../store/store';
 import { removeShortcut } from '../../store/slices/dashboardSlice';
-import type { Shortcut } from '../../store/slices/dashboardSlice';
+import type { Shortcut } from '../../types/dashboard';
 import CloseIcon from '@mui/icons-material/Close';
 import {
     Dashboard as DashboardIcon, Settings as SettingsIcon, PointOfSale as PointOfSaleIcon,
