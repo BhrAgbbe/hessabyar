@@ -10,6 +10,18 @@ import { ToastProvider } from "../src/components/ToastProvider";
 import DynamicThemeProvider from "../src/components/DynamicThemeProvider";
 import type { RootState } from "../src/store/store";
 
+import { CacheProvider } from '@emotion/react';
+import createCache from '@emotion/cache';
+import { prefixer } from 'stylis';
+import rtlPlugin from 'stylis-plugin-rtl';
+import CssBaseline from "@mui/material/CssBaseline";
+
+const cacheRtl = createCache({
+  key: 'muirtl',
+  stylisPlugins: [prefixer, rtlPlugin],
+});
+
+
 type AppWrapperProps = {
   Component: AppProps['Component'];
   pageProps: AppProps['pageProps'];
@@ -50,15 +62,18 @@ const AppWrapper = ({ Component, pageProps }: AppWrapperProps) => {
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <DynamicThemeProvider>
-          <ToastProvider>
-            <AppWrapper Component={Component} pageProps={pageProps} />
-          </ToastProvider>
-        </DynamicThemeProvider>
-      </PersistGate>
-    </Provider>
+    <CacheProvider value={cacheRtl}>
+      <Provider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <DynamicThemeProvider>
+            <CssBaseline />
+            <ToastProvider>
+              <AppWrapper Component={Component} pageProps={pageProps} />
+            </ToastProvider>
+          </DynamicThemeProvider>
+        </PersistGate>
+      </Provider>
+    </CacheProvider>
   );
 }
 

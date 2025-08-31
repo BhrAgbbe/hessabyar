@@ -24,7 +24,7 @@ const palette = {
 };
 
 const themeOptions: ThemeOptions = {
-  direction: 'ltr',
+  direction: 'rtl',
   palette: palette,
   typography: {
     fontFamily: 'Vazirmatn, Tahoma, Arial, sans-serif',
@@ -36,42 +36,15 @@ const themeOptions: ThemeOptions = {
     MuiTextField: {
       styleOverrides: {
         root: {
-          '& .MuiInputBase-input': {
-            textAlign: 'right',
-          },
+          
           '& .MuiInputLabel-root': {
             transformOrigin: 'top right',
             right: '1.75rem',
             left: 'auto',
           },
-          '& .MuiOutlinedInput-root legend': {
-            textAlign: 'right',
-          },
         },
       },
     },
-    MuiSelect: {
-      styleOverrides: {
-        select: {
-          textAlign: 'right',
-        },
-      },
-    },
-    MuiListItemButton: {
-      styleOverrides: {
-        root: {
-          textAlign: 'right',
-        },
-      },
-    },
-    MuiDrawer: {
-      styleOverrides: {
-        paper: {
-          left: 'auto',
-          right: 0,
-        }
-      }
-    }
   },
 };
 

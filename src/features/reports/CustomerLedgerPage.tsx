@@ -177,7 +177,7 @@ const CustomerLedgerPage = () => {
               title=""
               onRowClick={handleRowClick}
               actions={[
-                { icon: <EditIcon fontSize="small" />, tooltip: 'ویرایش', onClick: () => {/* Implement Edit */}},
+                { icon: <EditIcon fontSize="small" />, tooltip: 'ویرایش', onClick: () => {}},
                 { icon: <DeleteIcon color="error" fontSize="small" />, tooltip: 'حذف', onClick: (row) => handleOpenDeleteDialog(row) },
               ]}
             />

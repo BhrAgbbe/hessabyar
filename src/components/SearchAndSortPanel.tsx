@@ -36,7 +36,7 @@ const SearchAndSortPanel: React.FC<SearchAndSortPanelProps> = ({
       className="no-print"
       sx={{
         display: 'flex',
-        flexDirection: { xs: 'column', md: 'row' },
+        flexDirection: { xs: 'column', md: 'row-reverse' },
         alignItems: { md: 'center' },
         gap: 2,
         mb: 3,
@@ -46,12 +46,19 @@ const SearchAndSortPanel: React.FC<SearchAndSortPanelProps> = ({
         borderRadius: 1,
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 1,
+          flexDirection: 'row-reverse' 
+        }}
+      >
         <Typography
           variant="body2"
           sx={{ fontWeight: 'medium', color: 'text.secondary', whiteSpace: 'nowrap' }}
         >
-          مرتب‌سازی بر اساس:
+          :مرتب‌سازی بر اساس
         </Typography>
         <FormControl size="small" sx={{ minWidth: 120 }}>
           <Select value={sortBy} onChange={(e) => onSortByChange(e.target.value)}>
@@ -64,12 +71,20 @@ const SearchAndSortPanel: React.FC<SearchAndSortPanelProps> = ({
         </FormControl>
       </Box>
 
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexGrow: 1 }}>
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 1, 
+          flexGrow: 1,
+          flexDirection: 'row-reverse' 
+        }}
+      >
         <Typography
           variant="body2"
           sx={{ fontWeight: 'medium', color: 'text.secondary' }}
         >
-          جستجو:
+        :جستجو 
         </Typography>
         <TextField
           placeholder={`جستجو در ${selectedSortLabel}...`}

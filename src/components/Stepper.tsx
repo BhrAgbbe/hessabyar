@@ -65,7 +65,10 @@ const Stepper: React.FC<StepperProps> = ({ steps, getStepContent, activeStep, on
         activeStep={activeStep}
         alternativeLabel
         connector={<CustomConnector />}
-        sx={{ mb: 4 }}
+        sx={{ 
+          mb: 4,
+          flexDirection: 'row-reverse'
+        }}
       >
         {steps.map((label, idx) => (
           <Step key={`${label}-${idx}`}>
@@ -79,12 +82,16 @@ const Stepper: React.FC<StepperProps> = ({ steps, getStepContent, activeStep, on
           {getStepContent(activeStep)}
         </Typography>
 
-        <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'row-reverse', 
+          pt: 2 
+        }}>
           <Button
             color="inherit"
             disabled={activeStep === 0}
             onClick={onBack}
-            sx={{ mr: 1 }}
+            sx={{ ml: 1 }} 
           >
             بازگشت
           </Button>

@@ -5,14 +5,7 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
 const CustomTextField: React.FC<TextFieldProps> = (props) => {
   const [showPassword, setShowPassword] = useState(false);
-
   const commonSx = {
-    input: {
-      textAlign: 'right',
-      '&::placeholder': {
-        textAlign: 'right',
-      },
-    },
     ...props.sx,
   };
 
