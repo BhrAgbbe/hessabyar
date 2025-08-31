@@ -13,7 +13,6 @@ import type { RootState } from '../../store/store';
 import { removeShortcut } from '../../store/slices/dashboardSlice';
 import type { Shortcut } from '../../types/dashboard';
 import CloseIcon from '@mui/icons-material/Close';
-import AddToHomeScreenIcon from '@mui/icons-material/AddToHomeScreen';
 import {
     Dashboard as DashboardIcon, Settings as SettingsIcon, PointOfSale as PointOfSaleIcon,
     Assessment as AssessmentIcon, People as PeopleIcon, Business as BusinessIcon,
@@ -129,19 +128,7 @@ const DashboardPage = () => {
           {shortcuts.map((shortcut) => (
             <SortableShortcutCard key={shortcut.id} shortcut={shortcut} onRemove={handleRemoveShortcut} />
           ))}
-          {shortcuts.length === 0 && (
-            <Grid sx={{ minHeight: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Paper sx={{ p: 4, textAlign: 'center', backgroundColor: 'rgba(255, 255, 255, 0.8)' }}>
-                <AddToHomeScreenIcon sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }} />
-                <Typography variant="h6" color="text.secondary">
-                  داشبورد شما خالی است!
-                </Typography>
-                <Typography color="text.secondary">
-                  برای افزودن میانبر، یک آیتم از منوی کناری بکشید و اینجا رها کنید.
-                </Typography>
-              </Paper>
-            </Grid>
-          )}
+        
         </Grid>
       </SortableContext>
     </>

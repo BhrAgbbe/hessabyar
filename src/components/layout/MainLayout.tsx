@@ -11,7 +11,6 @@ import {
 } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import MenuIcon from "@mui/icons-material/Menu";
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import AccountCircle from "@mui/icons-material/AccountCircle";
@@ -24,6 +23,7 @@ import { navItems, type NavChild } from "./menuItems";
 
 const drawerWidth = 240;
 
+// New component for draggable menu items
 const DraggableListItem: React.FC<{ item: NavChild }> = ({ item }) => {
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
         id: `menu-item-${item.id}`,
@@ -54,6 +54,7 @@ const DraggableListItem: React.FC<{ item: NavChild }> = ({ item }) => {
             sx={{ paddingRight: 2 }}
         >
             <ListItemButton
+              // Prevent click navigation while dragging
               onClick={() => router.push(item.path)}
               selected={router.pathname === item.path}
               sx={{ pr: 2, width: '100%' }}
@@ -63,6 +64,7 @@ const DraggableListItem: React.FC<{ item: NavChild }> = ({ item }) => {
         </ListItem>
     );
 };
+
 
 export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -96,13 +98,15 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
+    // If not dropped over a valid area, do nothing
     if (!over) return;
-
+    
     const activeIsMenuItem = active.data.current?.type === 'menu-item';
     const activeIsShortcut = active.data.current?.type === 'shortcut';
     const overIsDashboard = over.id === 'dashboard-droppable-area';
     const overIsShortcut = over.data.current?.type === 'shortcut';
 
+    // Scenario 1: Dragging a menu item to create a shortcut
     if (activeIsMenuItem && (overIsDashboard || overIsShortcut)) {
         const item = active.data.current?.item as Shortcut;
         const isDuplicate = dashboardShortcuts.some((s) => s.id === item.id);
@@ -111,18 +115,20 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
         }
         return;
     }
-
+    
+    // Scenario 2: Sorting existing shortcuts
     if (activeIsShortcut && overIsShortcut && active.id !== over.id) {
         const oldIndex = dashboardShortcuts.findIndex((s) => s.id === active.id);
         const newIndex = dashboardShortcuts.findIndex((s) => s.id === over.id);
-
+        
         if (oldIndex !== -1 && newIndex !== -1) {
             const newOrder = arrayMove(dashboardShortcuts, oldIndex, newIndex);
             dispatch(setShortcuts(newOrder));
         }
     }
   };
-
+  
+  // Logic for adding shortcut on mobile via button click
   const handleAddShortcut = (item: NavChild) => {
     const isDuplicate = dashboardShortcuts.some((s) => s.id === item.id);
     if (!isDuplicate) {
@@ -156,6 +162,7 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
                       isDesktop ? (
                         <DraggableListItem key={child.id} item={child} />
                       ) : (
+                         // Keep the old button logic for mobile
                          <ListItem key={child.id} disablePadding sx={{ paddingRight: 2 }}>
                              <ListItemButton
                                  sx={{ pr: 2, display: 'flex', justifyContent: 'space-between', width: '100%' }}
@@ -167,7 +174,7 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
                              >
                                  <ListItemText primary={child.text} sx={{ textAlign: "right" }} />
                                  <IconButton edge="end" onClick={(e) => { e.stopPropagation(); handleAddShortcut(child); }}>
-                                     <AddCircleOutlineIcon />
+                                     {/* Use a different icon for clarity */}
                                  </IconButton>
                              </ListItemButton>
                          </ListItem>
