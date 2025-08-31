@@ -16,6 +16,7 @@ const dashboardSlice = createSlice({
     removeShortcut: (state, action: PayloadAction<string>) => {
       return state.filter(shortcut => shortcut.id !== action.payload);
     },
+    // This reducer will be used to update the order of shortcuts
     setShortcuts: (_state, action: PayloadAction<Shortcut[]>) => {
       return action.payload;
     },
