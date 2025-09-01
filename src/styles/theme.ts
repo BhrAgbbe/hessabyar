@@ -33,6 +33,9 @@ const themeOptions: ThemeOptions = {
     borderRadius: 8,
   },
   components: {
+    MuiCssBaseline: {
+      styleOverrides: ``, 
+    },
     MuiTextField: {
       styleOverrides: {
         root: {

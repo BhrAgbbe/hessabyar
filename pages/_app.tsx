@@ -4,7 +4,6 @@ import { Provider, useSelector } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { store, persistor } from "../src/store/store";
 import { MainLayout } from "../src/components/layout/MainLayout";
-import "../src/styles/fonts.css";
 import { useRouter } from "next/router";
 import { ToastProvider } from "../src/components/ToastProvider";
 import DynamicThemeProvider from "../src/components/DynamicThemeProvider";

@@ -4,7 +4,20 @@ class MyDocument extends Document {
   render() {
     return (
       <Html lang="fa" dir="rtl">
-        <Head>
+              <Head>
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              @font-face {
+                font-family: 'Vazirmatn';
+                src: url('/fonts/Vazir.woff2') format('woff2');
+                font-weight: 100 900;
+                font-style: normal;
+                font-display: swap;
+              }
+            `,
+          }}
+        />
         </Head>
         <body>
           <Main />
