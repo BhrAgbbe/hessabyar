@@ -108,7 +108,7 @@ const { control, handleSubmit, formState: { errors }, setValue, reset, trigger }
 
   if (viewMode === 'report') {
     return (
-      <Paper sx={{ p: 2, direction: 'rtl' }}>
+      <Paper sx={{ p: 2}}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Typography variant="h5" sx={{ fontWeight: 'bold' }}>گزارش ضایعات</Typography>
           <Button variant="contained" onClick={() => setViewMode('form')}>ثبت ضایعات جدید</Button>
@@ -123,7 +123,7 @@ const { control, handleSubmit, formState: { errors }, setValue, reset, trigger }
   }
 
   return (
-    <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', height: '100%', direction: 'rtl' }}>
+    <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', height: '100%' }}>
       <Paper sx={{ p: 2, flexGrow: 1, border: '1px solid #e0e0e0', borderRadius: '12px' }}>
         <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
           <Box sx={{ mb: 2 }}>

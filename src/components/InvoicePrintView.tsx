@@ -19,7 +19,7 @@ export const InvoicePrintView: React.FC<{ invoice: Invoice }> = ({ invoice }) =>
         : (invoice.subtotal * invoice.discountPercent / 100);
 
     return (
-        <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, direction: 'rtl' }}>
+        <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 } }}>
             <Grid container justifyContent="space-between" alignItems="flex-start" sx={{ mb: 4 }}>
                 <Grid>
                     <Typography variant="body1" sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }}>فاکتور شماره: {toPersianDigits(invoice.invoiceNumber)}</Typography>

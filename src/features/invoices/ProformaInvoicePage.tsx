@@ -21,7 +21,7 @@ const ProformaInvoicePage = () => {
         return (
             <PrintableReportLayout title={`پیش‌نمایش پیش فاکتور شماره ${toPersianDigits(savedInvoice.invoiceNumber)}`}>
                 <InvoicePrintView invoice={savedInvoice} />
-                <Box className="no-print" sx={{ mt: 2, direction: 'rtl' }}>
+                <Box className="no-print" sx={{ mt: 2}}>
                     <Button variant="outlined" onClick={handleCreateNewInvoice}>
                         صدور پیش فاکتور جدید
                     </Button>
@@ -31,7 +31,7 @@ const ProformaInvoicePage = () => {
     }
 
     return (
-        <Box sx={{ direction: 'rtl' }}>
+        <Box >
             <InvoiceForm mode="proforma" onSaveSuccess={handleSaveSuccess} />
         </Box>
     );

@@ -69,7 +69,7 @@ const InventoryPage = () => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>نام کالا</TableCell>
+                <TableCell align="center">نام کالا</TableCell>
                 <TableCell align="center">قیمت فروش</TableCell>
                 <TableCell align="center">موجودی فعلی</TableCell>
                 <TableCell align="center">عملیات</TableCell>
@@ -82,7 +82,7 @@ const InventoryPage = () => {
 
                 return (
                   <TableRow key={product.id}>
-                    <TableCell>{product.name}</TableCell>
+                    <TableCell align="center">{product.name}</TableCell>
                     <TableCell align="center">{toPersianDigits(product.retailPrice || 0)} تومان</TableCell>
                     <TableCell align="center">
                       {isEditing ? (

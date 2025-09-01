@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"; // useEffect اضافه شد
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -33,7 +33,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import AccountCircle from "@mui/icons-material/AccountCircle";
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import Link from "next/link";
 import type { RootState } from "../../store/store";
 import { addShortcut, setShortcuts } from "../../store/slices/dashboardSlice";
@@ -88,14 +88,15 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
   const dispatch = useDispatch();
   const router = useRouter();
 
-  const dashboardShortcuts = useSelector((state: RootState) => state.dashboard.shortcuts);
+  const dashboardShortcuts = useSelector(
+    (state: RootState) => state.dashboard.shortcuts
+  );
 
   const { isAuthenticated, currentUser } = useSelector(
     (state: RootState) => state.auth
   );
   const { backgroundImage } = useSelector((state: RootState) => state.settings);
-  
-  // متغیر حالت جدید برای اطمینان از بارگذاری کامپوننت
+
   const [isMounted, setIsMounted] = useState(false);
 
   const [nestedListOpen, setNestedListOpen] = useState<{
@@ -113,7 +114,6 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const isDesktop = !isMobile;
 
-  // پس از اولین رندر، متغیر حالت را true می‌کنیم
   useEffect(() => {
     setIsMounted(true);
   }, []);
@@ -123,7 +123,8 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
     useSensor(KeyboardSensor)
   );
 
-  const handleMenu = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
+  const handleMenu = (event: React.MouseEvent<HTMLElement>) =>
+    setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
 
   const handleLogout = () => {
@@ -140,7 +141,7 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
     const activeIsShortcut = active.data.current?.type === "shortcut";
     const overIsDashboard = over.id === "dashboard-droppable-area";
     const overIsShortcut = over.data.current?.type === "shortcut";
-    
+
     const shortcuts = dashboardShortcuts || [];
 
     if (activeIsMenuItem && (overIsDashboard || overIsShortcut)) {
@@ -189,23 +190,35 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
           if (item.children) {
             return (
               <React.Fragment key={item.text}>
-                <ListItemButton onClick={() => handleNestedListToggle(item.text)}>
+                <ListItemButton
+                  onClick={() => handleNestedListToggle(item.text)}
+                >
                   <ListItemIcon>{item.icon}</ListItemIcon>
                   <ListItemText primary={item.text} />
                   {nestedListOpen[item.text] ? <ExpandLess /> : <ExpandMore />}
                 </ListItemButton>
-                <Collapse in={nestedListOpen[item.text]} timeout="auto" unmountOnExit>
+                <Collapse
+                  in={nestedListOpen[item.text]}
+                  timeout="auto"
+                  unmountOnExit
+                >
                   <List component="div" disablePadding>
                     {item.children.map((child) => {
-                      // شرط نهایی و مطمئن‌تر
-                      const isDashboardPage = isMounted && router.isReady && router.pathname === "/";
+                      const isDashboardPage =
+                        isMounted && router.isReady && router.pathname === "/";
 
                       if (isDesktop) {
                         if (isDashboardPage) {
-                          return <DraggableListItem key={child.id} item={child} />;
+                          return (
+                            <DraggableListItem key={child.id} item={child} />
+                          );
                         } else {
                           return (
-                            <ListItem key={child.id} disablePadding sx={{ pr: 4 }}>
+                            <ListItem
+                              key={child.id}
+                              disablePadding
+                              sx={{ pr: 4 }}
+                            >
                               <ListItemButton
                                 selected={router.pathname === child.path}
                                 onClick={() => router.push(child.path)}
@@ -217,7 +230,11 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
                         }
                       } else {
                         return (
-                          <ListItem key={child.id} disablePadding sx={{ pr: 4 }}>
+                          <ListItem
+                            key={child.id}
+                            disablePadding
+                            sx={{ pr: 4 }}
+                          >
                             <ListItemButton
                               selected={router.pathname === child.path}
                               onClick={() => {
@@ -226,7 +243,13 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
                               }}
                             >
                               <ListItemText primary={child.text} />
-                              <IconButton edge="end" onClick={(e) => { e.stopPropagation(); handleAddShortcut(child); }}>
+                              <IconButton
+                                edge="end"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAddShortcut(child);
+                                }}
+                              >
                                 <AddCircleOutlineIcon />
                               </IconButton>
                             </ListItemButton>
@@ -240,8 +263,17 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
             );
           }
           return (
-            <Link href={item.path as string} passHref legacyBehavior key={item.text}>
-              <ListItemButton component="a" selected={router.pathname === item.path} onClick={() => isMobile && handleDrawerToggle()}>
+            <Link
+              href={item.path as string}
+              passHref
+              legacyBehavior
+              key={item.text}
+            >
+              <ListItemButton
+                component="a"
+                selected={router.pathname === item.path}
+                onClick={() => isMobile && handleDrawerToggle()}
+              >
                 <ListItemIcon>{item.icon}</ListItemIcon>
                 <ListItemText primary={item.text} />
               </ListItemButton>
@@ -263,7 +295,13 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
           }}
         >
           <Toolbar>
-            <IconButton color="inherit" aria-label="open drawer" edge="start" onClick={handleDrawerToggle} sx={{ display: { md: "none" } }}>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{ display: { md: "none" } }}
+            >
               <MenuIcon />
             </IconButton>
 
@@ -272,7 +310,12 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
                 <IconButton size="large" onClick={handleMenu} color="inherit">
                   <AccountCircle />
                 </IconButton>
-                <Menu id="menu-appbar" anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+                <Menu
+                  id="menu-appbar"
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleClose}
+                >
                   <MenuItem disabled>{currentUser?.username}</MenuItem>
                   <MenuItem onClick={handleLogout}>خروج از حساب</MenuItem>
                 </Menu>
@@ -280,10 +323,12 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
             )}
 
             <Box sx={{ flexGrow: 1 }} />
-
           </Toolbar>
         </AppBar>
-        <Box component="nav" sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}>
+        <Box
+          component="nav"
+          sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
+        >
           <Drawer
             variant="temporary"
             open={mobileOpen}
@@ -291,7 +336,10 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
             ModalProps={{ keepMounted: true }}
             sx={{
               display: { xs: "block", md: "none" },
-              "& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth },
+              "& .MuiDrawer-paper": {
+                boxSizing: "border-box",
+                width: drawerWidth,
+              },
             }}
             anchor="left"
           >
@@ -301,7 +349,10 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
             variant="permanent"
             sx={{
               display: { xs: "none", md: "block" },
-              "& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth },
+              "& .MuiDrawer-paper": {
+                boxSizing: "border-box",
+                width: drawerWidth,
+              },
             }}
             open
             anchor="left"
@@ -315,15 +366,15 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
             flexGrow: 1,
             p: 3,
             width: { md: `calc(100% - ${drawerWidth}px)` },
-            backgroundImage: backgroundImage ? `url(${backgroundImage})` : "none",
+            backgroundImage: backgroundImage
+              ? `url(${backgroundImage})`
+              : "none",
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
         >
           <Toolbar />
-          <Container maxWidth="xl">
-            {children}
-          </Container>
+          <Container maxWidth="xl">{children}</Container>
         </Box>
       </Box>
     </DndContext>

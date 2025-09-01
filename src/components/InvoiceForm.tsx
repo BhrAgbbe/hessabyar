@@ -318,7 +318,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
   };
 
   return (
-    <Paper sx={{ p: { xs: 2, sm: 3 }, direction: "rtl" }}>
+    <Paper sx={{ p: { xs: 2, sm: 3 } }}>
       {mode === "return" && (
         <FormControl component="fieldset" sx={{ mb: 2 }}>
           <RadioGroup
@@ -391,7 +391,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
         <Table sx={{ tableLayout: "fixed", width: "100%" }}>
           <TableHead>
              <TableRow>
-              <TableCell sx={{ width: '40%', textAlign: "right", fontSize: { xs: "0.65rem", sm: "0.875rem" }}}>کالا</TableCell>
+              <TableCell sx={{ width: '40%', textAlign: "center", fontSize: { xs: "0.65rem", sm: "0.875rem" }}}>کالا</TableCell>
               <TableCell sx={{ width: '15%', textAlign: "center", fontSize: { xs: "0.65rem", sm: "0.875rem" }}}>تعداد</TableCell>
               <TableCell sx={{ width: '20%', textAlign: "center", fontSize: { xs: "0.65rem", sm: "0.875rem" }}}>قیمت واحد</TableCell>
               <TableCell sx={{ width: '20%', textAlign: "center", fontSize: { xs: "0.65rem", sm: "0.875rem" }}}>قیمت کل</TableCell>

@@ -77,7 +77,7 @@ const StockTakingPage = () => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell align="right">نام کالا</TableCell>
+                <TableCell align="center">نام کالا</TableCell>
                 <TableCell align="center">قیمت فروش</TableCell>
                 <TableCell align="center">موجودی شمارش شده</TableCell>
               </TableRow>
@@ -85,7 +85,7 @@ const StockTakingPage = () => {
             <TableBody>
               {filteredProducts.map((product) => (
                 <TableRow key={product.id}>
-                  <TableCell align="right">{product.name}</TableCell>
+                  <TableCell align="center">{product.name}</TableCell>
                   <TableCell align="center">{toPersianDigits(product.retailPrice || 0)} تومان</TableCell>
                   <TableCell align="center">
                     <CustomTextField

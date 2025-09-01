@@ -51,7 +51,7 @@ const SalesInvoicePage = () => {
         return (
             <PrintableReportLayout title={`پیش‌نمایش فاکتور شماره ${toPersianDigits(currentInvoice.invoiceNumber)}`}>
                 <InvoicePrintView invoice={currentInvoice} />
-                <Box className="no-print" sx={{ mt: 2, direction: 'rtl' }}>
+                <Box className="no-print" sx={{ mt: 2}}>
                     <Button variant="outlined" onClick={handleCreateNewInvoice}>
                         صدور فاکتور جدید
                     </Button>
@@ -62,14 +62,13 @@ const SalesInvoicePage = () => {
 
     return (
         <>
-            <Box sx={{ direction: 'rtl' }}>
+            <Box>
                 <InvoiceForm mode="sale" onSaveSuccess={handleSaveSuccess} />
             </Box>
 
             <Dialog
                 open={isConfirmDialogOpen}
                 onClose={handleCancelPrint}
-                dir="rtl"
             >
                 <DialogTitle>عملیات موفق</DialogTitle>
                 <DialogContent>

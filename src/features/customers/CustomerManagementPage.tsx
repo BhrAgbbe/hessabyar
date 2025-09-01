@@ -191,7 +191,7 @@ const CustomerManagementPage: React.FC = () => {
   ];
 
   return (
-    <Box sx={{ p: { xs: 1, sm: 2, md: 3 }, direction: 'rtl' }}>
+    <Box sx={{ p: { xs: 1, sm: 2, md: 3 }, }}>
       <Paper sx={{ p: { xs: 2, md: 3 }, maxWidth: 1200, mx: 'auto' }}>
         <PageHeader
           personType={personType}

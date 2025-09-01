@@ -10,7 +10,7 @@ const palette = {
     main: "#82868B",
   },
   background: {
-    default: "#F8F7FA", 
+    default: "#F8F7FA",
     paper: "#FFFFFF",
   },
   text: {

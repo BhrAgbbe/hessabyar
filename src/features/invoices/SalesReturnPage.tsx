@@ -12,7 +12,7 @@ const SalesReturnPage = () => {
   };
 
   return (
-    <Box sx={{ direction: "rtl" }}>
+    <Box>
       <InvoiceForm mode="return" onSaveSuccess={handleSaveSuccess} />
     </Box>
   );

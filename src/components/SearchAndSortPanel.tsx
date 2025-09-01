@@ -46,30 +46,6 @@ const SearchAndSortPanel: React.FC<SearchAndSortPanelProps> = ({
         borderRadius: 1,
       }}
     >
-      <Box 
-        sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: 1,
-          flexDirection: 'row-reverse' 
-        }}
-      >
-        <Typography
-          variant="body2"
-          sx={{ fontWeight: 'medium', color: 'text.secondary', whiteSpace: 'nowrap' }}
-        >
-          :مرتب‌سازی بر اساس
-        </Typography>
-        <FormControl size="small" sx={{ minWidth: 120 }}>
-          <Select value={sortBy} onChange={(e) => onSortByChange(e.target.value)}>
-            {sortOptions.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Box>
 
       <Box 
         sx={{ 
@@ -80,12 +56,6 @@ const SearchAndSortPanel: React.FC<SearchAndSortPanelProps> = ({
           flexDirection: 'row-reverse' 
         }}
       >
-        <Typography
-          variant="body2"
-          sx={{ fontWeight: 'medium', color: 'text.secondary' }}
-        >
-        :جستجو 
-        </Typography>
         <TextField
           placeholder={`جستجو در ${selectedSortLabel}...`}
           variant="outlined"
@@ -94,7 +64,37 @@ const SearchAndSortPanel: React.FC<SearchAndSortPanelProps> = ({
           value={searchTerm}
           onChange={(e) => onSearchTermChange(e.target.value)}
         />
+        <Typography
+          variant="body2"
+          sx={{ fontWeight: 'medium', color: 'text.secondary' }}
+        >
+        جستجو 
+        </Typography>
       </Box>
+          <Box 
+            sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 1,
+              flexDirection: 'row-reverse' 
+            }}
+          >
+            <FormControl size="small" sx={{ minWidth: 120 }}>
+              <Select value={sortBy} onChange={(e) => onSortByChange(e.target.value)}>
+                {sortOptions.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <Typography
+              variant="body2"
+              sx={{ fontWeight: 'medium', color: 'text.secondary', whiteSpace: 'nowrap' }}
+            >
+             مرتب‌سازی بر اساس
+            </Typography>
+          </Box>
     </Box>
   );
 };
