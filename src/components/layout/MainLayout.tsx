@@ -103,9 +103,7 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
     [key: string]: boolean;
   }>({
     مدیریت: true,
-    عملیات: true,
-    گزارشات: true,
-    امکانات: true,
+   
   });
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
