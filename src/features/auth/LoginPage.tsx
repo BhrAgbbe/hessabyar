@@ -3,15 +3,16 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
-    Box, Paper, Typography, TextField, Button, Snackbar, Alert,
+    Box, Paper, Typography, TextField, Button,
     InputAdornment, IconButton
 } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import type { RootState } from '../../store/store';
 import { loginSuccess } from '../../store/slices/authSlice';
-import {type Check } from '../../types/check';
+import { type Check } from '../../types/check';
 import { loginSchema, type LoginFormData } from '../../schema/loginSchema';
+import { useToast } from '../../hooks/useToast'; 
 
 const LoginPage = () => {
     const dispatch = useDispatch();
@@ -19,8 +20,7 @@ const LoginPage = () => {
     const settings = useSelector((state: RootState) => state.settings);
     const checks = useSelector((state: RootState) => state.checks);
 
-    const [error, setError] = useState<string | null>(null);
-    const [toast, setToast] = useState<{ message: string; severity: 'info' | 'warning' } | null>(null);
+    const { showToast } = useToast();
     const [showPassword, setShowPassword] = useState(false);
 
     const { control, handleSubmit, formState: { errors } } = useForm({
@@ -40,10 +40,7 @@ const LoginPage = () => {
             });
 
             if (upcomingChecks.length > 0) {
-                setToast({
-                    message: `شما ${upcomingChecks.length} چک نزدیک به سررسید دارید.`,
-                    severity: 'warning'
-                });
+                showToast(`شما ${upcomingChecks.length} چک نزدیک به سررسید دارید.`, 'warning');
             }
         }
     };
@@ -54,7 +51,7 @@ const LoginPage = () => {
             dispatch(loginSuccess(user));
             checkForDueChecks(user.role);
         } else {
-            setError('نام کاربری یا رمز عبور اشتباه است.');
+            showToast('نام کاربری یا رمز عبور اشتباه است.', 'error');
         }
     };
 
@@ -110,14 +107,6 @@ const LoginPage = () => {
                     <Button type="submit" variant="contained" fullWidth sx={{ mt: 2 }}>ورود</Button>
                 </form>
             </Paper>
-            <Snackbar open={!!error} autoHideDuration={4000} onClose={() => setError(null)}>
-                <Alert severity="error" onClose={() => setError(null)}>{error}</Alert>
-            </Snackbar>
-            <Snackbar open={!!toast} autoHideDuration={8000} onClose={() => setToast(null)} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
-                <Alert severity={toast?.severity || 'info'} onClose={() => setToast(null)} sx={{ width: '100%' }}>
-                    {toast?.message}
-                </Alert>
-            </Snackbar>
         </Box>
     );
 };
