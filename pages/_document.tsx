@@ -4,10 +4,11 @@ class MyDocument extends Document {
   render() {
     return (
       <Html lang="fa" dir="rtl">
-              <Head>
-        <style
-          dangerouslySetInnerHTML={{
-            __html: `
+        <Head>
+          <link rel="icon" href="./icons/icon.svg" />
+          <style
+            dangerouslySetInnerHTML={{
+              __html: `
               @font-face {
                 font-family: 'Vazirmatn';
                 src: url('/fonts/Vazir.woff2') format('woff2');
@@ -16,8 +17,8 @@ class MyDocument extends Document {
                 font-display: swap;
               }
             `,
-          }}
-        />
+            }}
+          />
         </Head>
         <body>
           <Main />
