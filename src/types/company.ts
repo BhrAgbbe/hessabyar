@@ -4,8 +4,8 @@ export interface CompanyInfo {
   economicCode: string;
   phone: string;
   mobile: string;
-  fax: string;
+  fax: string | null;
   address: string;
-  promoMessage: string;
+  promoMessage: string | null;
   logo: string | null;
 }

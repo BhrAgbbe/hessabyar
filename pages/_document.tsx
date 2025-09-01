@@ -19,6 +19,20 @@ class MyDocument extends Document {
             `,
             }}
           />
+
+ <meta name="application-name" content="Hessabyar POS" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Hessabyar" />
+        <meta name="description" content="Point of Sale Application" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="theme-color" content="#FFFFFF" />
+        
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/icons/icon.svg"></link>
+
+
         </Head>
         <body>
           <Main />

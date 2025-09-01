@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useContext } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Box, Typography } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
@@ -9,7 +9,7 @@ import ConfirmationDialog from '../../components/ConfirmationDialog';
 import SearchAndSortPanel from '../../components/SearchAndSortPanel';
 import { InvoiceDetailDialog } from '../../components/InvoiceDetailDialog';
 import { PrintableReportLayout } from '../../components/layout/PrintableReportLayout';
-import { ToastContext } from '../../contexts/toast.context';
+import { useToast } from "../../hooks/useToast";
 import { toPersianDigits, toPersianDigitsString } from '../../utils/utils'; 
 import { type RootState } from '../../store/store';
 import { deleteTransaction } from '../../store/slices/transactionsSlice';
@@ -38,7 +38,7 @@ interface LedgerEntry {
 
 const CustomerAccountPage: React.FC<CustomerAccountPageProps> = ({ accountType }) => {
     const dispatch = useDispatch();
-    const { showToast } = useContext(ToastContext);
+  const { showToast } = useToast();
     const { customers, suppliers, invoices, transactions } = useSelector((state: RootState) => state);
     const [selectedPerson, setSelectedPerson] = useState<SelectOption | null>(null);
     const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);

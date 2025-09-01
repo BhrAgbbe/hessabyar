@@ -6,12 +6,10 @@ export const companySchema = yup.object({
   economicCode: yup.string().required('کد اقتصادی الزامی است'),
   phone: yup.string().required('شماره تلفن الزامی است'),
   mobile: yup.string().required('شماره همراه الزامی است'),
-  fax: yup.string().nullable(),
+  fax: yup.string().nullable().default(null),
   address: yup.string().required('آدرس الزامی است'),
-  promoMessage: yup.string().nullable(),
-  logo: yup.mixed().nullable(),
+  promoMessage: yup.string().nullable().default(null),
+  logo: yup.string().nullable().default(null),
 });
-
-
 
 export type CompanyFormData = yup.InferType<typeof companySchema>;

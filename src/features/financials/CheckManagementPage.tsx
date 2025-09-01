@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useContext } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Box, Button, Chip, Typography, Tabs, Tab } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
@@ -15,8 +15,7 @@ import {
   type CheckStatus,
 } from "../../store/slices/checksSlice";
 import {type Check } from '../../types/check';
-
-import { ToastContext } from "../../contexts/toast.context";
+import { useToast } from "../../hooks/useToast";
 import {
   checkSchema,
   editCheckSchema,
@@ -45,7 +44,7 @@ const getStatusChipColor = (status: CheckStatus) => {
 const CheckManagementPage = () => {
   const dispatch = useDispatch();
   const allChecks = useSelector((state: RootState) => state.checks);
-  const { showToast } = useContext(ToastContext);
+  const { showToast } = useToast();
 
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");

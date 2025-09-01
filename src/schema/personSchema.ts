@@ -42,8 +42,8 @@ export const createPersonSchema = (
           return true;
         }
       ),
-    city: yup.string().nullable().optional(),
-    address: yup.string().nullable().optional(),
+    city: yup.string().transform(value => value || undefined).optional(),
+    address: yup.string().transform(value => value || undefined).optional(),
     moein: yup
       .mixed<MoeinCategory>()
       .oneOf(moeinCategories, 'مقدار معین نامعتبر است')

@@ -3,7 +3,8 @@ import { useDispatch } from 'react-redux';
 import { Box, Button, Paper } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { type PayloadAction, type ActionCreatorWithOptionalPayload } from '@reduxjs/toolkit';
+import { type PayloadAction, ActionCreatorWithPayload } from '@reduxjs/toolkit';
+
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -27,7 +28,7 @@ interface GenericCrudPanelProps {
   items: readonly CrudItem[];
   add_action: (payload: { name: string }) => PayloadAction<{ name: string }>;
   edit_action: (payload: CrudItem) => PayloadAction<CrudItem>;
-  delete_action: ActionCreatorWithOptionalPayload<number, string>;
+  delete_action: ActionCreatorWithPayload<number>;
   showToast: (message: string, severity: 'success' | 'error') => void;
   schema: yup.ObjectSchema<{ name: string }>; 
 }

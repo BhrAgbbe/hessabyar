@@ -2,7 +2,7 @@ import { useMemo, useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useForm } from "react-hook-form";
 import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
+import { companySchema, type CompanyFormData } from "../../schema/companySchema"; 
 import { type RootState } from "../../store/store";
 import {
   updateCompanyInfo,
@@ -20,30 +20,6 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
 ) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
-
-const companySchema = yup.object({
-  name: yup.string().required('نام شرکت الزامی است').default(''),
-  managerName: yup.string().required('نام مدیر الزامی است').default(''),
-  economicCode: yup.string().required('کد اقتصادی الزامی است').default(''),
-  phone: yup.string().required('شماره تلفن الزامی است').default(''),
-  mobile: yup.string().required('شماره همراه الزامی است').default(''),
-  fax: yup.string().default(''),
-  address: yup.string().required('آدرس الزامی است').default(''),
-  promoMessage: yup.string().default(''),
-  logo: yup.mixed<string | null>().default(null),
-});
-
-type CompanyFormData = {
-  name: string;
-  managerName: string;
-  economicCode: string;
-  phone: string;
-  mobile: string;
-  fax: string;
-  address: string;
-  promoMessage: string;
-  logo: string | null;
-};
 
 const CompanyInfoPage = () => {
   const dispatch = useDispatch();
@@ -67,33 +43,11 @@ const CompanyInfoPage = () => {
   } = useForm<CompanyFormData>({
     mode: "onTouched",
     resolver: yupResolver(companySchema),
-    defaultValues: {
-      name: '',
-      managerName: '',
-      economicCode: '',
-      phone: '',
-      mobile: '',
-      fax: '',
-      address: '',
-      promoMessage: '',
-      logo: null,
-      ...companyInfo
-    }
+    defaultValues: companyInfo,
   });
 
   useEffect(() => {
-    reset({
-      name: '',
-      managerName: '',
-      economicCode: '',
-      phone: '',
-      mobile: '',
-      fax: '',
-      address: '',
-      promoMessage: '',
-      logo: null,
-      ...companyInfo
-    });
+    reset(companyInfo);
   }, [companyInfo, reset]);
 
   const handleSave = (data: CompanyFormData) => {
@@ -260,7 +214,6 @@ const CompanyInfoPage = () => {
           p: { xs: 2, sm: 3 },
           maxWidth: 600,
           mx: "auto",
-          direction: "rtl",
         }}
       >
         <Stepper
