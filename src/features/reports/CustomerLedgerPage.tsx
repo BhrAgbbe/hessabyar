@@ -161,7 +161,7 @@ const CustomerLedgerPage = () => {
       id: "description",
       numeric: false,
       label: "شرح",
-      align: "right",
+      align: "center",
       width: "35%",
     },
     {
