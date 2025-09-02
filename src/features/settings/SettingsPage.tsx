@@ -17,7 +17,7 @@ import {
 import type { SelectChangeEvent } from "@mui/material";
 import type { RootState } from "../../store/store";
 import { setAllSettings } from "../../store/slices/settingsSlice";
-import {type AppSettings } from '../../types/settings';
+import { type AppSettings } from "../../types/settings";
 
 import { useToast } from "../../hooks/useToast";
 
@@ -26,14 +26,17 @@ const SettingsPage: React.FC = () => {
   const { showToast } = useToast();
   const savedSettings = useSelector((state: RootState) => state.settings);
 
-  const [localSettings, setLocalSettings] = useState<AppSettings>(savedSettings);
+  const [localSettings, setLocalSettings] =
+    useState<AppSettings>(savedSettings);
 
   useEffect(() => {
     setLocalSettings(savedSettings);
   }, [savedSettings]);
 
-
-  const writeSetting = <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => {
+  const writeSetting = <K extends keyof AppSettings>(
+    key: K,
+    value: AppSettings[K]
+  ) => {
     setLocalSettings((prev) => {
       const next = { ...prev, [key]: value } as unknown as AppSettings;
       return next;
@@ -114,7 +117,10 @@ const SettingsPage: React.FC = () => {
         تنظیمات عمومی
       </Typography>
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pl: 1 }}>
-        <SettingItem name="checkReminderWarning" label="هشدار اعلام زمان باقی مانده چک">
+        <SettingItem
+          name="checkReminderWarning"
+          label="هشدار اعلام زمان باقی مانده چک"
+        >
           {localSettings.checkReminderWarning && (
             <TextField
               label="تعداد روز قبل از سررسید"
@@ -130,9 +136,15 @@ const SettingsPage: React.FC = () => {
           )}
         </SettingItem>
         <Divider />
-        <SettingItem name="syncCustomersToContacts" label="ارتباط و افزودن اطلاعات مشتریان به دفترچه تلفن" />
+        <SettingItem
+          name="syncCustomersToContacts"
+          label="ارتباط و افزودن اطلاعات مشتریان به دفترچه تلفن"
+        />
         <Divider />
-        <SettingItem name="autoBackupOnExit" label="انجام خودکار پشتیبان گیری هنگام بستن برنامه" />
+        <SettingItem
+          name="autoBackupOnExit"
+          label="انجام خودکار پشتیبان گیری هنگام بستن برنامه"
+        />
       </Box>
 
       <Divider sx={{ my: 4 }} />
@@ -141,24 +153,47 @@ const SettingsPage: React.FC = () => {
         تنظیمات فاکتور
       </Typography>
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pl: 1 }}>
-        <SettingItem name="allowUserDiscount" label="فعال کردن تخفیف ویژه برای کاربر عادی" />
+        <SettingItem
+          name="allowUserDiscount"
+          label="فعال کردن تخفیف ویژه برای کاربر عادی"
+        />
         <Divider />
-        <SettingItem name="autoAddQuantity" label="درج خودکار تعداد کالا در فاکتور فروش (پیش‌فرض ۱)" />
+        <SettingItem
+          name="autoAddQuantity"
+          label="درج خودکار تعداد کالا در فاکتور فروش (پیش‌فرض ۱)"
+        />
         <Divider />
-        <SettingItem name="useBarcodeScanner" label="از دستگاه بارکدخوان استفاده می‌شود" />
+        <SettingItem
+          name="useBarcodeScanner"
+          label="از دستگاه بارکدخوان استفاده می‌شود"
+        />
         <Divider />
-        <SettingItem name="checkStockOnHand" label="بررسی موجودی انبار در فروش (جلوگیری از فروش منفی)" />
+        <SettingItem
+          name="checkStockOnHand"
+          label="بررسی موجودی انبار در فروش (جلوگیری از فروش منفی)"
+        />
         <Divider />
-        <SettingItem name="showDebtOnInvoice" label="نمایش بدهی در چاپ فاکتور" />
+        <SettingItem
+          name="showDebtOnInvoice"
+          label="نمایش بدهی در چاپ فاکتور"
+        />
         <Divider />
-        <SettingItem name="showProfitOnInvoice" label="نمایش سود در فاکتور فروش (فقط مدیر)" />
+        <SettingItem
+          name="showProfitOnInvoice"
+          label="نمایش سود در فاکتور فروش (فقط مدیر)"
+        />
         <Divider />
         <SettingItem name="quickPrintInvoice" label="چاپ سریع فاکتور" />
       </Box>
 
       <FormControl sx={{ mt: 3, width: { xs: "100%", sm: 250 } }} size="small">
         <InputLabel>اندازه چاپ فاکتور</InputLabel>
-        <Select value={localSettings.invoicePrintSize ?? ""} label="اندازه چاپ فاکتور" name="invoicePrintSize" onChange={handleSelectChange}>
+        <Select
+          value={localSettings.invoicePrintSize ?? ""}
+          label="اندازه چاپ فاکتور"
+          name="invoicePrintSize"
+          onChange={handleSelectChange}
+        >
           <MenuItem value="A4">A4</MenuItem>
           <MenuItem value="A5">A5</MenuItem>
           <MenuItem value="Receipt">فیش پرینتر</MenuItem>
@@ -171,7 +206,11 @@ const SettingsPage: React.FC = () => {
         <Button variant="contained" onClick={handleSaveChanges}>
           ذخیره تغییرات
         </Button>
-        <Button variant="outlined" color="secondary" onClick={handleResetChanges}>
+        <Button
+          variant="outlined"
+          color="secondary"
+          onClick={handleResetChanges}
+        >
           بازنشانی
         </Button>
       </Box>

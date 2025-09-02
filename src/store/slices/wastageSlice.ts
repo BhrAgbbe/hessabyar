@@ -1,13 +1,13 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import type { WastageEntry } from '../../types/wastage'; 
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import type { WastageEntry } from "../../types/wastage";
 
 const initialState: WastageEntry[] = [];
 
 const wastageSlice = createSlice({
-  name: 'wastage',
+  name: "wastage",
   initialState,
   reducers: {
-    addWastage: (state, action: PayloadAction<Omit<WastageEntry, 'id'>>) => {
+    addWastage: (state, action: PayloadAction<Omit<WastageEntry, "id">>) => {
       const newEntry: WastageEntry = {
         id: new Date().toISOString() + Math.random(),
         ...action.payload,
@@ -15,7 +15,7 @@ const wastageSlice = createSlice({
       state.push(newEntry);
     },
     deleteWastage: (state, action: PayloadAction<string>) => {
-      return state.filter(entry => entry.id !== action.payload);
+      return state.filter((entry) => entry.id !== action.payload);
     },
   },
 });

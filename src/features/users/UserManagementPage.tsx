@@ -220,7 +220,7 @@ const UserManagementPage = () => {
         onConfirm={handleDelete}
         title="تایید حذف کاربر"
         message={`آیا از حذف کاربر "${userToDelete?.username}" اطمینان دارید؟`}
-      />  
+      />
     </>
   );
 };

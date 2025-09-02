@@ -1,30 +1,33 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-export type CheckStatus = 'در جریان' | 'پاس شده' | 'برگشتی';
-import type { Check } from '../../types/check'; 
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+export type CheckStatus = "در جریان" | "پاس شده" | "برگشتی";
+import type { Check } from "../../types/check";
 
 const initialState: Check[] = [];
 
 const checksSlice = createSlice({
-  name: 'checks',
+  name: "checks",
   initialState,
   reducers: {
-    addCheck: (state, action: PayloadAction<Omit<Check, 'id' | 'status'>>) => {
+    addCheck: (state, action: PayloadAction<Omit<Check, "id" | "status">>) => {
       const newCheck: Check = {
         id: `CHK-${Date.now()}`,
-        status: 'در جریان',
+        status: "در جریان",
         ...action.payload,
       };
       state.push(newCheck);
     },
-    editCheck: (state, action: PayloadAction<Partial<Check> & { id: string }>) => {
+    editCheck: (
+      state,
+      action: PayloadAction<Partial<Check> & { id: string }>
+    ) => {
       const { id, ...updates } = action.payload;
-      const checkIndex = state.findIndex(c => c.id === id);
+      const checkIndex = state.findIndex((c) => c.id === id);
       if (checkIndex !== -1) {
         state[checkIndex] = { ...state[checkIndex], ...updates };
       }
     },
     deleteCheck: (state, action: PayloadAction<string>) => {
-      return state.filter(c => c.id !== action.payload);
+      return state.filter((c) => c.id !== action.payload);
     },
   },
 });

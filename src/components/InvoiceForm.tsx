@@ -19,10 +19,15 @@ import {
   FormControl,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { toPersianDigits, toPersianDigitsString, toEnglishDigits } from "../utils/utils";
+import {
+  toPersianDigits,
+  toPersianDigitsString,
+  toEnglishDigits,
+} from "../utils/utils";
 import { type RootState } from "../store/store";
-import type{ Invoice ,InvoiceItem} from '../types/invoice';
+import type { Invoice, InvoiceItem } from "../types/invoice";
 import { type Product } from "../types/product";
+import { type Customer, type Supplier } from "../types/person";
 import { useToast } from "../hooks/useToast";
 import {
   addInvoice,
@@ -30,12 +35,29 @@ import {
   addSalesReturn,
   addPurchaseReturn,
 } from "../store/slices/invoicesSlice";
-import { setCustomers } from '../store/slices/customersSlice';
-import { setSupplier } from '../store/slices/suppliersSlice';
-import { fetchCustomers, fetchSuppliers } from '../mocks/customersApi';
+import { setCustomers } from "../store/slices/customersSlice";
+import { setSupplier } from "../store/slices/suppliersSlice";
+import apiClient from "../lib/apiClient";
 import SearchableSelect, { type SelectOption } from "./SearchableSelect";
 import ShamsiDatePicker from "./DatePicker";
 import CustomTextField from "./TextField";
+interface ApiUser {
+  id: number;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  company: {
+    name: string;
+    address: {
+      address: string;
+      city: string;
+    };
+  };
+}
+
+interface ApiResponse {
+  users: ApiUser[];
+}
 
 interface InvoiceFormProps {
   mode: "sale" | "purchase" | "return" | "proforma";
@@ -50,15 +72,18 @@ type InvoiceState = Omit<Invoice, "id" | "invoiceNumber" | "items"> & {
 type Action =
   | {
       type: "SET_PERSON";
-      payload: { id: number | string | null; personType: "customer" | "supplier" };
+      payload: {
+        id: number | string | null;
+        personType: "customer" | "supplier";
+      };
     }
   | { type: "SET_DATE"; payload: string | null }
   | { type: "ADD_EMPTY_ROW"; payload: { defaultQuantity: number } }
   | { type: "ADD_ITEM"; payload: { product: Product; defaultQuantity: number } }
   | { type: "REMOVE_ITEM"; payload: number }
   | {
-      type: 'UPDATE_ITEM_PRODUCT';
-      payload: { rowId: number; product: Product }
+      type: "UPDATE_ITEM_PRODUCT";
+      payload: { rowId: number; product: Product };
     }
   | {
       type: "UPDATE_ITEM_QUANTITY";
@@ -121,7 +146,7 @@ function invoiceReducer(state: InvoiceState, action: Action): InvoiceState {
           ),
         };
       }
-       const newRow: DraftInvoiceItem = {
+      const newRow: DraftInvoiceItem = {
         rowId: Date.now(),
         productId: product.id,
         quantity: defaultQuantity,
@@ -138,7 +163,10 @@ function invoiceReducer(state: InvoiceState, action: Action): InvoiceState {
       return { ...state, items: [...state.items, newRow] };
     }
     case "SET_DATE":
-      return { ...state, issueDate: action.payload || new Date().toISOString() };
+      return {
+        ...state,
+        issueDate: action.payload || new Date().toISOString(),
+      };
     case "ADD_EMPTY_ROW":
       return {
         ...state,
@@ -173,10 +201,10 @@ function invoiceReducer(state: InvoiceState, action: Action): InvoiceState {
               ],
       };
     }
-     case 'UPDATE_ITEM_PRODUCT':
+    case "UPDATE_ITEM_PRODUCT":
       return {
         ...state,
-        items: state.items.map(item =>
+        items: state.items.map((item) =>
           item.rowId === action.payload.rowId
             ? {
                 ...item,
@@ -242,22 +270,35 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
 
   useEffect(() => {
     const loadInitialData = async () => {
-      if (customers.length === 0) {
+      if (customers.length === 0 && suppliers.length === 0) {
         try {
-          const fetchedCustomers = await fetchCustomers();
+          const response = await apiClient.get<ApiResponse>("/users");
+
+          const fetchedCustomers: Customer[] = response.data.users.map(
+            (user) => ({
+              id: user.id,
+              name: `${user.firstName} ${user.lastName}`,
+              phone: user.phone,
+              city: user.company.address.city,
+              address: user.company.address.address,
+            })
+          );
+
+          const fetchedSuppliers: Supplier[] = response.data.users.map(
+            (user) => ({
+              id: user.id,
+              name: user.company.name,
+              phone: user.phone,
+              city: user.company.address.city,
+              address: user.company.address.address,
+            })
+          );
+
           reduxDispatch(setCustomers(fetchedCustomers));
-        } catch (error) {
-          console.error("Failed to fetch customers:", error);
-          showToast("خطا در دریافت لیست مشتریان", "error");
-        }
-      }
-      if (suppliers.length === 0) {
-        try {
-          const fetchedSuppliers = await fetchSuppliers();
           reduxDispatch(setSupplier(fetchedSuppliers));
         } catch (error) {
-          console.error("Failed to fetch suppliers:", error);
-          showToast("خطا در دریافت لیست فروشندگان", "error");
+          console.error("Failed to fetch persons:", error);
+          showToast("خطا در دریافت لیست اشخاص", "error");
         }
       }
     };
@@ -284,11 +325,16 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
   const personLabel = isSupplierMode ? "فروشنده" : "مشتری";
   const personType = isSupplierMode ? "supplier" : "customer";
 
-  const personOptions: SelectOption[] = personList.map(p => ({ id: p.id, label: p.name }));
-  const productOptions: SelectOption[] = products.map(p => ({ id: p.id, label: p.name }));
+  const personOptions: SelectOption[] = Array.isArray(personList)
+    ? personList.map((p) => ({ id: p.id, label: p.name }))
+    : [];
+  const productOptions: SelectOption[] = Array.isArray(products)
+    ? products.map((p) => ({ id: p.id, label: p.name }))
+    : [];
 
   const selectedPersonId = isSupplierMode ? state.supplierId : state.customerId;
-  const selectedPersonValue = personOptions.find(p => p.id === selectedPersonId) || null;
+  const selectedPersonValue =
+    personOptions.find((p) => p.id === selectedPersonId) || null;
 
   useEffect(() => {
     localDispatch({ type: "RECALCULATE_TOTALS" });
@@ -301,7 +347,10 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
 
     const isPersonSelected = state.customerId || state.supplierId;
     if (!isPersonSelected || validItems.length === 0) {
-      showToast(`لطفا ${personLabel} و حداقل یک کالا با تعداد معتبر انتخاب کنید.`, 'error');
+      showToast(
+        `لطفا ${personLabel} و حداقل یک کالا با تعداد معتبر انتخاب کنید.`,
+        "error"
+      );
       return;
     }
 
@@ -309,7 +358,12 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
       for (const item of validItems) {
         const product = products.find((p) => p.id === item.productId);
         if (product && (product.stock[item.warehouseId] ?? 0) < item.quantity) {
-          showToast(`موجودی کالای "${product.name}" کافی نیست (موجودی: ${product.stock[item.warehouseId] ?? 0})`, 'error');
+          showToast(
+            `موجودی کالای "${product.name}" کافی نیست (موجودی: ${
+              product.stock[item.warehouseId] ?? 0
+            })`,
+            "error"
+          );
           return;
         }
       }
@@ -330,7 +384,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
       else reduxDispatch(addPurchaseReturn(invoiceData));
     }
 
-    showToast("سند با موفقیت صادر شد!", 'success');
+    showToast("سند با موفقیت صادر شد!", "success");
 
     const savedInvoiceForCallback: Invoice = {
       ...invoiceData,
@@ -367,29 +421,34 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
         </FormControl>
       )}
 
-      <Grid container spacing={2} sx={{ mb: 3, alignItems: 'center' }}>
-        <Grid size={{ xs: 12, md: 4}}>
-            <SearchableSelect
-                label={`نام ${personLabel}`}
-                options={personOptions}
-                value={selectedPersonValue}
-                onChange={(option) => localDispatch({
-                    type: "SET_PERSON",
-                    payload: { id: option ? option.id : null, personType },
-                })}
-                sx={{ minWidth: 200 }} 
-            />
+      <Grid container spacing={2} sx={{ mb: 3, alignItems: "center" }}>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <SearchableSelect
+            label={`نام ${personLabel}`}
+            options={personOptions}
+            value={selectedPersonValue}
+            onChange={(option) =>
+              localDispatch({
+                type: "SET_PERSON",
+                payload: { id: option ? option.id : null, personType },
+              })
+            }
+            sx={{ minWidth: 200 }}
+          />
         </Grid>
-        <Grid size={{ xs: 12, md: 4}}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <ShamsiDatePicker
             label="تاریخ صدور"
             value={state.issueDate ? new Date(state.issueDate) : null}
             onChange={(date) =>
-              localDispatch({ type: "SET_DATE", payload: date ? date.toISOString() : null })
+              localDispatch({
+                type: "SET_DATE",
+                payload: date ? date.toISOString() : null,
+              })
             }
           />
         </Grid>
-        <Grid size={{ xs: 12, md: 4}}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <CustomTextField
             label="شماره فاکتور"
             value={toPersianDigits(displayInvoiceNumber || 1)}
@@ -415,42 +474,85 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
       <TableContainer component={Paper} variant="outlined">
         <Table sx={{ tableLayout: "fixed", width: "100%" }}>
           <TableHead>
-             <TableRow>
-              <TableCell sx={{ width: '40%', textAlign: "center", fontSize: { xs: "0.65rem", sm: "0.875rem" }}}>کالا</TableCell>
-              <TableCell sx={{ width: '15%', textAlign: "center", fontSize: { xs: "0.65rem", sm: "0.875rem" }}}>تعداد</TableCell>
-              <TableCell sx={{ width: '20%', textAlign: "center", fontSize: { xs: "0.65rem", sm: "0.875rem" }}}>قیمت واحد</TableCell>
-              <TableCell sx={{ width: '20%', textAlign: "center", fontSize: { xs: "0.65rem", sm: "0.875rem" }}}>قیمت کل</TableCell>
-              <TableCell sx={{ width: '5%', textAlign: "center", fontSize: { xs: "0.65rem", sm: "0.875rem" }}}>حذف</TableCell>
+            <TableRow>
+              <TableCell
+                sx={{
+                  width: "40%",
+                  textAlign: "center",
+                  fontSize: { xs: "0.65rem", sm: "0.875rem" },
+                }}
+              >
+                کالا
+              </TableCell>
+              <TableCell
+                sx={{
+                  width: "15%",
+                  textAlign: "center",
+                  fontSize: { xs: "0.65rem", sm: "0.875rem" },
+                }}
+              >
+                تعداد
+              </TableCell>
+              <TableCell
+                sx={{
+                  width: "20%",
+                  textAlign: "center",
+                  fontSize: { xs: "0.65rem", sm: "0.875rem" },
+                }}
+              >
+                قیمت واحد
+              </TableCell>
+              <TableCell
+                sx={{
+                  width: "20%",
+                  textAlign: "center",
+                  fontSize: { xs: "0.65rem", sm: "0.875rem" },
+                }}
+              >
+                قیمت کل
+              </TableCell>
+              <TableCell
+                sx={{
+                  width: "5%",
+                  textAlign: "center",
+                  fontSize: { xs: "0.65rem", sm: "0.875rem" },
+                }}
+              >
+                حذف
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {state.items.map((item) => {
-               const selectedProductValue = productOptions.find(p => p.id === item.productId) || null;
+              const selectedProductValue =
+                productOptions.find((p) => p.id === item.productId) || null;
               return (
                 <TableRow key={item.rowId}>
                   <TableCell sx={{ p: 1 }}>
-                     <SearchableSelect
-                        placeholder="انتخاب کالا"
-                        label=""
-                        options={productOptions}
-                        value={selectedProductValue}
-                        onChange={(option) => {
-                            if(option) {
-                                const product = products.find(p => p.id === option.id);
-                                if (product) {
-                                    localDispatch({
-                                        type: 'UPDATE_ITEM_PRODUCT',
-                                        payload: { rowId: item.rowId, product }
-                                    });
-                                }
-                            }
-                        }}
-                     />
+                    <SearchableSelect
+                      placeholder="انتخاب کالا"
+                      label=""
+                      options={productOptions}
+                      value={selectedProductValue}
+                      onChange={(option) => {
+                        if (option) {
+                          const product = products.find(
+                            (p) => p.id === option.id
+                          );
+                          if (product) {
+                            localDispatch({
+                              type: "UPDATE_ITEM_PRODUCT",
+                              payload: { rowId: item.rowId, product },
+                            });
+                          }
+                        }
+                      }}
+                    />
                   </TableCell>
                   <TableCell align="center" sx={{ p: 1 }}>
                     <CustomTextField
-                      type="text" 
-                      value={toPersianDigitsString(item.quantity)} 
+                      type="text"
+                      value={toPersianDigitsString(item.quantity)}
                       onChange={(e) =>
                         localDispatch({
                           type: "UPDATE_ITEM_QUANTITY",
@@ -461,17 +563,35 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
                         })
                       }
                       InputProps={{ inputProps: { min: 0 } }}
-                      sx={{ width: '95%', "& input": { textAlign: "center", p: 1 } }}
+                      sx={{
+                        width: "95%",
+                        "& input": { textAlign: "center", p: 1 },
+                      }}
                     />
                   </TableCell>
-                  <TableCell align="center" sx={{ fontSize: { xs: "0.65rem", sm: "0.875rem" }}}>
+                  <TableCell
+                    align="center"
+                    sx={{ fontSize: { xs: "0.65rem", sm: "0.875rem" } }}
+                  >
                     {toPersianDigits(item.unitPrice)}
                   </TableCell>
-                  <TableCell align="center" sx={{ fontSize: { xs: "0.65rem", sm: "0.875rem" }}}>
+                  <TableCell
+                    align="center"
+                    sx={{ fontSize: { xs: "0.65rem", sm: "0.875rem" } }}
+                  >
                     {toPersianDigits(item.quantity * item.unitPrice)}
                   </TableCell>
                   <TableCell align="center">
-                    <IconButton size="small" color="error" onClick={() => localDispatch({ type: "REMOVE_ITEM", payload: item.rowId })}>
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() =>
+                        localDispatch({
+                          type: "REMOVE_ITEM",
+                          payload: item.rowId,
+                        })
+                      }
+                    >
                       <DeleteIcon fontSize="small" />
                     </IconButton>
                   </TableCell>
@@ -482,72 +602,78 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
         </Table>
       </TableContainer>
 
-      <Grid container spacing={2} sx={{ mt: 1 }} alignItems="center" justifyContent="space-between">
-         <Grid>
-            <Box sx={{ display: 'flex', gap: 1}}>
-                <CustomTextField
-                  label="تخفیف (مبلغ)"
-                  type="text" 
-                  value={toPersianDigitsString(state.discountAmount || "")} 
-                  onChange={(e) =>
-                    localDispatch({
-                      type: "SET_DISCOUNT_AMOUNT",
-                      payload: Number(toEnglishDigits(e.target.value)), 
-                    })
-                  }
-                />
-                <CustomTextField
-                  label="تخفیف (درصد)"
-                  type="text" 
-                  value={toPersianDigitsString(state.discountPercent || "")} 
-                  onChange={(e) =>
-                    localDispatch({
-                      type: "SET_DISCOUNT_PERCENT",
-                      payload: Number(toEnglishDigits(e.target.value)), 
-                    })
-                  }
-                />
-            </Box>
+      <Grid
+        container
+        spacing={2}
+        sx={{ mt: 1 }}
+        alignItems="center"
+        justifyContent="space-between"
+      >
+        <Grid>
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <CustomTextField
+              label="تخفیف (مبلغ)"
+              type="text"
+              value={toPersianDigitsString(state.discountAmount || "")}
+              onChange={(e) =>
+                localDispatch({
+                  type: "SET_DISCOUNT_AMOUNT",
+                  payload: Number(toEnglishDigits(e.target.value)),
+                })
+              }
+            />
+            <CustomTextField
+              label="تخفیف (درصد)"
+              type="text"
+              value={toPersianDigitsString(state.discountPercent || "")}
+              onChange={(e) =>
+                localDispatch({
+                  type: "SET_DISCOUNT_PERCENT",
+                  payload: Number(toEnglishDigits(e.target.value)),
+                })
+              }
+            />
+          </Box>
         </Grid>
-         <Grid>
-            <Box
+        <Grid>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
+              flexWrap: "wrap",
+              justifyContent: { xs: "center", md: "flex-start" },
+            }}
+          >
+            <Typography
+              variant="h5"
+              color="primary.main"
               sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 2,
-                flexWrap: "wrap",
-                justifyContent: { xs: "center", md: "flex-start" },
+                fontWeight: "bold",
+                fontSize: { xs: "1.0rem", sm: "1.5rem" },
+                textAlign: { xs: "center", sm: "right" },
+                overflowWrap: "break-word",
+                wordBreak: "break-all",
               }}
             >
-              <Typography
-                variant="h5"
-                color="primary.main"
-                sx={{
-                  fontWeight: "bold",
-                  fontSize: { xs: "1.0rem", sm: "1.5rem" },
-                  textAlign: { xs: "center", sm: "right" },
-                  overflowWrap: "break-word",
-                  wordBreak: "break-all",
-                }}
-              >
-                مبلغ نهایی:{" "}
-                {toPersianDigits(state.grandTotal, {
-                  style: "currency",
-                  currency: "IRR",
-                })}
-              </Typography>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleSaveInvoice}
-                sx={{
-                  fontSize: { xs: "0.8rem", md: "0.9375rem" },
-                  px: { xs: 2, md: 3 },
-                }}
-              >
-                صدور و ذخیره سند
-              </Button>
-            </Box>
+              مبلغ نهایی:{" "}
+              {toPersianDigits(state.grandTotal, {
+                style: "currency",
+                currency: "IRR",
+              })}
+            </Typography>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleSaveInvoice}
+              sx={{
+                fontSize: { xs: "0.8rem", md: "0.9375rem" },
+                px: { xs: 2, md: 3 },
+              }}
+            >
+              صدور و ذخیره سند
+            </Button>
+          </Box>
         </Grid>
       </Grid>
     </Paper>

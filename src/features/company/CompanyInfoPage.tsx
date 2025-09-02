@@ -1,17 +1,18 @@
 import { useMemo, useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useForm } from "react-hook-form";
-import { yupResolver } from '@hookform/resolvers/yup';
-import { companySchema, type CompanyFormData } from "../../schema/companySchema"; 
-import { type RootState } from "../../store/store";
+import { yupResolver } from "@hookform/resolvers/yup";
 import {
-  updateCompanyInfo,
-} from "../../store/slices/companySlice";
+  companySchema,
+  type CompanyFormData,
+} from "../../schema/companySchema";
+import { type RootState } from "../../store/store";
+import { updateCompanyInfo } from "../../store/slices/companySlice";
 import { Box, Paper, Button, Avatar } from "@mui/material";
 import Stepper from "../../components/Stepper";
 import Form, { type FormField } from "../../components/Form";
-import Snackbar from "@mui/material/Snackbar"; 
-import MuiAlert, { type AlertProps } from "@mui/material/Alert"; 
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert, { type AlertProps } from "@mui/material/Alert";
 import React from "react";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(

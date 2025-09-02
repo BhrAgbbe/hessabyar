@@ -1,31 +1,31 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import type { Supplier } from '../../types/person'; 
-
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import type { Supplier } from "../../types/person";
 
 const initialState: Supplier[] = [];
 
 const suppliersSlice = createSlice({
-  name: 'suppliers',
+  name: "suppliers",
   initialState,
   reducers: {
     setSupplier: (state, action: PayloadAction<Supplier[]>) => {
-      return action.payload; 
+      return action.payload;
     },
 
-    addSupplier: (state, action: PayloadAction<Omit<Supplier, 'id'>>) => {
-      const maxId = state.length > 0 ? Math.max(...state.map(s => s.id)) : 99;
+    addSupplier: (state, action: PayloadAction<Omit<Supplier, "id">>) => {
+      const maxId = state.length > 0 ? Math.max(...state.map((s) => s.id)) : 99;
       const newId = maxId < 100 ? 100 : maxId + 1;
       state.push({ id: newId, ...action.payload });
     },
     editSupplier: (state, action: PayloadAction<Supplier>) => {
-        const index = state.findIndex(s => s.id === action.payload.id);
-        if (index !== -1) state[index] = action.payload;
+      const index = state.findIndex((s) => s.id === action.payload.id);
+      if (index !== -1) state[index] = action.payload;
     },
     deleteSupplier: (state, action: PayloadAction<number>) => {
-        return state.filter(s => s.id !== action.payload);
-    }
+      return state.filter((s) => s.id !== action.payload);
+    },
   },
 });
 
-export const {setSupplier, addSupplier, editSupplier, deleteSupplier } = suppliersSlice.actions;
+export const { setSupplier, addSupplier, editSupplier, deleteSupplier } =
+  suppliersSlice.actions;
 export default suppliersSlice.reducer;

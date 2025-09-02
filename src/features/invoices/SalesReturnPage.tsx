@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import { Box } from "@mui/material";
 import InvoiceForm from "../../components/InvoiceForm";
-import {type Invoice } from '../../types/invoice';
+import { type Invoice } from "../../types/invoice";
 
 const SalesReturnPage = () => {
   const router = useRouter();

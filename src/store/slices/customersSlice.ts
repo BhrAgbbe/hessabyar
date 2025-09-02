@@ -1,33 +1,30 @@
-import { createSlice,type PayloadAction } from '@reduxjs/toolkit';
-import type { Customer } from '../../types/person'; 
-
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import type { Customer } from "../../types/person";
 
 const initialState: Customer[] = [];
 
 const customersSlice = createSlice({
-  name: 'customers',
+  name: "customers",
   initialState,
   reducers: {
-
-
     setCustomers: (state, action: PayloadAction<Customer[]>) => {
-      return action.payload; 
-  
+      return action.payload;
     },
-    addCustomer: (state, action: PayloadAction<Omit<Customer, 'id'>>) => {
-      const maxId = state.length > 0 ? Math.max(...state.map(c => c.id)) : 99;
+    addCustomer: (state, action: PayloadAction<Omit<Customer, "id">>) => {
+      const maxId = state.length > 0 ? Math.max(...state.map((c) => c.id)) : 99;
       const newId = maxId < 100 ? 100 : maxId + 1;
       state.push({ id: newId, ...action.payload });
     },
     editCustomer: (state, action: PayloadAction<Customer>) => {
-        const index = state.findIndex(c => c.id === action.payload.id);
-        if (index !== -1) state[index] = action.payload;
+      const index = state.findIndex((c) => c.id === action.payload.id);
+      if (index !== -1) state[index] = action.payload;
     },
     deleteCustomer: (state, action: PayloadAction<number>) => {
-        return state.filter(c => c.id !== action.payload);
-    }
+      return state.filter((c) => c.id !== action.payload);
+    },
   },
 });
 
-export const {setCustomers, addCustomer, editCustomer, deleteCustomer } = customersSlice.actions;
+export const { setCustomers, addCustomer, editCustomer, deleteCustomer } =
+  customersSlice.actions;
 export default customersSlice.reducer;

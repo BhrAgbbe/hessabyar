@@ -51,14 +51,13 @@ export const removeUser = createAsyncThunk(
   }
 );
 
-
 const usersSlice = createSlice({
   name: "users",
   initialState,
   reducers: {
     setAllUsers: (state, action: PayloadAction<User[]>) => {
       state.users = action.payload;
-      state.status = "succeeded"; 
+      state.status = "succeeded";
       state.error = null;
     },
   },

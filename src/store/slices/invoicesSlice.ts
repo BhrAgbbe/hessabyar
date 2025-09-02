@@ -1,5 +1,5 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import type { Invoice, InvoicesState } from '../../types/invoice';
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import type { Invoice, InvoicesState } from "../../types/invoice";
 
 const initialState: InvoicesState = {
   sales: [],
@@ -10,23 +10,32 @@ const initialState: InvoicesState = {
 };
 
 const invoicesSlice = createSlice({
-  name: 'invoices',
+  name: "invoices",
   initialState,
   reducers: {
-    addInvoice: (state, action: PayloadAction<Omit<Invoice, 'id' | 'invoiceNumber'>>) => {
-        const maxInvoiceNum = state.sales.length > 0 ? Math.max(...state.sales.map(inv => inv.invoiceNumber)) : 0;
-        const newInvoice: Invoice = {
-            ...action.payload,
-            id: `SALE-${Date.now()}`,
-            invoiceNumber: maxInvoiceNum + 1,
-        };
-        state.sales.push(newInvoice);
+    addInvoice: (
+      state,
+      action: PayloadAction<Omit<Invoice, "id" | "invoiceNumber">>
+    ) => {
+      const maxInvoiceNum =
+        state.sales.length > 0
+          ? Math.max(...state.sales.map((inv) => inv.invoiceNumber))
+          : 0;
+      const newInvoice: Invoice = {
+        ...action.payload,
+        id: `SALE-${Date.now()}`,
+        invoiceNumber: maxInvoiceNum + 1,
+      };
+      state.sales.push(newInvoice);
     },
     deleteInvoice: (state, action: PayloadAction<string>) => {
-        state.sales = state.sales.filter(inv => inv.id !== action.payload);
+      state.sales = state.sales.filter((inv) => inv.id !== action.payload);
     },
 
-    addProforma: (state, action: PayloadAction<Omit<Invoice, 'id' | 'invoiceNumber'>>) => {
+    addProforma: (
+      state,
+      action: PayloadAction<Omit<Invoice, "id" | "invoiceNumber">>
+    ) => {
       const newProforma: Invoice = {
         ...action.payload,
         id: `PROF-${Date.now()}`,
@@ -35,32 +44,48 @@ const invoicesSlice = createSlice({
       state.proformas.push(newProforma);
     },
 
-    addSalesReturn: (state, action: PayloadAction<Omit<Invoice, 'id' | 'invoiceNumber'>>) => {
-        const newReturn: Invoice = {
-          ...action.payload,
-          id: `SRET-${Date.now()}`,
-          invoiceNumber: 0,
-        };
-        state.salesReturns.push(newReturn);
+    addSalesReturn: (
+      state,
+      action: PayloadAction<Omit<Invoice, "id" | "invoiceNumber">>
+    ) => {
+      const newReturn: Invoice = {
+        ...action.payload,
+        id: `SRET-${Date.now()}`,
+        invoiceNumber: 0,
+      };
+      state.salesReturns.push(newReturn);
     },
     deleteSalesReturn: (state, action: PayloadAction<string>) => {
-        state.salesReturns = state.salesReturns.filter(inv => inv.id !== action.payload);
+      state.salesReturns = state.salesReturns.filter(
+        (inv) => inv.id !== action.payload
+      );
     },
 
-    addPurchase: (state, action: PayloadAction<Omit<Invoice, 'id' | 'invoiceNumber'>>) => {
-        const maxPurchaseNum = state.purchases.length > 0 ? Math.max(...state.purchases.map(inv => inv.invoiceNumber)) : 0;
-        const newPurchase: Invoice = {
-            ...action.payload,
-            id: `PUR-${Date.now()}`,
-            invoiceNumber: maxPurchaseNum + 1,
-        };
-        state.purchases.push(newPurchase);
+    addPurchase: (
+      state,
+      action: PayloadAction<Omit<Invoice, "id" | "invoiceNumber">>
+    ) => {
+      const maxPurchaseNum =
+        state.purchases.length > 0
+          ? Math.max(...state.purchases.map((inv) => inv.invoiceNumber))
+          : 0;
+      const newPurchase: Invoice = {
+        ...action.payload,
+        id: `PUR-${Date.now()}`,
+        invoiceNumber: maxPurchaseNum + 1,
+      };
+      state.purchases.push(newPurchase);
     },
     deletePurchase: (state, action: PayloadAction<string>) => {
-        state.purchases = state.purchases.filter(inv => inv.id !== action.payload);
+      state.purchases = state.purchases.filter(
+        (inv) => inv.id !== action.payload
+      );
     },
 
-    addPurchaseReturn: (state, action: PayloadAction<Omit<Invoice, 'id' | 'invoiceNumber'>>) => {
+    addPurchaseReturn: (
+      state,
+      action: PayloadAction<Omit<Invoice, "id" | "invoiceNumber">>
+    ) => {
       const newPurchaseReturn: Invoice = {
         ...action.payload,
         id: `PRET-${Date.now()}`,
@@ -69,15 +94,25 @@ const invoicesSlice = createSlice({
       state.purchaseReturns.push(newPurchaseReturn);
     },
     deletePurchaseReturn: (state, action: PayloadAction<string>) => {
-        state.purchaseReturns = state.purchaseReturns.filter(inv => inv.id !== action.payload);
+      state.purchaseReturns = state.purchaseReturns.filter(
+        (inv) => inv.id !== action.payload
+      );
     },
 
     updateInvoice: (state, action: PayloadAction<Invoice>) => {
       const updatedInvoice = action.payload;
-      const invoiceTypes: (keyof InvoicesState)[] = ['sales', 'purchases', 'salesReturns', 'purchaseReturns', 'proformas'];
+      const invoiceTypes: (keyof InvoicesState)[] = [
+        "sales",
+        "purchases",
+        "salesReturns",
+        "purchaseReturns",
+        "proformas",
+      ];
 
       for (const type of invoiceTypes) {
-        const index = state[type].findIndex(inv => inv.id === updatedInvoice.id);
+        const index = state[type].findIndex(
+          (inv) => inv.id === updatedInvoice.id
+        );
         if (index !== -1) {
           state[type][index] = updatedInvoice;
           break;
@@ -97,7 +132,7 @@ export const {
   deletePurchase,
   addPurchaseReturn,
   deletePurchaseReturn,
-  updateInvoice
+  updateInvoice,
 } = invoicesSlice.actions;
 
 export default invoicesSlice.reducer;

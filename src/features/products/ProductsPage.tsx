@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import {
   Box,
   Typography,
@@ -16,6 +17,8 @@ import {
   Checkbox,
   RadioGroup,
   Radio,
+  Snackbar,
+  Alert,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -27,37 +30,84 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useForm, Controller, type SubmitHandler } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-
-import { type Product, type ProductFormData } from "../../types/product";
-import { productSchema } from "../../schema/productSchema";
+import { type RootState } from "../../store/store";
 import {
-  fetchProducts,
   addProduct,
   editProduct,
   deleteProduct,
-} from "../../mocks/productsApi";
-import { useToast } from "../../hooks/useToast";
+  setProducts,
+} from "../../store/slices/productsSlice";
+import { type Product } from "../../types/product";
+
+import {
+  productSchema,
+  type ProductFormData,
+} from "../../schema/productSchema";
+import apiClient from "../../lib/apiClient";
+
+// 1. تعریف یک اینترفیس برای شکل داده‌های دریافتی از API
+interface ApiProduct {
+  id: number;
+  title: string;
+  price: number;
+  category: string;
+}
 
 const ProductsPage = () => {
-  const queryClient = useQueryClient();
-  const { showToast } = useToast();
-
+  const dispatch = useDispatch();
   const [view, setView] = useState<"form" | "report">("report");
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchBy, setSearchBy] = useState<"name" | "code">("name");
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success" as "success" | "error",
+  });
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<number | null>(null);
 
-  const {
-    data: products = [],
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ["products"],
-    queryFn: fetchProducts,
-  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const { products } = useSelector((state: RootState) => state);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setError(null);
+        setLoading(true);
+        // 2. مشخص کردن نوع داده بازگشتی از API در هنگام فراخوانی
+        const response = await apiClient.get<ApiProduct[]>("/products");
+
+        // 3. حذف 'any' از پارامتر 'apiProduct' - تایپ به صورت خودکار استنتاج می‌شود
+        const mappedProducts: Product[] = response.data.map((apiProduct) => ({
+          id: apiProduct.id,
+          name: apiProduct.title,
+          retailPrice: apiProduct.price,
+          purchasePrice: apiProduct.price * 0.8,
+          wholesalePrice: apiProduct.price * 0.9,
+          unitId: 1,
+          groupId: 1,
+          warehouseId: 1,
+          model: apiProduct.category || "",
+          barcode: String(
+            Math.floor(100000000000 + Math.random() * 900000000000)
+          ),
+          allowDuplicate: false,
+          stock: {},
+        }));
+        dispatch(setProducts(mappedProducts));
+      } catch (err) {
+        setError("خطا در دریافت اطلاعات کالاها");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [dispatch]);
 
   const {
     control,
@@ -80,44 +130,6 @@ const ProductsPage = () => {
     },
   });
 
-  const mutation = useMutation({
-    mutationFn: (data: ProductFormData) => {
-      if (editingProduct) {
-        return editProduct({
-          ...data,
-          id: editingProduct.id,
-          stock: editingProduct.stock,
-        });
-      }
-      return addProduct(data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
-      showToast(
-        editingProduct ? "کالا با موفقیت ویرایش شد." : "کالا با موفقیت ثبت شد.",
-        "success"
-      );
-      setView("report");
-      setEditingProduct(null);
-    },
-    onError: () => {
-      showToast("عملیات با خطا مواجه شد.", "error");
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: deleteProduct,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
-      showToast("کالا با موفقیت حذف شد.", "success");
-      setDeleteConfirmOpen(false);
-      setProductToDelete(null);
-    },
-    onError: () => {
-      showToast("حذف با خطا مواجه شد.", "error");
-    },
-  });
-
   const getNextId = () => {
     const maxId =
       products.length > 0 ? Math.max(...products.map((p) => p.id)) : 14;
@@ -126,8 +138,10 @@ const ProductsPage = () => {
 
   const handleSetFormView = (product: Product | null = null) => {
     setEditingProduct(product);
-    reset(
-      product || {
+    if (product) {
+      reset(product);
+    } else {
+      reset({
         name: "",
         unitId: 0,
         groupId: 0,
@@ -138,13 +152,28 @@ const ProductsPage = () => {
         warehouseId: 0,
         barcode: "",
         allowDuplicate: false,
-      }
-    );
+      });
+    }
     setView("form");
   };
 
   const onSubmit: SubmitHandler<ProductFormData> = (data) => {
-    mutation.mutate(data);
+    if (editingProduct) {
+      dispatch(editProduct({ ...data, id: editingProduct.id }));
+      setSnackbar({
+        open: true,
+        message: "کالا با موفقیت ویرایش شد.",
+        severity: "success",
+      });
+    } else {
+      dispatch(addProduct(data));
+      setSnackbar({
+        open: true,
+        message: "کالا با موفقیت ثبت شد.",
+        severity: "success",
+      });
+    }
+    handleSetFormView(null);
   };
 
   const handleDeleteClick = (id: number) => {
@@ -154,8 +183,15 @@ const ProductsPage = () => {
 
   const confirmDelete = () => {
     if (productToDelete !== null) {
-      deleteMutation.mutate(productToDelete);
+      dispatch(deleteProduct(productToDelete));
+      setSnackbar({
+        open: true,
+        message: "کالا با موفقیت حذف شد.",
+        severity: "success",
+      });
     }
+    setDeleteConfirmOpen(false);
+    setProductToDelete(null);
   };
 
   const filteredProducts = useMemo(() => {
@@ -167,21 +203,92 @@ const ProductsPage = () => {
     });
   }, [products, searchTerm, searchBy]);
 
-  if (isLoading) {
-    return (
-      <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  const renderReportContent = () => {
+    if (loading) {
+      return (
+        <Box sx={{ display: "flex", justifyContent: "center", my: 5 }}>
+          <CircularProgress />
+        </Box>
+      );
+    }
 
-  if (isError) {
+    if (error) {
+      return (
+        <Typography color="error" sx={{ textAlign: "center", my: 5 }}>
+          {error}
+        </Typography>
+      );
+    }
+
     return (
-      <Typography color="error" sx={{ p: 4 }}>
-        خطا در دریافت اطلاعات محصولات.
-      </Typography>
+      <>
+        <Box sx={{ display: "flex", gap: 2, alignItems: "center", mb: 2 }}>
+          <TextField
+            label="جستجو..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            size="small"
+          />
+          <RadioGroup
+            row
+            value={searchBy}
+            onChange={(e) => setSearchBy(e.target.value as "name" | "code")}
+          >
+            <FormControlLabel
+              value="name"
+              control={<Radio size="small" />}
+              label="نام کالا"
+            />
+            <FormControlLabel
+              value="code"
+              control={<Radio size="small" />}
+              label="کد کالا"
+            />
+          </RadioGroup>
+        </Box>
+        <TableContainer component={Paper} variant="outlined">
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>کد</TableCell>
+                <TableCell>نام کالا</TableCell>
+                <TableCell>قیمت فروش</TableCell>
+                <TableCell>عملیات</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filteredProducts.map((p) => (
+                <TableRow key={p.id}>
+                  <TableCell>{p.id}</TableCell>
+                  <TableCell>{p.name}</TableCell>
+                  <TableCell>{p.retailPrice.toLocaleString()}</TableCell>
+                  <TableCell>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleSetFormView(p)}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleDeleteClick(p.id)}
+                    >
+                      <DeleteIcon color="error" />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <Box sx={{ mt: 2, textAlign: "center" }}>
+          <Button variant="contained" onClick={() => handleSetFormView(null)}>
+            ثبت کالای جدید
+          </Button>
+        </Box>
+      </>
     );
-  }
+  };
 
   return (
     <Box>
@@ -191,6 +298,7 @@ const ProductsPage = () => {
             معرفی کالا
           </Typography>
           <form onSubmit={handleSubmit(onSubmit)}>
+            {/* Form content remains unchanged */}
             <Grid container spacing={2} direction="column">
               <Grid sx={{ textAlign: "right" }}>
                 <Typography>
@@ -324,25 +432,22 @@ const ProductsPage = () => {
               </Grid>
               <Grid container spacing={1} justifyContent="center">
                 <Grid>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    disabled={mutation.isPending}
-                  >
-                    {mutation.isPending ? "در حال ذخیره..." : "ثبت"}
+                  <Button type="submit" variant="contained">
+                    ثبت
                   </Button>
                 </Grid>
-                {editingProduct && (
-                  <Grid>
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      onClick={() => handleDeleteClick(editingProduct.id)}
-                    >
-                      حذف
-                    </Button>
-                  </Grid>
-                )}
+                <Grid>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    disabled={!editingProduct}
+                    onClick={() =>
+                      editingProduct && handleDeleteClick(editingProduct.id)
+                    }
+                  >
+                    حذف
+                  </Button>
+                </Grid>
                 <Grid>
                   <Button variant="outlined" onClick={() => setView("report")}>
                     گزارش کالا
@@ -357,72 +462,24 @@ const ProductsPage = () => {
           <Typography variant="h6" sx={{ textAlign: "center", mb: 2 }}>
             لیست گزارش کالا
           </Typography>
-          <Box sx={{ display: "flex", gap: 2, alignItems: "center", mb: 2 }}>
-            <TextField
-              label="جستجو..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              size="small"
-            />
-            <RadioGroup
-              row
-              value={searchBy}
-              onChange={(e) => setSearchBy(e.target.value as "name" | "code")}
-            >
-              <FormControlLabel
-                value="name"
-                control={<Radio size="small" />}
-                label="نام کالا"
-              />
-              <FormControlLabel
-                value="code"
-                control={<Radio size="small" />}
-                label="کد کالا"
-              />
-            </RadioGroup>
-          </Box>
-          <TableContainer component={Paper} variant="outlined">
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>کد</TableCell>
-                  <TableCell>نام کالا</TableCell>
-                  <TableCell>قیمت فروش</TableCell>
-                  <TableCell>عملیات</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredProducts.map((p) => (
-                  <TableRow key={p.id}>
-                    <TableCell>{p.id}</TableCell>
-                    <TableCell>{p.name}</TableCell>
-                    <TableCell>{p.retailPrice.toLocaleString()}</TableCell>
-                    <TableCell>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleSetFormView(p)}
-                      >
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleDeleteClick(p.id)}
-                      >
-                        <DeleteIcon color="error" />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          <Box sx={{ mt: 2, textAlign: "center" }}>
-            <Button variant="contained" onClick={() => handleSetFormView(null)}>
-              ثبت کالای جدید
-            </Button>
-          </Box>
+          {renderReportContent()}
         </Paper>
       )}
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
 
       <Dialog
         open={deleteConfirmOpen}
@@ -434,12 +491,8 @@ const ProductsPage = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDeleteConfirmOpen(false)}>انصراف</Button>
-          <Button
-            onClick={confirmDelete}
-            color="error"
-            disabled={deleteMutation.isPending}
-          >
-            {deleteMutation.isPending ? "در حال حذف..." : "حذف"}
+          <Button onClick={confirmDelete} color="error">
+            حذف
           </Button>
         </DialogActions>
       </Dialog>
