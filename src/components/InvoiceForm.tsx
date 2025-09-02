@@ -21,18 +21,18 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import { toPersianDigits, toPersianDigitsString, toEnglishDigits } from "../utils/utils";
 import { type RootState } from "../store/store";
+import type{ Invoice ,InvoiceItem} from '../types/invoice';
+import { type Product } from "../types/product";
+import { useToast } from "../hooks/useToast";
 import {
   addInvoice,
   addPurchase,
   addSalesReturn,
   addPurchaseReturn,
 } from "../store/slices/invoicesSlice";
-
-import type{ Invoice ,InvoiceItem} from '../types/invoice';
-
-import { type Product } from "../types/product";
-import { useToast } from "../hooks/useToast";
-
+import { setCustomers } from '../store/slices/customersSlice';
+import { setSupplier } from '../store/slices/suppliersSlice';
+import { fetchCustomers, fetchSuppliers } from '../mocks/customersApi';
 import SearchableSelect, { type SelectOption } from "./SearchableSelect";
 import ShamsiDatePicker from "./DatePicker";
 import CustomTextField from "./TextField";
@@ -228,17 +228,42 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
     (state: RootState) => state
   );
   const { showToast } = useToast();
+  const reduxDispatch = useDispatch();
   const defaultQuantity = settings.autoAddQuantity ? 1 : 0;
 
   const [state, localDispatch] = useReducer(
     invoiceReducer,
     getInitialState(defaultQuantity)
   );
-  const reduxDispatch = useDispatch();
 
   const [returnPersonType, setReturnPersonType] = useState<
     "customer" | "supplier"
   >("customer");
+
+  useEffect(() => {
+    const loadInitialData = async () => {
+      if (customers.length === 0) {
+        try {
+          const fetchedCustomers = await fetchCustomers();
+          reduxDispatch(setCustomers(fetchedCustomers));
+        } catch (error) {
+          console.error("Failed to fetch customers:", error);
+          showToast("خطا در دریافت لیست مشتریان", "error");
+        }
+      }
+      if (suppliers.length === 0) {
+        try {
+          const fetchedSuppliers = await fetchSuppliers();
+          reduxDispatch(setSupplier(fetchedSuppliers));
+        } catch (error) {
+          console.error("Failed to fetch suppliers:", error);
+          showToast("خطا در دریافت لیست فروشندگان", "error");
+        }
+      }
+    };
+
+    loadInitialData();
+  }, [customers.length, suppliers.length, reduxDispatch, showToast]);
 
   const nextSalesInvoiceNumber =
     (invoices.sales?.length > 0
@@ -292,10 +317,9 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
 
     const finalItems = validItems.map(({ ...rest }) => rest);
 
-    const invoiceData: Omit<Invoice, "id"> = {
+    const invoiceData: Omit<Invoice, "id" | "invoiceNumber"> = {
       ...state,
       items: finalItems,
-      invoiceNumber: displayInvoiceNumber,
     };
 
     if (mode === "sale") reduxDispatch(addInvoice(invoiceData));
@@ -311,6 +335,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
     const savedInvoiceForCallback: Invoice = {
       ...invoiceData,
       id: Date.now().toString(),
+      invoiceNumber: displayInvoiceNumber,
     };
     onSaveSuccess(savedInvoiceForCallback);
 
@@ -323,7 +348,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
         <FormControl component="fieldset" sx={{ mb: 2 }}>
           <RadioGroup
             row
-            defaultValue={returnPersonType}
+            value={returnPersonType}
             onChange={(e) =>
               setReturnPersonType(e.target.value as "customer" | "supplier")
             }
@@ -347,7 +372,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
             <SearchableSelect
                 label={`نام ${personLabel}`}
                 options={personOptions}
-                defaultValue={selectedPersonValue}
+                value={selectedPersonValue}
                 onChange={(option) => localDispatch({
                     type: "SET_PERSON",
                     payload: { id: option ? option.id : null, personType },
@@ -367,7 +392,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
         <Grid size={{ xs: 12, md: 4}}>
           <CustomTextField
             label="شماره فاکتور"
-            defaultValue={toPersianDigits(displayInvoiceNumber || 1)}
+            value={toPersianDigits(displayInvoiceNumber || 1)}
             disabled
             fullWidth
           />
@@ -408,7 +433,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
                         placeholder="انتخاب کالا"
                         label=""
                         options={productOptions}
-                        defaultValue={selectedProductValue}
+                        value={selectedProductValue}
                         onChange={(option) => {
                             if(option) {
                                 const product = products.find(p => p.id === option.id);
@@ -425,7 +450,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
                   <TableCell align="center" sx={{ p: 1 }}>
                     <CustomTextField
                       type="text" 
-                      defaultValue={toPersianDigitsString(item.quantity)} 
+                      value={toPersianDigitsString(item.quantity)} 
                       onChange={(e) =>
                         localDispatch({
                           type: "UPDATE_ITEM_QUANTITY",
@@ -463,7 +488,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
                 <CustomTextField
                   label="تخفیف (مبلغ)"
                   type="text" 
-                  defaultValue={toPersianDigitsString(state.discountAmount || "")} 
+                  value={toPersianDigitsString(state.discountAmount || "")} 
                   onChange={(e) =>
                     localDispatch({
                       type: "SET_DISCOUNT_AMOUNT",
@@ -474,7 +499,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ mode, onSaveSuccess }) => {
                 <CustomTextField
                   label="تخفیف (درصد)"
                   type="text" 
-                  defaultValue={toPersianDigitsString(state.discountPercent || "")} 
+                  value={toPersianDigitsString(state.discountPercent || "")} 
                   onChange={(e) =>
                     localDispatch({
                       type: "SET_DISCOUNT_PERCENT",

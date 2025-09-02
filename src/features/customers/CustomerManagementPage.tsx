@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import { Box, Paper, TextField } from '@mui/material';
 import { useForm, type SubmitHandler, type Resolver } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -7,6 +8,8 @@ import { useToast } from '../../hooks/useToast';
 import type { Customer, MoeinCategory, Supplier } from '../../types/person';
 import { createPersonSchema, type PersonFormData } from '../../schema/personSchema';
 import { fetchCustomers, fetchSuppliers, addPerson, editPerson, deletePerson } from '../../mocks/customersApi';
+import { setCustomers } from '../../store/slices/customersSlice';
+import { setSupplier } from '../../store/slices/suppliersSlice';
 
 import SearchAndSortPanel from '../../components/SearchAndSortPanel';
 import PageHeader from '../../components/PageHeader';
@@ -34,6 +37,7 @@ const formFields: FormField<PersonFormData>[] = [
 
 const CustomerManagementPage: React.FC = () => {
   const queryClient = useQueryClient();
+  const dispatch = useDispatch();
   const { showToast } = useToast();
   const [personType, setPersonType] = useState<'customer' | 'supplier'>('customer');
   const [searchTerm, setSearchTerm] = useState('');
@@ -45,6 +49,18 @@ const CustomerManagementPage: React.FC = () => {
 
   const { data: customers = [], isLoading: isLoadingCustomers } = useQuery({ queryKey: ['customers'], queryFn: fetchCustomers });
   const { data: suppliers = [], isLoading: isLoadingSuppliers } = useQuery({ queryKey: ['suppliers'], queryFn: fetchSuppliers });
+
+  useEffect(() => {
+    if (customers.length) {
+      dispatch(setCustomers(customers));
+    }
+  }, [customers, dispatch]);
+
+  useEffect(() => {
+    if (suppliers.length) {
+      dispatch(setSupplier(suppliers));
+    }
+  }, [suppliers, dispatch]);
 
   const allPersons = useMemo(() => [...customers, ...suppliers], [customers, suppliers]);
 
@@ -227,4 +243,3 @@ const CustomerManagementPage: React.FC = () => {
 };
 
 export default CustomerManagementPage;
-

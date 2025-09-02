@@ -8,6 +8,12 @@ const customersSlice = createSlice({
   name: 'customers',
   initialState,
   reducers: {
+
+
+    setCustomers: (state, action: PayloadAction<Customer[]>) => {
+      return action.payload; 
+  
+    },
     addCustomer: (state, action: PayloadAction<Omit<Customer, 'id'>>) => {
       const maxId = state.length > 0 ? Math.max(...state.map(c => c.id)) : 99;
       const newId = maxId < 100 ? 100 : maxId + 1;
@@ -23,5 +29,5 @@ const customersSlice = createSlice({
   },
 });
 
-export const { addCustomer, editCustomer, deleteCustomer } = customersSlice.actions;
+export const {setCustomers, addCustomer, editCustomer, deleteCustomer } = customersSlice.actions;
 export default customersSlice.reducer;

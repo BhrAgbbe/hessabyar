@@ -36,7 +36,6 @@ const ChangePasswordPage = () => {
         }
     ];
     
-    // تابع onSubmit برای مدیریت عملیات آسنکرون بهینه شد
     const onSubmit = async (data: ChangePasswordFormData) => {
         if (!currentUser) {
             showToast('کاربر فعلی یافت نشد.', 'error');
@@ -45,7 +44,6 @@ const ChangePasswordPage = () => {
 
         if (data.currentPassword === currentUser.password) {
             try {
-                // **اصلاح شد: از updateUser استفاده می‌شود**
                 await dispatch(updateUser({ ...currentUser, password: data.newPassword as string })).unwrap();
                 showToast('رمز عبور با موفقیت تغییر کرد.', 'success');
             } catch (error) {
