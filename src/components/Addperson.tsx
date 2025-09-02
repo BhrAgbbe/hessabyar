@@ -26,7 +26,7 @@ type Person = Customer | Supplier;
 interface AddPersonProps {
   personType: "customer" | "supplier";
   onPersonTypeChange: (type: "customer" | "supplier") => void;
-  onSave: (data: Omit<Person, "id">) => void;
+  onSave: (data: PersonFormData) => void;
   getNextId: () => number;
   moeinOptions: SelectOption[];
   existingPersons: Person[];
@@ -104,10 +104,10 @@ const AddPerson: React.FC<AddPersonProps> = ({
       return;
     }
 
-    const payload = {
+    const payload: PersonFormData = {
       ...formData,
       moein: selectedMoein.id as MoeinCategory,
-    } as Omit<Person, "id">;
+    };
 
     onSave(payload);
     handleClose();
@@ -202,3 +202,4 @@ const AddPerson: React.FC<AddPersonProps> = ({
 };
 
 export default AddPerson;
+

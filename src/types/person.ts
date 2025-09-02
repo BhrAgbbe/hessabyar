@@ -18,3 +18,5 @@ export interface Supplier {
   address?: string;
   moein?: MoeinCategory;
 }
+
+export type PersonFormData = Omit<Customer, 'id'>;

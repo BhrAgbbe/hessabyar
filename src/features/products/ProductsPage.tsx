@@ -1,42 +1,70 @@
 import { useState, useMemo } from "react";
-import { useSelector, useDispatch } from "react-redux";
 import {
-  Box, Typography, Paper, Button, TextField, Table,
-  TableContainer, TableHead, TableRow, TableCell, TableBody,
-  IconButton, FormControlLabel, Checkbox, RadioGroup, Radio,
-  Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions, Grid
+  Box,
+  Typography,
+  Paper,
+  Button,
+  TextField,
+  Table,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  IconButton,
+  FormControlLabel,
+  Checkbox,
+  RadioGroup,
+  Radio,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Grid,
+  CircularProgress,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useForm, Controller, type SubmitHandler } from "react-hook-form";
-import { yupResolver } from '@hookform/resolvers/yup';
-import { type RootState } from "../../store/store";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
+import { type Product, type ProductFormData } from "../../types/product";
+import { productSchema } from "../../schema/productSchema";
 import {
+  fetchProducts,
   addProduct,
   editProduct,
   deleteProduct,
-} from "../../store/slices/productsSlice";
-import {type Product } from '../../types/product';
-
-import { productSchema, type ProductFormData } from "../../schema/productSchema"; 
+} from "../../mocks/productsApi";
+import { useToast } from "../../hooks/useToast";
 
 const ProductsPage = () => {
-  const dispatch = useDispatch();
-  const [view, setView] = useState<"form" | "report">("form");
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+
+  const [view, setView] = useState<"form" | "report">("report");
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchBy, setSearchBy] = useState<"name" | "code">("name");
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success" as "success" | "error",
-  });
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<number | null>(null);
 
-  const { products } = useSelector((state: RootState) => state);
+  const {
+    data: products = [],
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["products"],
+    queryFn: fetchProducts,
+  });
 
-  const { control, handleSubmit, reset, formState: { errors } } = useForm<ProductFormData>({
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<ProductFormData>({
     resolver: yupResolver(productSchema),
     defaultValues: {
       name: "",
@@ -49,7 +77,45 @@ const ProductsPage = () => {
       warehouseId: 0,
       barcode: "",
       allowDuplicate: false,
-    }
+    },
+  });
+
+  const mutation = useMutation({
+    mutationFn: (data: ProductFormData) => {
+      if (editingProduct) {
+        return editProduct({
+          ...data,
+          id: editingProduct.id,
+          stock: editingProduct.stock,
+        });
+      }
+      return addProduct(data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      showToast(
+        editingProduct ? "کالا با موفقیت ویرایش شد." : "کالا با موفقیت ثبت شد.",
+        "success"
+      );
+      setView("report");
+      setEditingProduct(null);
+    },
+    onError: () => {
+      showToast("عملیات با خطا مواجه شد.", "error");
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteProduct,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      showToast("کالا با موفقیت حذف شد.", "success");
+      setDeleteConfirmOpen(false);
+      setProductToDelete(null);
+    },
+    onError: () => {
+      showToast("حذف با خطا مواجه شد.", "error");
+    },
   });
 
   const getNextId = () => {
@@ -60,10 +126,8 @@ const ProductsPage = () => {
 
   const handleSetFormView = (product: Product | null = null) => {
     setEditingProduct(product);
-    if (product) {
-      reset(product);
-    } else {
-      reset({
+    reset(
+      product || {
         name: "",
         unitId: 0,
         groupId: 0,
@@ -74,28 +138,13 @@ const ProductsPage = () => {
         warehouseId: 0,
         barcode: "",
         allowDuplicate: false,
-      });
-    }
+      }
+    );
     setView("form");
   };
 
   const onSubmit: SubmitHandler<ProductFormData> = (data) => {
-    if (editingProduct) {
-      dispatch(editProduct({ ...data, id: editingProduct.id }));
-      setSnackbar({
-        open: true,
-        message: "کالا با موفقیت ویرایش شد.",
-        severity: "success",
-      });
-    } else {
-      dispatch(addProduct(data));
-      setSnackbar({
-        open: true,
-        message: "کالا با موفقیت ثبت شد.",
-        severity: "success",
-      });
-    }
-    handleSetFormView(null);
+    mutation.mutate(data);
   };
 
   const handleDeleteClick = (id: number) => {
@@ -105,15 +154,8 @@ const ProductsPage = () => {
 
   const confirmDelete = () => {
     if (productToDelete !== null) {
-      dispatch(deleteProduct(productToDelete));
-      setSnackbar({
-        open: true,
-        message: "کالا با موفقیت حذف شد.",
-        severity: "success",
-      });
+      deleteMutation.mutate(productToDelete);
     }
-    setDeleteConfirmOpen(false);
-    setProductToDelete(null);
   };
 
   const filteredProducts = useMemo(() => {
@@ -124,6 +166,22 @@ const ProductsPage = () => {
       return String(p.id).includes(searchTerm);
     });
   }, [products, searchTerm, searchBy]);
+
+  if (isLoading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Typography color="error" sx={{ p: 4 }}>
+        خطا در دریافت اطلاعات محصولات.
+      </Typography>
+    );
+  }
 
   return (
     <Box>
@@ -144,10 +202,10 @@ const ProductsPage = () => {
                   name="name"
                   control={control}
                   render={({ field }) => (
-                    <TextField 
-                      {...field} 
-                      label="نام کالا" 
-                      fullWidth 
+                    <TextField
+                      {...field}
+                      label="نام کالا"
+                      fullWidth
                       error={!!errors.name}
                       helperText={errors.name?.message}
                     />
@@ -159,11 +217,11 @@ const ProductsPage = () => {
                   name="unitId"
                   control={control}
                   render={({ field }) => (
-                    <TextField 
-                      {...field} 
-                      label="واحد کالا" 
+                    <TextField
+                      {...field}
+                      label="واحد کالا"
                       type="number"
-                      fullWidth 
+                      fullWidth
                       error={!!errors.unitId}
                       helperText={errors.unitId?.message}
                     />
@@ -266,22 +324,25 @@ const ProductsPage = () => {
               </Grid>
               <Grid container spacing={1} justifyContent="center">
                 <Grid>
-                  <Button type="submit" variant="contained">
-                    ثبت
-                  </Button>
-                </Grid>
-                <Grid>
                   <Button
-                    variant="outlined"
-                    color="error"
-                    disabled={!editingProduct}
-                    onClick={() =>
-                      editingProduct && handleDeleteClick(editingProduct.id)
-                    }
+                    type="submit"
+                    variant="contained"
+                    disabled={mutation.isPending}
                   >
-                    حذف
+                    {mutation.isPending ? "در حال ذخیره..." : "ثبت"}
                   </Button>
                 </Grid>
+                {editingProduct && (
+                  <Grid>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      onClick={() => handleDeleteClick(editingProduct.id)}
+                    >
+                      حذف
+                    </Button>
+                  </Grid>
+                )}
                 <Grid>
                   <Button variant="outlined" onClick={() => setView("report")}>
                     گزارش کالا
@@ -363,21 +424,6 @@ const ProductsPage = () => {
         </Paper>
       )}
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          severity={snackbar.severity}
-          sx={{ width: "100%" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-
       <Dialog
         open={deleteConfirmOpen}
         onClose={() => setDeleteConfirmOpen(false)}
@@ -388,8 +434,12 @@ const ProductsPage = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDeleteConfirmOpen(false)}>انصراف</Button>
-          <Button onClick={confirmDelete} color="error">
-            حذف
+          <Button
+            onClick={confirmDelete}
+            color="error"
+            disabled={deleteMutation.isPending}
+          >
+            {deleteMutation.isPending ? "در حال حذف..." : "حذف"}
           </Button>
         </DialogActions>
       </Dialog>

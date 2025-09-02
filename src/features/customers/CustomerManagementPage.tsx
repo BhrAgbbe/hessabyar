@@ -1,23 +1,13 @@
 import React, { useState, useMemo } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { type RootState } from '../../store/store';
 import { Box, Paper, TextField } from '@mui/material';
 import { useForm, type SubmitHandler, type Resolver } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '../../hooks/useToast';
-import {
-  addCustomer,
-  editCustomer,
-  deleteCustomer,
-} from '../../store/slices/customersSlice';
-import {
-  addSupplier,
-  editSupplier,
-  deleteSupplier,
-} from '../../store/slices/suppliersSlice';
-import type {  Customer, MoeinCategory , Supplier  } from '../../types/person';
+import type { Customer, MoeinCategory, Supplier } from '../../types/person';
+import { createPersonSchema, type PersonFormData } from '../../schema/personSchema';
+import { fetchCustomers, fetchSuppliers, addPerson, editPerson, deletePerson } from '../../mocks/customersApi';
 
-import { createPersonSchema, type PersonFormData } from '../../schema/personSchema'; 
 import SearchAndSortPanel from '../../components/SearchAndSortPanel';
 import PageHeader from '../../components/PageHeader';
 import EnhancedMuiTable, { type HeadCell, type Action } from '../../components/Table';
@@ -43,19 +33,21 @@ const formFields: FormField<PersonFormData>[] = [
 ];
 
 const CustomerManagementPage: React.FC = () => {
-  const dispatch = useDispatch();
+  const queryClient = useQueryClient();
   const { showToast } = useToast();
   const [personType, setPersonType] = useState<'customer' | 'supplier'>('customer');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'city'>('name');
-
   const [editingPerson, setEditingPerson] = useState<Person | null>(null);
   const [editFormOpen, setEditFormOpen] = useState(false);
   const [deleteModal, setDeleteModal] = useState<{ open: boolean; id: number | null }>({ open: false, id: null });
   const [selectedMoeinForEdit, setSelectedMoeinForEdit] = useState<SelectOption | null>(null);
 
-  const { customers, suppliers } = useSelector((state: RootState) => state);
+  const { data: customers = [], isLoading: isLoadingCustomers } = useQuery({ queryKey: ['customers'], queryFn: fetchCustomers });
+  const { data: suppliers = [], isLoading: isLoadingSuppliers } = useQuery({ queryKey: ['suppliers'], queryFn: fetchSuppliers });
+
   const allPersons = useMemo(() => [...customers, ...suppliers], [customers, suppliers]);
+
   const editSchema = useMemo(() => {
     const nameMessage = personType === 'customer' ? 'نام شخص الزامی است' : 'نام تامین‌کننده الزامی است';
     const editingPersonId = editingPerson ? editingPerson.id : null;
@@ -69,64 +61,64 @@ const CustomerManagementPage: React.FC = () => {
     handleSubmit: handleEditSubmit,
     reset: resetEditForm,
     formState: { errors: editErrors },
-  } = useForm<PersonFormData>({
-    resolver,
-    defaultValues: {
-      name: '',
-      phone: '',
-      city: '',
-      address: '',
-      debt: 0,
-      moein: undefined,
-    } as Partial<PersonFormData>,
+  } = useForm<PersonFormData>({ resolver });
+
+  const addMutation = useMutation<Customer | Supplier, Error, { type: 'customer' | 'supplier', data: PersonFormData }>({
+    mutationFn: addPerson,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [personType === 'customer' ? 'customers' : 'suppliers'] });
+      showToast('شخص جدید با موفقیت اضافه شد', 'success');
+    },
+     onError: (error) => {
+      showToast(`خطا در افزودن شخص: ${error.message}`, 'error');
+    }
+  });
+
+  const editMutation = useMutation<Customer | Supplier, Error, Person>({
+    mutationFn: editPerson,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
+      queryClient.invalidateQueries({ queryKey: ['suppliers'] });
+      showToast('ویرایش با موفقیت انجام شد', 'success');
+      handleCloseEditForm();
+    },
+    onError: (error) => {
+      showToast(`خطا در ویرایش: ${error.message}`, 'error');
+    }
+  });
+
+  const deleteMutation = useMutation<void, Error, number>({
+    mutationFn: deletePerson,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [personType === 'customer' ? 'customers' : 'suppliers'] });
+      showToast('شخص با موفقیت حذف شد.', 'success');
+      handleCloseDeleteModal();
+    },
+     onError: (error) => {
+      showToast(`خطا در حذف: ${error.message}`, 'error');
+    }
   });
 
   const data = useMemo(() => {
     const sourceData = personType === 'customer' ? customers : suppliers;
     const term = searchTerm.toLowerCase().trim();
     return sourceData
-      .filter((p) => {
-        if (!term) return true;
-        const name = (p as Person & { name?: string }).name ?? '';
-        const city = (p as Person & { city?: string }).city ?? '';
-        return name.toLowerCase().includes(term) || city.toLowerCase().includes(term);
-      })
-      .sort((a, b) => ((a[sortBy] ?? '') as string).localeCompare((b[sortBy] ?? '') as string, 'fa'));
+      .filter(p => !term || p.name.toLowerCase().includes(term) || (p.city && p.city.toLowerCase().includes(term)))
+      .sort((a, b) => (a[sortBy] ?? '').localeCompare(b[sortBy] ?? '', 'fa'));
   }, [personType, customers, suppliers, searchTerm, sortBy]);
 
   const getNextId = () => {
     const sourceData = personType === 'customer' ? customers : suppliers;
-    const maxId = sourceData.length > 0 ? Math.max(...sourceData.map((p) => p.id)) : 99;
+    const maxId = sourceData.length > 0 ? Math.max(...sourceData.map(p => p.id)) : 99;
     return maxId < 100 ? 100 : maxId + 1;
   };
 
-  const handleSaveNewPerson = (personData: Partial<Omit<Person, 'id'>>) => {
-    const defaultMoein = moeinOptions[0].id as MoeinCategory;
-
-    if (personType === 'customer') {
-      const custPayload: Omit<Customer, 'id'> = {
-        name: personData.name!,
-        phone: personData.phone,
-        city: personData.city,
-        address: personData.address,
-        moein: (personData.moein ?? defaultMoein) as MoeinCategory,
-        debt: (personData as Partial<Customer>).debt ?? 0,
-      };
-      dispatch(addCustomer(custPayload));
-    } else {
-      const supPayload: Omit<Supplier, 'id'> = {
-        name: personData.name!,
-        phone: personData.phone,
-        city: personData.city,
-        address: personData.address,
-        moein: (personData.moein ?? defaultMoein) as MoeinCategory,
-      };
-      dispatch(addSupplier(supPayload));
-    }
-    showToast('شخص جدید با موفقیت اضافه شد', 'success');
+  const handleSaveNewPerson = (personData: PersonFormData) => {
+    addMutation.mutate({ type: personType, data: personData });
   };
-
+  
   const handleOpenEditForm = (person: Person) => {
+    setPersonType('debt' in person ? 'customer' : 'supplier');
     setEditingPerson(person);
     setSelectedMoeinForEdit(moeinOptions.find(opt => opt.id === person.moein) || null);
     resetEditForm(person as PersonFormData);
@@ -140,42 +132,17 @@ const CustomerManagementPage: React.FC = () => {
   
   const onEditSubmit: SubmitHandler<PersonFormData> = (formData) => {
     if (!editingPerson || !selectedMoeinForEdit) return;
-
-    if (personType === 'customer') {
-      const payload: Customer = {
-        id: editingPerson.id,
-        name: formData.name,
-        phone: formData.phone,
-        city: formData.city,
-        address: formData.address,
-        moein: selectedMoeinForEdit.id as MoeinCategory,
-        debt: formData.debt ?? 0,
-      };
-      dispatch(editCustomer(payload));
-    } else {
-      const payloadSupplier: Supplier = {
-        id: editingPerson.id,
-        name: formData.name,
-        phone: formData.phone,
-        city: formData.city,
-        address: formData.address,
-        moein: selectedMoeinForEdit.id as MoeinCategory,
-      } as Supplier;
-      dispatch(editSupplier(payloadSupplier));
-    }
-
-    showToast('ویرایش با موفقیت انجام شد', 'success');
-    handleCloseEditForm();
+    const payload = { ...editingPerson, ...formData, moein: selectedMoeinForEdit.id as MoeinCategory };
+    editMutation.mutate(payload);
   };
 
   const handleOpenDeleteModal = (id: number) => setDeleteModal({ open: true, id });
   const handleCloseDeleteModal = () => setDeleteModal({ open: false, id: null });
   
   const handleConfirmDelete = () => {
-    if (deleteModal.id === null) return;
-    dispatch(personType === 'customer' ? deleteCustomer(deleteModal.id) : deleteSupplier(deleteModal.id));
-    showToast('شخص با موفقیت حذف شد.', 'success');
-    handleCloseDeleteModal();
+    if (deleteModal.id !== null) {
+      deleteMutation.mutate(deleteModal.id);
+    }
   };
 
   const headCells: readonly HeadCell<Person>[] = [
@@ -186,7 +153,7 @@ const CustomerManagementPage: React.FC = () => {
   ];
 
   const actions: readonly Action<Person>[] = [
-    { icon: <EditIcon fontSize="small" />, tooltip: 'ویرایش', onClick: (row) => handleOpenEditForm(row) },
+    { icon: <EditIcon fontSize="small" />, tooltip: 'ویرایش', onClick: handleOpenEditForm },
     { icon: <DeleteIcon color="error" fontSize="small" />, tooltip: 'حذف', onClick: (row) => handleOpenDeleteModal(row.id) },
   ];
 
@@ -220,6 +187,7 @@ const CustomerManagementPage: React.FC = () => {
           title=""
           actions={actions}
           onDelete={(ids) => ids.forEach(id => handleOpenDeleteModal(Number(id)))}
+          loading={isLoadingCustomers || isLoadingSuppliers}
         />
       </Paper>
 
@@ -259,3 +227,4 @@ const CustomerManagementPage: React.FC = () => {
 };
 
 export default CustomerManagementPage;
+

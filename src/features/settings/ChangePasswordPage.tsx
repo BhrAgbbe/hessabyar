@@ -2,14 +2,14 @@ import { Box, Paper, Button } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { yupResolver } from '@hookform/resolvers/yup';
-import type { RootState } from '../../store/store';
-import { editUser } from '../../store/slices/usersSlice';
-import { useToast } from '../../hooks/useToast'; 
-import Form, { type FormField } from '../../components/Form'; 
+import type { RootState, AppDispatch } from '../../store/store'; 
+import { updateUser } from '../../store/slices/usersSlice'; 
+import { useToast } from '../../hooks/useToast';
+import Form, { type FormField } from '../../components/Form';
 import { changePasswordSchema, type ChangePasswordFormData, getDefaultValues } from '../../schema/changePasswordSchema';
 
 const ChangePasswordPage = () => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch<AppDispatch>();
     const { showToast } = useToast();
     const currentUser = useSelector((state: RootState) => state.auth.currentUser);
 
@@ -36,10 +36,22 @@ const ChangePasswordPage = () => {
         }
     ];
     
-    const onSubmit = (data: ChangePasswordFormData) => {
-        if (currentUser && data.currentPassword === currentUser.password) {
-            dispatch(editUser({ ...currentUser, password: data.newPassword as string }));
-            showToast('رمز عبور با موفقیت تغییر کرد.', 'success');
+    // تابع onSubmit برای مدیریت عملیات آسنکرون بهینه شد
+    const onSubmit = async (data: ChangePasswordFormData) => {
+        if (!currentUser) {
+            showToast('کاربر فعلی یافت نشد.', 'error');
+            return;
+        }
+
+        if (data.currentPassword === currentUser.password) {
+            try {
+                // **اصلاح شد: از updateUser استفاده می‌شود**
+                await dispatch(updateUser({ ...currentUser, password: data.newPassword as string })).unwrap();
+                showToast('رمز عبور با موفقیت تغییر کرد.', 'success');
+            } catch (error) {
+                const err = error as { message: string };
+                showToast(err.message || 'خطا در برقراری ارتباط با سرور', 'error');
+            }
         } else {
             showToast('رمز عبور فعلی اشتباه است.', 'error');
         }

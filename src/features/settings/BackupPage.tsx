@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Box, Paper, Button, Typography } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
 import { type RootState } from '../../store/store';
-import { useToast } from '../../hooks/useToast'; 
-import ConfirmationDialog from '../../components/ConfirmationDialog'; 
+import { useToast } from '../../hooks/useToast';
+import ConfirmationDialog from '../../components/ConfirmationDialog';
 
 import { setAllSettings } from '../../store/slices/settingsSlice';
 import { setAllUsers } from '../../store/slices/usersSlice';
@@ -19,7 +19,8 @@ const BackupPage = () => {
 
     const handleSaveBackup = () => {
         try {
-            const jsonString = JSON.stringify(allState, null, 2);
+            const stateToSave = { ...allState };
+            const jsonString = JSON.stringify(stateToSave, null, 2);
             const blob = new Blob([jsonString], { type: 'application/json' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
@@ -31,7 +32,7 @@ const BackupPage = () => {
             URL.revokeObjectURL(link.href);
 
             showToast('فایل پشتیبان با موفقیت دانلود شد.', 'success');
-        } catch (error) {
+        } catch (error: unknown) { 
             showToast('خطا در ایجاد فایل پشتیبان.', 'error');
             console.error("Backup failed:", error);
         }
@@ -48,10 +49,18 @@ const BackupPage = () => {
                 if (!e.target?.result) throw new Error("فایل خالی است.");
                 const parsedState = JSON.parse(e.target.result as string);
                 
+                if (!parsedState.settings || !parsedState.users) {
+                    throw new Error("ساختار فایل پشتیبان معتبر نیست.");
+                }
+
                 setRestoredState(parsedState);
                 setConfirmOpen(true);
-            } catch {
-                showToast('فایل پشتیبان نامعتبر یا خراب است.', 'error');
+            } catch (err: unknown) { 
+                let message = 'فایل پشتیبان نامعتبر یا خراب است.';
+                if (err instanceof Error) {
+                    message = err.message;
+                }
+                showToast(message, 'error');
             }
         };
         event.target.value = '';
@@ -62,10 +71,12 @@ const BackupPage = () => {
         
         try {
             if (restoredState.settings) dispatch(setAllSettings(restoredState.settings));
-            if (restoredState.users) dispatch(setAllUsers(restoredState.users));
+            if (restoredState.users && restoredState.users.users) {
+                dispatch(setAllUsers(restoredState.users.users));
+            }
 
             showToast('اطلاعات با موفقیت بازیابی شد. لطفاً صفحه را رفرش کنید.', 'success');
-        } catch (error) {
+        } catch (error: unknown) { 
             showToast('خطا در فرآیند بازیابی اطلاعات.', 'error');
             console.error("Restore failed:", error);
         } finally {

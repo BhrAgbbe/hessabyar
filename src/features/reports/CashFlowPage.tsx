@@ -352,7 +352,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
         renderInput={(params) => (
           <TextField
             {...params}
-            label="طرف حساب (اختیاری)"
+            label="طرف حساب"
             margin="dense"
             fullWidth
           />

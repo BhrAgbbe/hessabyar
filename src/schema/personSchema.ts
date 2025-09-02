@@ -12,7 +12,7 @@ interface ExistingPerson {
 /**
  * @param nameRequiredMessage - پیام خطا برای فیلد نام
  * @param existingPersons - آرایه‌ای از تمام اشخاص موجود برای بررسی شماره تکراری
- * @param currentPersonId - (اختیاری) شناسه‌ی شخصی که در حال ویرایش است تا از لیست بررسی تکراری خارج شود
+ * @param currentPersonId - شناسه‌ی شخصی که در حال ویرایش است تا از لیست بررسی تکراری خارج شود
  */
 export const createPersonSchema = (
   nameRequiredMessage: string,

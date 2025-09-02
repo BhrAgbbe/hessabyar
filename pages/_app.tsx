@@ -1,5 +1,5 @@
 import type { AppProps } from "next/app";
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Provider, useSelector } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { store, persistor } from "../src/store/store";
@@ -8,7 +8,8 @@ import { useRouter } from "next/router";
 import { ToastProvider } from "../src/components/ToastProvider";
 import DynamicThemeProvider from "../src/components/DynamicThemeProvider";
 import type { RootState } from "../src/store/store";
-
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
 import { prefixer } from 'stylis';
@@ -19,7 +20,6 @@ const cacheRtl = createCache({
   key: 'muirtl',
   stylisPlugins: [prefixer, rtlPlugin],
 });
-
 
 type AppWrapperProps = {
   Component: AppProps['Component'];
@@ -58,18 +58,22 @@ const AppWrapper = ({ Component, pageProps }: AppWrapperProps) => {
   );
 };
 
-
 function MyApp({ Component, pageProps }: AppProps) {
+  const [queryClient] = useState(() => new QueryClient());
+
   return (
     <CacheProvider value={cacheRtl}>
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
-          <DynamicThemeProvider>
-            <CssBaseline />
-            <ToastProvider>
-              <AppWrapper Component={Component} pageProps={pageProps} />
-            </ToastProvider>
-          </DynamicThemeProvider>
+          <QueryClientProvider client={queryClient}>
+            <DynamicThemeProvider>
+              <CssBaseline />
+              <ToastProvider>
+                <AppWrapper Component={Component} pageProps={pageProps} />
+              </ToastProvider>
+            </DynamicThemeProvider>
+            <ReactQueryDevtools initialIsOpen={false} />
+          </QueryClientProvider>
         </PersistGate>
       </Provider>
     </CacheProvider>

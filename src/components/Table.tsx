@@ -16,6 +16,7 @@ import {
   Typography,
   Tooltip,
   IconButton,
+  CircularProgress,
 } from "@mui/material";
 import { visuallyHidden } from "@mui/utils";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -214,6 +215,7 @@ interface EnhancedMuiTableProps<T extends Data> {
   onDelete?: (selected: readonly (string | number)[]) => void;
   actions?: readonly Action<T>[];
   onRowClick?: (row: T) => void;
+  loading?: boolean;
 }
 
 export default function EnhancedMuiTable<T extends Data>({
@@ -223,6 +225,7 @@ export default function EnhancedMuiTable<T extends Data>({
   onDelete,
   actions,
   onRowClick,
+  loading = false,
 }: EnhancedMuiTableProps<T>) {
   const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<keyof T | null>(headCells.length ? headCells[0].id : null);
@@ -298,60 +301,70 @@ export default function EnhancedMuiTable<T extends Data>({
           <Table sx={{ tableLayout: "fixed" }}>
             <EnhancedTableHead numSelected={selected.length} order={order} orderBy={orderBy} onSelectAllClick={handleSelectAllClick} onRequestSort={handleRequestSort} rowCount={rows.length} headCells={headCells} hasActions={!!actions?.length} />
             <TableBody>
-              {visibleRows.map((row) => {
-                const isItemSelected = isSelected(row.id);
-                return (
-                  <TableRow
-                    hover
-                    role="checkbox"
-                    tabIndex={-1}
-                    key={row.id}
-                    selected={isItemSelected}
-                    sx={{ cursor: onRowClick ? "pointer" : "default" }}
-                    onClick={() => onRowClick?.(row)}
-                  >
-                    <TableCell padding="none" sx={{ width: 48, textAlign: "center" }}>
-                      <Checkbox
-                        checked={isItemSelected}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleClick(e, row.id);
-                        }}
-                      />
-                    </TableCell>
-                    {headCells.map((cell) => {
-                      const key = cell.id as keyof T;
-                      const value = row[key];
-                      const content = cell.cell ? cell.cell(row) : formatCellValue(value);
-                      return (
-                        <TableCell key={String(cell.id)} align={cell.align ?? "center"} sx={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontSize: { xs: "0.55rem", md: "0.875rem" }, p: { xs: 0.5, sm: 2 }, width: cell.width }}>
-                          {content}
-                        </TableCell>
-                      );
-                    })}
-                    {actions && (
-                      <TableCell align="center" sx={{ width: 90 }}>
-                        {actions.map((action, i) => (
-                          <Tooltip title={action.tooltip} key={i}>
-                            <IconButton
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                action.onClick(row);
-                              }}
-                            >
-                              {action.icon}
-                            </IconButton>
-                          </Tooltip>
-                        ))}
-                      </TableCell>
-                    )}
-                  </TableRow>
-                );
-              })}
-              {emptyRows > 0 && (
-                <TableRow style={{ height: 53 * emptyRows }}>
-                  <TableCell colSpan={headCells.length + 2} />
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={headCells.length + (actions ? 2 : 1)} align="center" sx={{ py: 4 }}>
+                    <CircularProgress />
+                  </TableCell>
                 </TableRow>
+              ) : (
+                <>
+                  {visibleRows.map((row) => {
+                    const isItemSelected = isSelected(row.id);
+                    return (
+                      <TableRow
+                        hover
+                        role="checkbox"
+                        tabIndex={-1}
+                        key={row.id}
+                        selected={isItemSelected}
+                        sx={{ cursor: onRowClick ? "pointer" : "default" }}
+                        onClick={() => onRowClick?.(row)}
+                      >
+                        <TableCell padding="none" sx={{ width: 48, textAlign: "center" }}>
+                          <Checkbox
+                            checked={isItemSelected}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleClick(e, row.id);
+                            }}
+                          />
+                        </TableCell>
+                        {headCells.map((cell) => {
+                          const key = cell.id as keyof T;
+                          const value = row[key];
+                          const content = cell.cell ? cell.cell(row) : formatCellValue(value);
+                          return (
+                            <TableCell key={String(cell.id)} align={cell.align ?? "center"} sx={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontSize: { xs: "0.55rem", md: "0.875rem" }, p: { xs: 0.5, sm: 2 }, width: cell.width }}>
+                              {content}
+                            </TableCell>
+                          );
+                        })}
+                        {actions && (
+                          <TableCell align="center" sx={{ width: 90 }}>
+                            {actions.map((action, i) => (
+                              <Tooltip title={action.tooltip} key={i}>
+                                <IconButton
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    action.onClick(row);
+                                  }}
+                                >
+                                  {action.icon}
+                                </IconButton>
+                              </Tooltip>
+                            ))}
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    );
+                  })}
+                  {emptyRows > 0 && (
+                    <TableRow style={{ height: 53 * emptyRows }}>
+                      <TableCell colSpan={headCells.length + 2} />
+                    </TableRow>
+                  )}
+                </>
               )}
             </TableBody>
             <TableFooter>
@@ -378,3 +391,4 @@ export default function EnhancedMuiTable<T extends Data>({
     </Box>
   );
 }
+
