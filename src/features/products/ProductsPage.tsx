@@ -45,7 +45,6 @@ import {
 } from "../../schema/productSchema";
 import apiClient from "../../lib/apiClient";
 
-// 1. تعریف یک اینترفیس برای شکل داده‌های دریافتی از API
 interface ApiProduct {
   id: number;
   title: string;
@@ -58,7 +57,7 @@ const ProductsPage = () => {
   const [view, setView] = useState<"form" | "report">("report");
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchBy, setSearchBy] = useState<"name" | "code">("name");
+  const [searchBy, setSearchBy] = useState<"name" | "code" | "barcode">("name");
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -77,10 +76,8 @@ const ProductsPage = () => {
       try {
         setError(null);
         setLoading(true);
-        // 2. مشخص کردن نوع داده بازگشتی از API در هنگام فراخوانی
         const response = await apiClient.get<ApiProduct[]>("/products");
 
-        // 3. حذف 'any' از پارامتر 'apiProduct' - تایپ به صورت خودکار استنتاج می‌شود
         const mappedProducts: Product[] = response.data.map((apiProduct) => ({
           id: apiProduct.id,
           name: apiProduct.title,
@@ -199,6 +196,9 @@ const ProductsPage = () => {
       if (searchBy === "name") {
         return p.name.toLowerCase().includes(searchTerm.toLowerCase());
       }
+      if (searchBy === "barcode") {
+        return p.barcode ? p.barcode.includes(searchTerm) : false;
+      }
       return String(p.id).includes(searchTerm);
     });
   }, [products, searchTerm, searchBy]);
@@ -232,7 +232,9 @@ const ProductsPage = () => {
           <RadioGroup
             row
             value={searchBy}
-            onChange={(e) => setSearchBy(e.target.value as "name" | "code")}
+            onChange={(e) =>
+              setSearchBy(e.target.value as "name" | "code" | "barcode")
+            }
           >
             <FormControlLabel
               value="name"
@@ -243,6 +245,11 @@ const ProductsPage = () => {
               value="code"
               control={<Radio size="small" />}
               label="کد کالا"
+            />
+            <FormControlLabel
+              value="barcode"
+              control={<Radio size="small" />}
+              label="بارکد"
             />
           </RadioGroup>
         </Box>
@@ -298,7 +305,6 @@ const ProductsPage = () => {
             معرفی کالا
           </Typography>
           <form onSubmit={handleSubmit(onSubmit)}>
-            {/* Form content remains unchanged */}
             <Grid container spacing={2} direction="column">
               <Grid sx={{ textAlign: "right" }}>
                 <Typography>

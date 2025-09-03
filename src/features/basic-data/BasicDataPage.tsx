@@ -587,7 +587,7 @@ const BasicDataPage = () => {
           {productView === "form" ? (
             <Paper sx={{ p: 3, maxWidth: 600, mx: "auto", boxShadow: "none" }}>
               <form onSubmit={handleSubmit(onProductSubmit)}>
-                <Typography sx={{ mb: 2, textAlign: "right" }}>
+                <Typography sx={{ mb: 2, textAlign: "left" }}>
                   کد کالا:{" "}
                   {editingProduct ? editingProduct.id : getNextProductId()}
                 </Typography>
