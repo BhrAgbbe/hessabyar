@@ -44,6 +44,7 @@ import {
   DataSaverOn as DataSaverOnIcon,
   Backup as BackupIcon,
   Security as SecurityIcon,
+  DragIndicator as DragIndicatorIcon, 
 } from "@mui/icons-material";
 
 const iconMap: { [key: string]: React.ReactNode } = {
@@ -75,7 +76,8 @@ const iconMap: { [key: string]: React.ReactNode } = {
 const ShortcutCard: React.FC<{
   shortcut: Shortcut;
   onRemove: (id: string) => void;
-}> = ({ shortcut, onRemove }) => {
+  dragHandleListeners?: ReturnType<typeof useSortable>["listeners"];
+}> = ({ shortcut, onRemove, dragHandleListeners }) => {
   const router = useRouter();
 
   return (
@@ -91,6 +93,21 @@ const ShortcutCard: React.FC<{
         position: "relative",
       }}
     >
+      <Box
+        {...dragHandleListeners}
+        sx={{
+          position: "absolute",
+          top: 4,
+          left: 4,
+          cursor: "grab",
+          color: "text.secondary",
+          touchAction: "none", 
+        }}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        <DragIndicatorIcon />
+      </Box>
+
       <IconButton
         aria-label="delete shortcut"
         onMouseDown={(e) => e.stopPropagation()}
@@ -99,17 +116,19 @@ const ShortcutCard: React.FC<{
       >
         <CloseIcon fontSize="small" />
       </IconButton>
+
       <Box
         onClick={() => router.push(shortcut.path)}
-        sx={{ cursor: "pointer", flexGrow: 1 }}
+        sx={{ cursor: "pointer", flexGrow: 1, mt: 3 }} 
       >
-        <Box sx={{ fontSize: 48, color: "primary.main", mb: 1, mt: 2 }}>
+        <Box sx={{ fontSize: 48, color: "primary.main", mb: 1 }}>
           {iconMap[shortcut.iconName] || <DashboardIcon fontSize="large" />}
         </Box>
         <Typography variant="h6" gutterBottom>
           {shortcut.title}
         </Typography>
       </Box>
+
       <Button
         onClick={() => router.push(shortcut.path)}
         variant="contained"
@@ -146,8 +165,12 @@ const SortableShortcutCard: React.FC<{
   };
 
   return (
-    <Grid ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <ShortcutCard shortcut={shortcut} onRemove={onRemove} />
+    <Grid ref={setNodeRef} style={style} {...attributes}>
+      <ShortcutCard
+        shortcut={shortcut}
+        onRemove={onRemove}
+        dragHandleListeners={listeners} 
+      />
     </Grid>
   );
 };

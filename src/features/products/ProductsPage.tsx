@@ -288,11 +288,7 @@ const ProductsPage = () => {
             </TableBody>
           </Table>
         </TableContainer>
-        <Box sx={{ mt: 2, textAlign: "center" }}>
-          <Button variant="contained" onClick={() => handleSetFormView(null)}>
-            ثبت کالای جدید
-          </Button>
-        </Box>
+
       </>
     );
   };

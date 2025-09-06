@@ -34,6 +34,7 @@ import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import DragIndicatorIcon from "@mui/icons-material/DragIndicator"; 
 import Link from "next/link";
 import type { RootState } from "../../store/store";
 import { addShortcut, setShortcuts } from "../../store/slices/dashboardSlice";
@@ -60,21 +61,33 @@ const DraggableListItem: React.FC<{ item: NavChild }> = ({ item }) => {
 
   const style = {
     opacity: isDragging ? 0.4 : 1,
-    cursor: "grab",
   };
 
   return (
     <ListItem
       ref={setNodeRef}
       style={style}
-      {...listeners}
-      {...attributes}
+      {...attributes} 
       disablePadding
-      sx={{ pr: 4 }}
+      sx={{ display: "flex", alignItems: "center", pr: 2.5 }} 
     >
+      <ListItemIcon
+        {...listeners}
+        sx={{
+          cursor: "grab",
+          minWidth: "auto",
+          px: 1,
+          touchAction: "none",
+        }}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        <DragIndicatorIcon fontSize="small" />
+      </ListItemIcon>
+
       <ListItemButton
         onClick={() => router.push(item.path)}
         selected={router.pathname === item.path}
+        sx={{ flexGrow: 1, py: 0.5 }} 
       >
         <ListItemText primary={item.text} />
       </ListItemButton>
@@ -103,7 +116,6 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({
     [key: string]: boolean;
   }>({
     مدیریت: true,
-   
   });
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);

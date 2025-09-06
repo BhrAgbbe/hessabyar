@@ -495,7 +495,11 @@ const BasicDataPage = () => {
     }
 
     return (
-      <PrintableReportLayout>
+      <PrintableReportLayout   primaryAction={
+      <Button variant="contained" onClick={() => handleSetFormView(null)}>
+        ثبت کالای جدید
+      </Button>
+    }>
         <SearchAndSortPanel
           searchTerm={searchTerm}
           onSearchTermChange={setSearchTerm}
@@ -561,14 +565,6 @@ const BasicDataPage = () => {
             </TableBody>
           </Table>
         </TableContainer>
-        <Box
-          className="no-print"
-          sx={{ mt: 2, display: "flex", justifyContent: "center", gap: 2 }}
-        >
-          <Button variant="contained" onClick={() => handleSetFormView(null)}>
-            ثبت کالای جدید
-          </Button>
-        </Box>
       </PrintableReportLayout>
     );
   };
