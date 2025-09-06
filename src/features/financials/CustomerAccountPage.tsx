@@ -7,7 +7,7 @@ import EnhancedMuiTable, { type HeadCell, type Action } from '../../components/T
 import SearchableSelect, { type SelectOption } from '../../components/SearchableSelect';
 import ConfirmationDialog from '../../components/ConfirmationDialog';
 import SearchAndSortPanel from '../../components/SearchAndSortPanel';
-import { InvoiceDetailDialog } from '../../components/InvoiceDetailDialog';
+import { InvoiceDetailDialog } from '../reports/InvoiceDetailDialog';
 import { PrintableReportLayout } from '../../components/layout/PrintableReportLayout';
 import { useToast } from "../../hooks/useToast";
 import { toPersianDigits, toPersianDigitsString } from '../../utils/utils'; 

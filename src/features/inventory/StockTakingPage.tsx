@@ -17,7 +17,7 @@ import {
 } from "@mui/material";
 import { type RootState } from "../../store/store";
 import { updateStock } from "../../store/slices/productsSlice";
-import { ProductFormDialog } from "../../components/ProductFormDialog";
+import { ProductFormDialog } from "../products/ProductFormDialog";
 import { useToast } from "../../hooks/useToast";
 import ConfirmationDialog from "../../components/ConfirmationDialog";
 import CustomTextField from "../../components/TextField";

@@ -7,7 +7,7 @@ import EditIcon from "@mui/icons-material/Edit";
 
 import EnhancedMuiTable, { type HeadCell } from "../../components/Table";
 import { PrintableReportLayout } from "../../components/layout/PrintableReportLayout";
-import { InvoiceDetailDialog } from "../../components/InvoiceDetailDialog";
+import { InvoiceDetailDialog } from "./InvoiceDetailDialog";
 import SearchableSelect, {
   type SelectOption,
 } from "../../components/SearchableSelect";

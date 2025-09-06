@@ -18,7 +18,7 @@ import EnhancedMuiTable, {
 import FormDialog from "../../components/FormDialog";
 import ConfirmationDialog from "../../components/ConfirmationDialog";
 import Form, { type FormField } from "../../components/Form";
-import NewBankDialog from "../../components/NewBankDialog";
+import NewBankDialog from "./NewBankDialog";
 import { type SelectOption } from "../../components/SearchableSelect";
 import { type RootState } from "../../store/store";
 import {

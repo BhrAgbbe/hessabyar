@@ -14,24 +14,23 @@ import {
   DialogActions,
 } from "@mui/material";
 import { useForm, Controller, type SubmitHandler } from "react-hook-form";
-import { type RootState } from "../store/store";
+import { type RootState } from "../../store/store";
 import {
   type ProductFormData,
   addProduct,
   editProduct,
-} from "../store/slices/productsSlice";
-import { type Product } from "../types/product";
+} from "../../store/slices/productsSlice";
+import { type Product } from "../../types/product";
 import { Result } from "@zxing/library";
 import dynamic from "next/dynamic";
 
-// **FIX:** Dynamically import the BarcodeScanner with SSR turned off
 const BarcodeScanner = dynamic(() => import("react-qr-barcode-scanner"), {
   ssr: false,
 });
 
-import CustomTextField from "./TextField";
-import FormDialog from "./FormDialog";
-import { useToast } from "../hooks/useToast";
+import CustomTextField from "../../components/TextField";
+import FormDialog from "../../components/FormDialog";
+import { useToast } from "../../hooks/useToast";
 
 interface ProductFormDialogProps {
   open: boolean;

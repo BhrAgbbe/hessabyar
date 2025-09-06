@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import FormDialog from './FormDialog';
-import CustomTextField from './TextField';
+import FormDialog from '../../components/FormDialog';
+import CustomTextField from '../../components/TextField';
 
 interface NewBankDialogProps {
   open: boolean;

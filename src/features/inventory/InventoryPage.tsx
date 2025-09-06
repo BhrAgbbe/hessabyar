@@ -20,7 +20,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import { type RootState } from "../../store/store";
 import { updateStock } from "../../store/slices/productsSlice";
-import { ProductFormDialog } from "../../components/ProductFormDialog";
+import { ProductFormDialog } from "../products/ProductFormDialog";
 import { useToast } from "../../hooks/useToast";
 import CustomTextField from "../../components/TextField";
 import { toPersianDigits } from "../../utils/utils";

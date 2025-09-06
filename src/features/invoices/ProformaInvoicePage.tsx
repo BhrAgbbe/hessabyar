@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Box, Button } from "@mui/material";
-import InvoiceForm from "../../components/InvoiceForm";
+import InvoiceForm from "./InvoiceForm";
 import { PrintableReportLayout } from "../../components/layout/PrintableReportLayout";
 import { type Invoice } from "../../types/invoice";
-import { InvoicePrintView } from "../../components/InvoicePrintView";
+import { InvoicePrintView } from "./InvoicePrintView";
 import { toPersianDigits } from "../../utils/utils";
 
 const ProformaInvoicePage = () => {

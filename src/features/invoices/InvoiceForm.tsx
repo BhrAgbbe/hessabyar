@@ -23,24 +23,24 @@ import {
   toPersianDigits,
   toPersianDigitsString,
   toEnglishDigits,
-} from "../utils/utils";
-import { type RootState } from "../store/store";
-import type { Invoice, InvoiceItem } from "../types/invoice";
-import { type Product } from "../types/product";
-import { type Customer, type Supplier } from "../types/person";
-import { useToast } from "../hooks/useToast";
+} from "../../utils/utils";
+import { type RootState } from "../../store/store";
+import type { Invoice, InvoiceItem } from "../../types/invoice";
+import { type Product } from "../../types/product";
+import { type Customer, type Supplier } from "../../types/person";
+import { useToast } from "../../hooks/useToast";
 import {
   addInvoice,
   addPurchase,
   addSalesReturn,
   addPurchaseReturn,
-} from "../store/slices/invoicesSlice";
-import { setCustomers } from "../store/slices/customersSlice";
-import { setSupplier } from "../store/slices/suppliersSlice";
-import apiClient from "../lib/apiClient";
-import SearchableSelect, { type SelectOption } from "./SearchableSelect";
-import ShamsiDatePicker from "./DatePicker";
-import CustomTextField from "./TextField";
+} from "../../store/slices/invoicesSlice";
+import { setCustomers } from "../../store/slices/customersSlice";
+import { setSupplier } from "../../store/slices/suppliersSlice";
+import apiClient from "../../lib/apiClient";
+import SearchableSelect, { type SelectOption } from "../../components/SearchableSelect";
+import ShamsiDatePicker from "../../components/DatePicker";
+import CustomTextField from "../../components/TextField";
 interface ApiUser {
   id: number;
   firstName: string;

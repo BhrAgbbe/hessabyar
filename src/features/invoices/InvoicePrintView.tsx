@@ -1,9 +1,9 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { Box, Paper, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Grid, Divider } from '@mui/material';
-import {type Invoice } from '../types/invoice';
-import { type RootState } from '../store/store';
-import { toPersianDigits, toPersianDigitsString } from '../utils/utils'; 
+import {type Invoice } from '../../types/invoice';
+import { type RootState } from '../../store/store';
+import { toPersianDigits, toPersianDigitsString } from '../../utils/utils'; 
 
 export const InvoicePrintView: React.FC<{ invoice: Invoice }> = ({ invoice }) => {
     const { products, customers, suppliers } = useSelector((state: RootState) => state);
